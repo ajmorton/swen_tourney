@@ -11,7 +11,7 @@ class TourneyRequestHandler(socketserver.BaseRequestHandler):
         print('Request received: "{}"'.format(self.data))
 
         if self.data == "shutdown":
-            # self.request.sendall("SHUTTING DOWN SERVER".encode())
+            self.request.sendall("SHUTTING_DOWN_SERVER".encode())
             self.server._BaseServer__shutdown_request = True
         elif self.data == 'get_port':
             self.request.sendall(str(server_config.get_port()).encode())
@@ -25,8 +25,11 @@ class TourneyRequestHandler(socketserver.BaseRequestHandler):
 if __name__ == "__main__":
     HOST, PORT = server_config.get_host(), server_config.get_port()
 
+    file = open('new_file.txt', 'w')
+    file.write("NEW_FILE")
+
     try:
-        # Create the server, binding to localhost on port 11013
+        # Create the server
         server = socketserver.TCPServer((HOST, PORT), TourneyRequestHandler)
         server.serve_forever()
         server.server_close()
@@ -37,7 +40,7 @@ if __name__ == "__main__":
             # This occurs when the server is closed, and a restart is attempted
             # before the socket can be garbage collected
             print("Cannot allocate socket, already in use.")
-            print("By default the server uses port ", server_config.get_port,
-                  " on the loopback address ", server_config.get_host, ".");
+            print("By default the server uses port", server_config.get_port(),
+                  "on the loopback address", server_config.get_host(), ".");
             print("This resource can take some time to be freed when the server is shutdown, try waiting " 
                   "a minute before running again");
