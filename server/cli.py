@@ -1,10 +1,10 @@
 import socket
-import sys
+import json
+import arg_parser
 import os
 import subprocess
-import time
 
-from server import server_config
+from config import server_config
 
 path = os.path.dirname(os.path.abspath(__file__))
 HOST, PORT = server_config.get_host(), server_config.get_port()
@@ -15,7 +15,7 @@ def start_server():
     Spawn the request server in a new process
     """
     print('starting server')
-    process = subprocess.Popen(['python', path + '/server/request_server.py'])
+    process = subprocess.Popen(['python', path + '/request_server.py'])
     print('spawned process PID: {}'.format(process.pid))
 
 
@@ -42,9 +42,11 @@ def send_request(request):
 
 
 if __name__ == "__main__":
-    args = ' '.join(sys.argv[1:])
-    if args == 'start_server':
+
+    event = arg_parser.parse_args()
+    if event.type == 'start_server':
         start_server()
     else:
-        send_request(args)
+        json = json.dumps(vars(event))
+        send_request(json)
 

@@ -12,25 +12,35 @@ class EventQueue(queue.Queue):
         self.mut = threading.Lock()
         queue.Queue.__init__(self)
 
-    def _put(self, item):
+    def _put(self, new_event):
         """
-        Default queue just pushes to the end of the queue.
-        Check that the item doesn't already exist in queue. If it does remove it and add the new occurrence of item
-        :param item: the item to add to the queue
+        Add the new event to the end of the queue.
+        If the new event is a 'submit' event, and the submitter has made a previous
+        submission, then the previous submission can be removed provided there is
+        no 'report' event in between the two.
+        :param new_event: the event to add to the queue
         """
 
         with self.mut:
             ls = deque()
+            report_found = False
 
             while self.queue:
-                i = self.queue.popleft()
-                # if item in deque matches new item, remove the existing item
-                if i == item:
+                # pop events in reverse order
+                event = self.queue.pop()
+
+                if event['type'] == 'report':
+                    report_found = True
+
+                # if a previous 'submit' event with the same submitter is found with
+                # no 'report' event between them then remove it
+                if event == new_event and new_event['type'] == 'submit' and not report_found:
                     pass
                 else:
-                    ls.append(i)
+                    ls.append(event)
 
-            ls.append(item)
+            ls.reverse()
+            ls.append(new_event)
 
             self.queue = ls
 

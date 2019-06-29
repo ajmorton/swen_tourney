@@ -24,11 +24,15 @@ class EventProcessor(Thread):
         print("EventProcessor started...")
         while self.process_events:
             try:
-                item = self.queue.get(block=False)
-                print("Popping event {}".format(item))
+                event = self.queue.get(block=False)
+                event_type = event['type']
+                if event_type == 'submit':
+                    print("Submission from {}".format(event['submitter_name']))
+                elif event_type == 'report':
+                    print("Making report, sending to {}".format(event['requester_email']))
             except queue.Empty:
                 print("Nothing to pop from queue")
-            time.sleep(10)
+            time.sleep(20)
 
         self.shutdown()
 
@@ -36,7 +40,7 @@ class EventProcessor(Thread):
         """
         Shutdown hook for the EventProcessor
         """
-        print("fifo_dequeuer closing with queue: {}".format(self.queue.get_contents()))
+        print("EventProcessor closing with queue: {}".format(self.queue.get_contents()))
 
     def stop(self):
         """

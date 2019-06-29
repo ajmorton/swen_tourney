@@ -1,8 +1,9 @@
 import socketserver
-from event_processor import EventProcessor
-from event_queue import EventQueue
+import json
+from events.event_processor import EventProcessor
+from events.event_queue import EventQueue
 
-import server_config
+from config import server_config
 
 
 class TourneyRequestHandler(socketserver.BaseRequestHandler):
@@ -18,37 +19,45 @@ class TourneyRequestHandler(socketserver.BaseRequestHandler):
         :return:
         """
         # self.request is the TCP socket connected to the client
-        self.data = self.request.recv(1024).decode()
+        data = self.request.recv(1024).decode()
+        event = json.loads(data)
 
-        print('Request received: "{}"'.format(self.data))
+        print('Event received: "{}"'.format(event))
 
-        if self.data == "shutdown":
+        event_type = event['type']
+
+        if event_type == "shutdown":
             self.request.sendall("SHUTTING_DOWN_SERVER".encode())
             self.server._BaseServer__shutdown_request = True
-
-        elif self.data == 'get_port':
-            self.request.sendall(str(server_config.get_port()).encode())
-        elif self.data == 'get_host':
-            self.request.sendall(str(server_config.get_host()).encode())
-        else:
-            # just send back the same data, but upper-cased
-            self.queue.put(self.data)
-            return_string = ", ".join(list(self.queue.queue))
+        elif event_type in {"submit", "report"}:
+            self.queue.put(event)
+            return_string = "\n".join([json.dumps(x) for x in list(self.queue.queue)])
             self.request.sendall(return_string.encode())
+        else:
+            print("Event type '{}' is not currently handled".format(event_type))
+
+
+def event_to_str(event):
+    if event['type'] == 'submit':
+        return "Submit: {}".format(event['submitter_name'])
+    elif event['type'] == 'report':
+        return "Report to: {}".format(event['reporter_email'])
+    else:
+        return "Event {} not yet handled".format(event['type'])
 
 
 def start_server():
     """
     Create the EventProcessor and SocketServer threads
     """
-    HOST, PORT = server_config.get_host(), server_config.get_port()
+    host, port = server_config.get_host(), server_config.get_port()
     try:
         # start up the  fifo dequeuer
         fifo_dequeuer = EventProcessor(TourneyRequestHandler.queue)
         fifo_dequeuer.start()
 
         # Create the server
-        server = socketserver.TCPServer((HOST, PORT), TourneyRequestHandler)
+        server = socketserver.TCPServer((host, port), TourneyRequestHandler)
         server.serve_forever()
 
         # when server stops serving, close all threads
