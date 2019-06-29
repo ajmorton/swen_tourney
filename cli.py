@@ -13,19 +13,16 @@ HOST, PORT = server_config.get_host(), server_config.get_port()
 def start_server():
     """
     Spawn the request server in a new process
-    :return:
     """
     print('starting server')
     process = subprocess.Popen(['python', path + '/server/request_server.py'])
     print('spawned process PID: {}'.format(process.pid))
-    time.sleep(5)
 
 
 def send_request(request):
     """
-    Send a request to the request server. Print the received message
+    Send a request to the request server. Print the received response
     :param request: The request sent to the server. String
-    :return:
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
