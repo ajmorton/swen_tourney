@@ -1,36 +1,35 @@
+
 import socket
 import json
-import arg_parser
+import back_end.arg_parser as arg_parser
 import os
 import subprocess
 
-from config import server_config
+from back_end.config import server_config
 
 path = os.path.dirname(os.path.abspath(__file__))
-HOST, PORT = server_config.get_host(), server_config.get_port()
-
 
 def start_server():
     """
-    Spawn the request server in a new process
+    Spawn the request back_end in a new process
     """
-    print('starting server')
-    process = subprocess.Popen(['python', path + '/request_server.py'])
+    print('starting back_end')
+    process = subprocess.Popen(['python', path + '/back_end/request_server.py'])
     print('spawned process PID: {}'.format(process.pid))
 
 
 def send_request(request):
     """
-    Send a request to the request server. Print the received response
-    :param request: The request sent to the server. String
+    Send a request to the request back_end. Print the received response
+    :param request: The request sent to the back_end. String
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
         try:
-            sock.connect((HOST, PORT))
+            sock.connect((server_config.get_host(), server_config.get_port()))
             sock.sendall(request.encode())
 
-            # Receive data from the server and shut down
+            # Receive data from the back_end and shut down
             received = sock.recv(1024).decode('utf-8')
 
             print('Sent:     {}'.format(request))

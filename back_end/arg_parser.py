@@ -17,7 +17,7 @@ def create_parser(parser_list):
     # add the parser for the start_server command
     command_name = 'start_server'
     start_server_parser = subparsers.add_parser(
-        command_name, help='Start the tournament server'
+        command_name, help='Start the tournament back_end'
     )
     start_server_parser.set_defaults(type=command_name)
     parser_list[command_name] = start_server_parser
@@ -25,19 +25,10 @@ def create_parser(parser_list):
     # add the parser for the shutdown command
     command_name = 'shutdown'
     shutdown_parser = subparsers.add_parser(
-        command_name, help='Shut down the tournament server'
+        command_name, help='Shut down the tournament back_end'
     )
     shutdown_parser.set_defaults(type=command_name)
     parser_list[command_name] = shutdown_parser
-
-    # add the parser for the process_submission command
-    command_name = 'submit'
-    submission_parser = subparsers.add_parser(
-        command_name, help='Add a submission'
-    )
-    submission_parser.add_argument('submitter_name', help='The name of the submitter')
-    submission_parser.set_defaults(type=command_name)
-    parser_list[command_name] = submission_parser
 
     # add the parser for the send_report command
     command_name = 'report'
