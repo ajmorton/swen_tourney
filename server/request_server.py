@@ -8,14 +8,14 @@ from config import server_config
 
 class TourneyRequestHandler(socketserver.BaseRequestHandler):
     """
-    Handle request made to the Tourney back_end via the CLI and provide responses.
+    Handle request made to the Tourney server via the CLI and provide responses.
     """
 
     queue = EventQueue()
 
     def handle(self):
         """
-        Handle a request made to the back_end.
+        Handle a request made to the server.
         :return:
         """
         # self.request is the TCP socket connected to the client
@@ -30,12 +30,9 @@ class TourneyRequestHandler(socketserver.BaseRequestHandler):
             self.request.sendall("SHUTTING_DOWN_SERVER".encode())
             self.server._BaseServer__shutdown_request = True
         elif event_type == "submit":
-            success = self.handle_submission(event)
-            if success:
-                self.request.sendall("SUBMISSION_SUCCESSFUL".encode())
-            else:
-                self.request.sendall("SUBMISSION_FAILED".encode())
-        elif event_type in {"submit", "report"}:
+            result = self.handle_submission(event)
+            self.request.sendall(result.encode())
+        elif event_type == "report":
             self.queue.put(event)
             return_string = "\n".join([json.dumps(x) for x in list(self.queue.queue)])
             self.request.sendall(return_string.encode())
@@ -43,41 +40,41 @@ class TourneyRequestHandler(socketserver.BaseRequestHandler):
             print("Event type '{}' is not currently handled".format(event_type))
 
     def handle_submission(self, submission_event):
-        pass
-        submitter = submission_event['dir'].split("/")[-1]
+        submitter = submission_event['submitter']
         print("SUBMISSION FROM {}".format(submitter))
         event = {"type": "submit", "submitter": submitter}
         self.queue.put(event)
-        return True
+        return "SUBMISSION_SUCCESSFUL"
 
 def start_server():
     """
     Create the EventProcessor and SocketServer threads
     """
     host, port = server_config.get_host(), server_config.get_port()
+    fifo_dequeuer = EventProcessor(TourneyRequestHandler.queue)
+
     try:
-        # start up the  fifo dequeuer
-        fifo_dequeuer = EventProcessor(TourneyRequestHandler.queue)
+        # start up the fifo dequeuer
         fifo_dequeuer.start()
 
-        # Create the back_end
+        # Create the server
         server = socketserver.TCPServer((host, port), TourneyRequestHandler)
         server.serve_forever()
 
-        # when back_end stops serving, close all threads
+        # when server stops serving, close all threads
         server.server_close()
         fifo_dequeuer.stop()
 
     except OSError as os_error:
         if os_error.errno == 48:
             # OSError 48: Socket address already in use
-            # This occurs when the back_end is closed, and a restart is attempted
+            # This occurs when the server is closed, and a restart is attempted
             # before the socket can be garbage collected
             print("Cannot allocate socket, already in use.")
-            print("By default the back_end uses port", server_config.get_port(),
+            print("By default the server uses port", server_config.get_port(),
                   "on the loopback address", server_config.get_host(), ".")
             print("This resource can take some time to be freed when the "
-                  "back_end is shutdown, try waiting a minute before running "
+                  "server is shutdown, try waiting a minute before running "
                   "again")
 
             fifo_dequeuer.stop()

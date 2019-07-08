@@ -10,14 +10,14 @@ class SubcommandHelpFormatter(argparse.RawDescriptionHelpFormatter):
         return parts
 
 
-def create_parser(parser_list):
+def create_backend_parser(parser_list):
     parser = argparse.ArgumentParser(formatter_class=SubcommandHelpFormatter)
     subparsers = parser.add_subparsers(title='commands')
 
     # add the parser for the start_server command
     command_name = 'start_server'
     start_server_parser = subparsers.add_parser(
-        command_name, help='Start the tournament back_end'
+        command_name, help='Start the tournament server'
     )
     start_server_parser.set_defaults(type=command_name)
     parser_list[command_name] = start_server_parser
@@ -25,7 +25,7 @@ def create_parser(parser_list):
     # add the parser for the shutdown command
     command_name = 'shutdown'
     shutdown_parser = subparsers.add_parser(
-        command_name, help='Shut down the tournament back_end'
+        command_name, help='Shut down the tournament server'
     )
     shutdown_parser.set_defaults(type=command_name)
     parser_list[command_name] = shutdown_parser
@@ -42,6 +42,41 @@ def create_parser(parser_list):
     return parser
 
 
+def create_frontend_parser(parser_list):
+    parser = argparse.ArgumentParser(formatter_class=SubcommandHelpFormatter)
+    subparsers = parser.add_subparsers(title='commands')
+
+    # common parser for parsing the submission directory's path
+    directory_parser = argparse.ArgumentParser(add_help=False)
+    directory_parser.add_argument('dir', help="The directory of the submission to test")
+
+    # add the parser for the validate_tests command
+    command_name = 'validate_tests'
+    val_test_parser = subparsers.add_parser(
+        command_name, help='Validate the tests in a provided submission', parents=[directory_parser]
+    )
+    val_test_parser.set_defaults(type=command_name)
+    parser_list[command_name] = val_test_parser
+
+    # add the parser for the process_submission command
+    command_name = 'validate_puts'
+    val_mut_parser = subparsers.add_parser(
+        command_name, help='Validate the programs under test in a provided submission', parents=[directory_parser]
+    )
+    val_mut_parser.set_defaults(type=command_name)
+    parser_list[command_name] = val_mut_parser
+
+    # add the parser for the submit command
+    command_name = 'submit'
+    submit_parser = subparsers.add_parser(
+        command_name, help='Make a submission', parents=[directory_parser]
+    )
+    submit_parser.set_defaults(type=command_name)
+    parser_list[command_name] = submit_parser
+
+    return parser
+
+
 def print_help_text(parser_list, root_parser):
     print()
 
@@ -54,9 +89,20 @@ def print_help_text(parser_list, root_parser):
         root_parser.print_help()
 
 
-def parse_args():
+def parse_frontend_args():
     sub_parser_list = dict()
-    parser = create_parser(sub_parser_list)
+    parser = create_frontend_parser(sub_parser_list)
+
+    try:
+        return parser.parse_args()
+
+    except SystemExit:
+        print_help_text(sub_parser_list, parser)
+        exit(1)
+
+def parse_backend_args():
+    sub_parser_list = dict()
+    parser = create_backend_parser(sub_parser_list)
 
     try:
         return parser.parse_args()

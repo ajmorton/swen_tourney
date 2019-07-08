@@ -2,6 +2,7 @@ from tournament.configs.AbstractConfig import AbstractConfig
 import os
 import subprocess
 from typing import Tuple
+from tournament.util.types import TestResult
 
 
 class AntConfig(AbstractConfig):
@@ -10,6 +11,12 @@ class AntConfig(AbstractConfig):
         self.path = os.path.dirname(os.path.abspath(__file__))
         self.source_assg = self.path + "/source_assg"
         pass
+
+    def get_test_list(self) -> [str]:
+        return ["boundary", "partitioning"]
+
+    def get_programs_under_test_list(self) -> [str]:
+        return ["mutant-1", "mutant-2", "mutant-3", "mutant-4", "mutant-5"]
 
     def validate_tests(self, submission_dir: str) -> Tuple[bool, str]:
         """
@@ -63,6 +70,19 @@ class AntConfig(AbstractConfig):
             mutants_valid = mutants_valid and not test_passed and not test_timeout
 
         return mutants_valid, validation_traces
+
+    def run_test(self, test: str, mutant: str, submission_dir: str) -> TestResult:
+        result = subprocess.run(
+            ['ant {} -Dprogram="{}"'.format(test, mutant)], shell=True, cwd=submission_dir + "/ant_assignment",
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+        )
+
+        if "Parallel execution timed out" in result.stderr:
+            return TestResult.TIMEOUT
+        elif result.returncode == 0:
+            return TestResult.TEST_PASSED
+        else:
+            return TestResult.TEST_FAILED
 
     def run_tests(self, mutants: [str], tests: [str], submission_dir: str) -> [str, str, bool, bool]:
         """

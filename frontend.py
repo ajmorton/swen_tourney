@@ -1,4 +1,4 @@
-import front_end.arg_parser as parse
+import cli.arg_parser as parser
 import tournament.main as tournament
 
 
@@ -6,17 +6,19 @@ def main():
     """
     Parse and process commands
     """
-    event = parse.parse_args()
+    event = parser.parse_frontend_args()
     event = vars(event)
 
     event_type = event['type']
 
     if event_type == "validate_tests":
         success = tournament.validate_tests(event['dir'])
-    elif event_type == "validate_mutants":
-        success = tournament.validate_mutants(event['dir'])
+    elif event_type == "validate_puts":
+        success = tournament.validate_programs_under_test(event['dir'])
     elif event_type == "submit":
-        success = tournament.submit(event)
+        submission_dir = event["dir"]
+        submitter = submission_dir.split("/")[-1]
+        success = tournament.submit(submitter, submission_dir)
     else:
         success = False
 
