@@ -42,9 +42,9 @@ class TourneyRequestHandler(socketserver.BaseRequestHandler):
     def handle_submission(self, submission_event):
         submitter = submission_event['submitter']
         print("SUBMISSION FROM {}".format(submitter))
-        event = {"type": "submit", "submitter": submitter}
-        self.queue.put(event)
+        self.queue.put(submission_event)
         return "SUBMISSION_SUCCESSFUL"
+
 
 def start_server():
     """

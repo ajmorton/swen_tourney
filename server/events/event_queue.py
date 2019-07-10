@@ -1,6 +1,10 @@
 import queue
 import threading
 from collections import deque
+import paths
+
+import subprocess
+
 
 
 class EventQueue(queue.Queue):
@@ -44,13 +48,27 @@ class EventQueue(queue.Queue):
 
             self.queue = ls
 
+            if new_event['type'] == "submit":
+                staged_dest = paths.STAGING_DIR + "/" + new_event['submitter']
+
+                subprocess.run("rm -rf {}".format(staged_dest), shell=True)
+                subprocess.run("cp -rf {} {}".format(new_event['dir'], staged_dest), shell=True)
+
     def _get(self):
         """
         Pop the first item in the queue
         :return: the first item in the queue
         """
         with self.mut:
-            return self.queue.popleft()
+            popped_event = self.queue.popleft()
+            if popped_event['type'] == "submit":
+                staged_dir = paths.STAGING_DIR + "/" + popped_event['submitter']
+                tourney_dest = paths.TOURNEY_DIR + "/" + popped_event['submitter']
+                subprocess.run("rm -rf {}".format(tourney_dest), shell=True)
+                subprocess.run("cp -rf {} {}".format(staged_dir, tourney_dest), shell=True)
+
+            return popped_event
+
 
     def get_contents(self):
         """

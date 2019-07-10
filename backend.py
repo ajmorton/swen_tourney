@@ -15,7 +15,7 @@ def start_server():
     Spawn the request server in a new process
     """
     print('starting server')
-    process = subprocess.Popen(['python', path + '/server/request_server.py'])
+    process = subprocess.Popen(['python', path + '/server/request_server.py'], cwd=path)
     print('spawned process PID: {}'.format(process.pid))
 
 

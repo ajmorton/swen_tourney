@@ -27,7 +27,7 @@ class EventProcessor(Thread):
                 event = self.queue.get(block=False)
                 event_type = event['type']
                 if event_type == 'submit':
-                    print("Submission from {}".format(event['submitter_name']))
+                    print("Submission from {}".format(event['submitter']))
                 elif event_type == 'report':
                     print("Making report, sending to {}".format(event['requester_email']))
             except queue.Empty:
