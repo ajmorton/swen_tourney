@@ -19,10 +19,10 @@ def start_server():
     print('spawned process PID: {}'.format(process.pid))
 
 
-def send_request(request):
+def send_request(request: str):
     """
     Send a request to the request server. Print the received response
-    :param request: The request sent to the server. String
+    :param request: The request sent to the server.
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 

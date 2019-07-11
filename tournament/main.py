@@ -3,10 +3,14 @@ import socket
 from server.config import server_config
 from typing import Tuple
 import json
-from tournament.util.types import TestResult
-
+import tournament.util.types as types
+from typing import Dict
 
 cfg = AntConfig()
+
+
+def check_submitter_eligibility(submitter: str) -> bool:
+    return submitter in open(types.SUBMITTERS_LIST).read()
 
 
 def validate_tests(submission_dir: str) -> bool:
@@ -17,16 +21,16 @@ def validate_tests(submission_dir: str) -> bool:
     for test in cfg.get_test_list():
         test_result = cfg.run_test(test, "original", submission_dir)
 
-        if test_result == TestResult.TIMEOUT:
+        if test_result == types.TestResult.TIMEOUT:
             validation_traces += "\n{} {} test FAIL - Timeout".format("original", test)
-        elif test_result == TestResult.TEST_PASSED:
+        elif test_result == types.TestResult.TEST_PASSED:
             validation_traces += "\n{} {} test SUCCESS - No bugs detected in original program".format("original", test)
-        elif test_result == TestResult.TEST_FAILED:
+        elif test_result == types.TestResult.TEST_FAILED:
             validation_traces += "\n{} {} test FAIL - Test falsely reports an error in original code".format("original", test)
         else:
             validation_traces += "\n{} {} ERROR - unexpected test result: {}".format("original", test, test_result)
 
-        tests_valid = tests_valid and test_result == TestResult.TEST_PASSED
+        tests_valid = tests_valid and test_result == types.TestResult.TEST_PASSED
 
     write_file(submission_dir, "validate_tests_results.txt", validation_traces)
     return tests_valid
@@ -42,22 +46,22 @@ def validate_programs_under_test(submission_dir: str) -> bool:
         for test in cfg.get_test_list():
             test_result = cfg.run_test(test, put, submission_dir)
 
-            if test_result == TestResult.TIMEOUT:
+            if test_result == types.TestResult.TIMEOUT:
                 validation_traces += "\n{} {} test FAIL - Timeout".format(put, test)
-            elif test_result == TestResult.TEST_PASSED:
+            elif test_result == types.TestResult.TEST_PASSED:
                 validation_traces += "\n{} {} test FAIL - Test suite does not detect error".format(put, test)
-            elif test_result == TestResult.TEST_FAILED:
+            elif test_result == types.TestResult.TEST_FAILED:
                 validation_traces += "\n{} {} test SUCCESS - Test suite detects error".format(put, test)
             else:
                 validation_traces += "\n{} {} ERROR - unexpected test result: {}".format(put, test, test_result)
 
-            puts_valid = puts_valid and test_result == TestResult.TEST_FAILED
+            puts_valid = puts_valid and test_result == types.TestResult.TEST_FAILED
 
     write_file(submission_dir, "validate_tests_results.txt", validation_traces)
     return puts_valid
 
 
-def submit(submitter, submission_dir) -> bool:
+def submit(submitter: str, submission_dir: str) -> bool:
     request = {"type": "submit", "submitter": submitter, "dir": submission_dir}
 
     (success, submission_traces) = send_request(request)
@@ -71,7 +75,7 @@ def write_file(submission_dir: str, filename: str, contents: str):
     results_file.close()
 
 
-def send_request(request) -> Tuple[bool, str]:
+def send_request(request: Dict[str, str]) -> Tuple[bool, str]:
     """
     Send a submission request to the request server.
     :param request: The request sent to the server. String

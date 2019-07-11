@@ -1,5 +1,6 @@
 import cli.arg_parser as parser
 import tournament.main as tournament
+import os
 
 
 def main():
@@ -11,13 +12,18 @@ def main():
 
     event_type = event['type']
 
-    if event_type == "validate_tests":
+    if event_type == "check_eligibility":
+        submission_dir = event["dir"]
+        submitter = os.path.basename(submission_dir.rsplit('/'))
+        success = tournament.check_submitter_eligibility(submitter)
+        print("submitter {} elig?: {}".format(submitter, success))
+    elif event_type == "validate_tests":
         success = tournament.validate_tests(event['dir'])
     elif event_type == "validate_puts":
         success = tournament.validate_programs_under_test(event['dir'])
     elif event_type == "submit":
         submission_dir = event["dir"]
-        submitter = submission_dir.split("/")[-1]
+        submitter = os.path.basename(submission_dir.rsplit('/'))
         success = tournament.submit(submitter, submission_dir)
     else:
         success = False

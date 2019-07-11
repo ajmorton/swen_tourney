@@ -50,6 +50,14 @@ def create_frontend_parser(parser_list):
     directory_parser = argparse.ArgumentParser(add_help=False)
     directory_parser.add_argument('dir', help="The directory of the submission to test")
 
+    # add the parser for the check_eligibility command
+    command_name = 'check_eligibility'
+    check_elig_parser = subparsers.add_parser(
+        command_name, help='Check the submitter is eligible to submit to the tournament', parents=[directory_parser]
+    )
+    check_elig_parser.set_defaults(type=command_name)
+    parser_list[command_name] = check_elig_parser
+
     # add the parser for the validate_tests command
     command_name = 'validate_tests'
     val_test_parser = subparsers.add_parser(
