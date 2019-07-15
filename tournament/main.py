@@ -1,4 +1,6 @@
 from typing import Tuple, Dict
+import subprocess
+import os
 from tournament.util.types.tourney_state import TourneyState
 from tournament.util.types.basetypes import TestResult
 import tournament.config.paths as paths
@@ -70,11 +72,11 @@ def run_submission(submitter: str):
     # run others tests against submitters progs
     proging_results = run_tests(other_submitters, [submitter])
 
-    for (tester, progr) in testing_results.keys():
-        tourney_state.set(tester, progr, testing_results[(tester, progr)])
+    for (tester, testee) in testing_results.keys():
+        tourney_state.set(tester, testee, testing_results[(tester, testee)])
 
-    for (tester, progr) in proging_results.keys():
-        tourney_state.set(tester, progr, proging_results[(tester, progr)])
+    for (tester, testee) in proging_results.keys():
+        tourney_state.set(tester, testee, proging_results[(tester, testee)])
 
     tourney_state.print()
     tourney_state.save_to_file()
@@ -92,23 +94,25 @@ def rand_result() -> TestResult:
         return TestResult.TIMEOUT
 
 
-def run_tests(testers: [str], progrs: [str]) -> [Dict[str, Dict[str, str]]]:
+def run_tests(testers: [str], testees: [str]) -> [Dict[str, Dict[str, str]]]:
 
-    #TODO threading
-    staging_dir = paths.HEAD_TO_HEAD_DIR
+    # TODO threading
+    test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/test_stage"
+    if not os.path.isdir(test_stage_dir):
+        subprocess.run("mkdir {}".format(test_stage_dir), shell=True)
+        subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), test_stage_dir), shell=True)
 
     all_results = {}
 
     for tester in testers:
-        for progr in progrs:
-            #TODO
-            # prepare testing stage for (symlinks)
+        for testee in testees:
+            assg.prep_test_stage(tester, testee, test_stage_dir)
             test_set = {}
             for test in assg.get_test_list():
                 test_set[test] = {}
                 for prog in assg.get_programs_under_test_list():
-                    test_set[test][prog] = rand_result()
+                    test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
 
-            all_results[(tester, progr)] = test_set
+            all_results[(tester, testee)] = test_set
 
     return all_results

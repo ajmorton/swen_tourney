@@ -49,6 +49,8 @@ class EventQueue(queue.Queue):
             if new_event['type'] == "submit":
                 staged_dest = paths.STAGING_DIR + "/" + new_event['submitter']
 
+                # TODO add check here to determine updated progs and tests
+                #      Can cut down on unnecessary re-computation
                 subprocess.run("rm -rf {}".format(staged_dest), shell=True)
                 subprocess.run("cp -rf {} {}".format(new_event['dir'], staged_dest), shell=True)
 

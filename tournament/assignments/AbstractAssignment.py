@@ -5,6 +5,13 @@ from tournament.util.types.basetypes import TestResult
 class AbstractAssignment(metaclass=ABCMeta):
 
     @abstractmethod
+    def get_source_assg_dir(self) -> str:
+        """
+        Return the path to the original source code of the assignment
+        :return: the path to the original source code of the assignment
+        """
+
+    @abstractmethod
     def get_test_list(self) -> [str]:
         """
         Get the list of tests in the assignment
@@ -38,3 +45,12 @@ class AbstractAssignment(metaclass=ABCMeta):
         :param submission_dir: The directory of the submission
         """
         raise NotImplementedError("Error: prep_submission is not implemented")
+
+    @abstractmethod
+    def prep_test_stage(self, tester: str, testee: str, test_stage_dir: str):
+        """
+        Prepare a test stage with the tests from the tester and the progs under test from the testee.
+        :param tester: the name of the submitter whose tests are to be run
+        :param testee: the name of the submitter whose programs under test are to be tested
+        :param test_stage_dir: the directory of the test staging area
+        """
