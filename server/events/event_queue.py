@@ -1,10 +1,8 @@
 import queue
 import threading
 from collections import deque
-import paths
-
+import tournament.config.paths as paths
 import subprocess
-
 
 
 class EventQueue(queue.Queue):
@@ -66,9 +64,9 @@ class EventQueue(queue.Queue):
                 tourney_dest = paths.TOURNEY_DIR + "/" + popped_event['submitter']
                 subprocess.run("rm -rf {}".format(tourney_dest), shell=True)
                 subprocess.run("cp -rf {} {}".format(staged_dir, tourney_dest), shell=True)
+                subprocess.run("rm -rf {}".format(staged_dir), shell=True)
 
             return popped_event
-
 
     def get_contents(self):
         """

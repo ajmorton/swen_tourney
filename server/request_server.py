@@ -1,9 +1,9 @@
 import socketserver
 import json
-from events.event_processor import EventProcessor
-from events.event_queue import EventQueue
+from server.events.event_processor import EventProcessor
+from server.events.event_queue import EventQueue
 
-from config import server_config
+from server.config import server_config
 
 
 class TourneyRequestHandler(socketserver.BaseRequestHandler):
@@ -79,6 +79,3 @@ def start_server():
 
             fifo_dequeuer.stop()
 
-
-if __name__ == "__main__":
-    start_server()

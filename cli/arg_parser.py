@@ -67,7 +67,7 @@ def create_frontend_parser(parser_list):
     parser_list[command_name] = val_test_parser
 
     # add the parser for the process_submission command
-    command_name = 'validate_puts'
+    command_name = 'validate_progs'
     val_mut_parser = subparsers.add_parser(
         command_name, help='Validate the programs under test in a provided submission', parents=[directory_parser]
     )

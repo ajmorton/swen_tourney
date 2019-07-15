@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 
+# directories containing test submissions
+subs
+
 # C extensions
 *.so
 

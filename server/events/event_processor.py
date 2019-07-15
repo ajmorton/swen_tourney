@@ -1,7 +1,7 @@
 from threading import Thread
 import time
 import queue
-
+import tournament.main as tourney
 
 class EventProcessor(Thread):
     """
@@ -27,12 +27,12 @@ class EventProcessor(Thread):
                 event = self.queue.get(block=False)
                 event_type = event['type']
                 if event_type == 'submit':
-                    print("Submission from {}".format(event['submitter']))
+                    tourney.run_submission(event['submitter'])
                 elif event_type == 'report':
                     print("Making report, sending to {}".format(event['requester_email']))
             except queue.Empty:
                 print("Nothing to pop from queue")
-            time.sleep(20)
+            time.sleep(8)
 
         self.shutdown()
 

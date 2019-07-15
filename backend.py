@@ -5,17 +5,16 @@ import os
 import subprocess
 
 import cli.arg_parser as parser
-
 from server.config import server_config
 
-path = os.path.dirname(os.path.abspath(__file__))
 
 def start_server():
     """
-    Spawn the request server in a new process
+    Spawn the server in a new process
     """
     print('starting server')
-    process = subprocess.Popen(['python', path + '/server/request_server.py'], cwd=path)
+    path = os.path.dirname(os.path.abspath(__file__))
+    process = subprocess.Popen(['python', path + '/start_server.py'], cwd=path)
     print('spawned process PID: {}'.format(process.pid))
 
 
