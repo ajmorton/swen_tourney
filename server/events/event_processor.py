@@ -3,6 +3,7 @@ import time
 import queue
 import tournament.main as tourney
 
+
 class EventProcessor(Thread):
     """
     A thread that pops the first item off of the EventQueue and processes it.

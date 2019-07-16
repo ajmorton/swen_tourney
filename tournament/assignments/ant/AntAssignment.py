@@ -4,23 +4,27 @@ import subprocess
 from tournament.util.types.basetypes import TestResult
 import tournament.config.paths as paths
 
+
+path = os.path.dirname(os.path.abspath(__file__))
+source_assg = path + "/ant_assignment"
+
+
 class AntAssignment(AbstractAssignment):
 
-    def __init__(self):
-        self.path = os.path.dirname(os.path.abspath(__file__))
-        self.source_assg = self.path + "/ant_assignment"
-        pass
+    @staticmethod
+    def get_source_assg_dir() -> str:
+        return source_assg
 
-    def get_source_assg_dir(self) -> str:
-        return self.source_assg
-
-    def get_test_list(self) -> [str]:
+    @staticmethod
+    def get_test_list() -> [str]:
         return ["boundary", "partitioning"]
 
-    def get_programs_under_test_list(self) -> [str]:
+    @staticmethod
+    def get_programs_under_test_list() -> [str]:
         return ["mutant-1", "mutant-2", "mutant-3", "mutant-4", "mutant-5"]
 
-    def run_test(self, test: str, prog: str, submission_dir: str) -> TestResult:
+    @staticmethod
+    def run_test(test: str, prog: str, submission_dir: str) -> TestResult:
         result = subprocess.run(
             ['ant {} -Dprogram="{}"'.format(test, prog)], shell=True, cwd=submission_dir + "/ant_assignment",
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
@@ -33,19 +37,21 @@ class AntAssignment(AbstractAssignment):
         else:
             return TestResult.TEST_FAILED
 
-    def prep_submission(self, submission_dir: str):
+    @staticmethod
+    def prep_submission(submission_dir: str):
         test_dir = submission_dir + "/ant_assignment"
 
         # replace build.xml with the one from the source assignment
-        subprocess.run('ln -sf {} {}'.format(self.source_assg + "/build.xml", "build.xml"), shell=True, cwd=test_dir)
+        subprocess.run('ln -sf {} {}'.format(source_assg + "/build.xml", "build.xml"), shell=True, cwd=test_dir)
 
         # replace programs/original dir with the source assignment's.
         subprocess.run('rm -r {}'.format("programs/original"), shell=True, cwd=test_dir)
         subprocess.run(
-            'ln -s {} {}'.format(self.source_assg + "/programs/original", "programs/original"), shell=True, cwd=test_dir
+            'ln -s {} {}'.format(source_assg + "/programs/original", "programs/original"), shell=True, cwd=test_dir
         )
 
-    def prep_test_stage(self, tester: str, testee: str, test_stage_dir: str):
+    @staticmethod
+    def prep_test_stage(tester: str, testee: str, test_stage_dir: str):
 
         test_stage_code_dir = test_stage_dir + "/ant_assignment"
         tester_code_dir = paths.TOURNEY_DIR + "/" + tester + "/ant_assignment"

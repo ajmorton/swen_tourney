@@ -11,7 +11,7 @@ Tournament code to be used for SWEN subjects with bug/test suite tournaments.
     - JSON, what requests can be made
 - Emailer
 - Assignment code integration
-    - Example assignements
+    - Example assignments
     - Dynamic compilation of example code
     - Assignment code folder structure (to be constant across all assignments)
 - Gitlab CI integration

@@ -1,6 +1,7 @@
 import argparse
 import sys
 
+
 # Formats the help message, removes some annoying text
 class SubcommandHelpFormatter(argparse.RawDescriptionHelpFormatter):
     def _format_action(self, action):
@@ -107,6 +108,7 @@ def parse_frontend_args():
     except SystemExit:
         print_help_text(sub_parser_list, parser)
         exit(1)
+
 
 def parse_backend_args():
     sub_parser_list = dict()

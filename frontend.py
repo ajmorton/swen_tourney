@@ -6,8 +6,6 @@ from server.config import server_config
 from typing import Tuple, Dict
 import json
 
-from tournament.util.types.tourney_state import TourneyState
-import tournament.util.funcs as funcs
 
 def main():
     """

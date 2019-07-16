@@ -1,11 +1,11 @@
 import os
 import json
-from typing import Dict
 
 import tournament.config.config as config
-from tournament.util.types.basetypes import TestResult
+from tournament.util.types.basetypes import TestResult, TestSet
 import tournament.config.paths as paths
 import tournament.util.funcs as funcs
+
 
 class TourneyState:
     """
@@ -16,12 +16,12 @@ class TourneyState:
     def __init__(self):
         self.state = {}
 
-        #TODO check for missing approved_submitters.txt
+        # TODO check for missing approved_submitters.txt
         with open(paths.SUBMITTERS_LIST, 'r') as submitters_file:
             submitters_list = [line.strip() for line in submitters_file]
 
         if os.path.isfile(paths.TOURNEY_STATE_FILE):
-            #TODO error handling for this file
+            # TODO error handling for this file
             with open(paths.TOURNEY_STATE_FILE, 'r') as infile:
                 state_from_file = json.load(infile)
                 self.initialise_state_from_file(submitters_list, state_from_file)
@@ -44,7 +44,8 @@ class TourneyState:
             for prog_submitter in submitters_list:
                 if test_submitter == prog_submitter:
                     continue
-                if test_submitter in state_from_file.keys() and prog_submitter in state_from_file[test_submitter].keys():
+                if test_submitter in state_from_file.keys() and \
+                        prog_submitter in state_from_file[test_submitter].keys():
                     self.state[test_submitter][prog_submitter] = state_from_file[test_submitter][prog_submitter]
                 else:
                     self.state[test_submitter][prog_submitter] = self.create_default_testset()
@@ -54,22 +55,18 @@ class TourneyState:
             json.dump(self.state, outfile)
 
     @staticmethod
-    def create_default_testset() -> Dict[str, Dict[str, TestResult]]:
+    def create_default_testset() -> TestSet:
         """
         Create a test set where all values are NOT_TESTED
         testset[test][prog] = TestResult
         :return:
         """
-
-        testbench = {}
+        testset = TestSet({})
         for test in config.assignment.get_test_list():
-            d = {}
+            testset[test] = {}
             for prog in config.assignment.get_programs_under_test_list():
-                d[prog] = TestResult.NOT_TESTED
-
-            testbench[test] = d
-
-        return testbench
+                testset[test][prog] = TestResult.NOT_TESTED
+        return testset
 
     def get_valid_submitters(self):
         """

@@ -14,6 +14,8 @@ def start_server():
     """
     print('starting server')
     path = os.path.dirname(os.path.abspath(__file__))
+    # TODO determine how to ensure this is python 3.6
+    subprocess.run("python --version", shell=True)
     process = subprocess.Popen(['python', path + '/start_server.py'], cwd=path)
     print('spawned process PID: {}'.format(process.pid))
 
