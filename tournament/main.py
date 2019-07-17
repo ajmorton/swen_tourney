@@ -12,17 +12,43 @@ from tournament.util.types.basetypes import TestSet
 assg = config.assignment
 
 
-def check_submitter_eligibility(submitter: str) -> bool:
-    return submitter in open(paths.SUBMITTERS_LIST).read()
+def check_submitter_eligibility(submitter: str, submission_dir: str) -> Tuple[bool, str]:
+    submitter_eligible = submitter in open(paths.SUBMITTERS_LIST).read()
+    assg_folder = os.path.basename(assg.get_source_assg_dir().rstrip("/"))
+
+    if submitter_eligible:
+        # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
+        submitter_pre_validation_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
+        if os.path.isdir(submitter_pre_validation_dir):
+            subprocess.run("rm -rf {}".format(submitter_pre_validation_dir), shell=True)
+        subprocess.run("mkdir {}".format(submitter_pre_validation_dir), shell=True)
+
+        subprocess.run(
+            "cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir + "/" + assg_folder),
+            shell=True
+        )
+        assg.prep_submission(submission_dir, submitter_pre_validation_dir)
+
+    if submitter_eligible:
+        eligibility_check_traces = "Submitter is eligible for the tournament"
+    else:
+        eligibility_check_traces = \
+            "Submitter '{}' is not on the approved submitters list.\n"\
+            "If this is a group assignment please check that you are committing to "\
+            "the repo of your designated team representative.\n"\
+            "If this is an individual assignment please check with your tutors that"\
+            " you are added to the approved_submitters list".format(submitter)
+
+    return submitter_eligible, eligibility_check_traces
 
 
-def validate_tests(submission_dir: str) -> Tuple[bool, str]:
-    assg.prep_submission(submission_dir)
+def validate_tests(submitter: str) -> Tuple[bool, str]:
+    validation_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
 
     tests_valid = True
     validation_traces = "Validation results:"
     for test in assg.get_test_list():
-        test_result = assg.run_test(test, "original", submission_dir)
+        test_result = assg.run_test(test, "original", validation_dir)
 
         if test_result == TestResult.TIMEOUT:
             validation_traces += "\n{} {} test FAIL - Timeout".format("original", test)
@@ -39,15 +65,15 @@ def validate_tests(submission_dir: str) -> Tuple[bool, str]:
     return tests_valid, validation_traces
 
 
-def validate_programs_under_test(submission_dir: str) -> Tuple[bool, str]:
-    assg.prep_submission(submission_dir)
+def validate_programs_under_test(submitter: str) -> Tuple[bool, str]:
+    validation_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
 
     progs_valid = True
     validation_traces = "Validation results:"
 
     for prog in assg.get_programs_under_test_list():
         for test in assg.get_test_list():
-            test_result = assg.run_test(test, prog, submission_dir)
+            test_result = assg.run_test(test, prog, validation_dir)
 
             if test_result == TestResult.TIMEOUT:
                 validation_traces += "\n{} {} test FAIL - Timeout".format(prog, test)

@@ -38,17 +38,25 @@ class AntAssignment(AbstractAssignment):
             return TestResult.TEST_FAILED
 
     @staticmethod
-    def prep_submission(submission_dir: str):
-        test_dir = submission_dir + "/ant_assignment"
+    def prep_submission(submission_dir: str, destination_dir: str):
 
-        # replace build.xml with the one from the source assignment
-        subprocess.run('ln -sf {} {}'.format(source_assg + "/build.xml", "build.xml"), shell=True, cwd=test_dir)
-
-        # replace programs/original dir with the source assignment's.
-        subprocess.run('rm -r {}'.format("programs/original"), shell=True, cwd=test_dir)
+        # copy across the test folder
+        subprocess.run("rm -rf {}".format(destination_dir + "/ant_assignment/test"), shell=True)
         subprocess.run(
-            'ln -s {} {}'.format(source_assg + "/programs/original", "programs/original"), shell=True, cwd=test_dir
+            "cp -rf {} {}".format(submission_dir + "/ant_assignment/test", destination_dir + "/ant_assignment")
+            , shell=True
         )
+
+        for program in AntAssignment.get_programs_under_test_list():
+            # copy across the program
+            subprocess.run("rm -rf {}".format(destination_dir + "/ant_assignment/programs/" + program), shell=True)
+            subprocess.run(
+                "cp -rf {} {}".format(
+                    submission_dir + "/ant_assignment/programs/" + program,
+                    destination_dir + "/ant_assignment/programs")
+                , shell=True
+            )
+
 
     @staticmethod
     def prep_test_stage(tester: str, testee: str, test_stage_dir: str):

@@ -44,10 +44,13 @@ class AbstractAssignment(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def prep_submission(submission_dir: str):
+    def prep_submission(submission_dir: str, destination_dir: str):
         """
-        Ensure that files in a submission that should not be changed by the submitter are unchanged
+        Copy the relevant files from the submitters submission into a destination folder. The destination_dir is
+        assumed to be a copy of the original source code for the submission.
         :param submission_dir: The directory of the submission
+        :param destination_dir: Where to copy the relevant files to.
+                                Assumed to be a copy of the original source assignment.
         """
         raise NotImplementedError("Error: prep_submission is not implemented")
 

@@ -19,22 +19,28 @@ def main():
     if event_type == "check_eligibility":
         submission_dir = event["dir"]
         submitter = os.path.basename(submission_dir.rstrip('/'))
-        success = tourney.check_submitter_eligibility(submitter)
+        success, eligibility_check_traces = tourney.check_submitter_eligibility(submitter, submission_dir)
+        write_file(submission_dir, "check_eligibility_results.txt", eligibility_check_traces)
 
     elif event_type == "validate_tests":
         submission_dir = event['dir']
-        success, validation_traces = tourney.validate_tests(submission_dir)
+        submitter = os.path.basename(submission_dir.rstrip('/'))
+        success, validation_traces = tourney.validate_tests(submitter)
         write_file(submission_dir, "validate_tests_results.txt", validation_traces)
 
     elif event_type == "validate_progs":
         submission_dir = event['dir']
-        success, validation_traces = tourney.validate_programs_under_test(submission_dir)
-        write_file(submission_dir, "validate_tests_results.txt", validation_traces)
+        submitter = os.path.basename(submission_dir.rstrip('/'))
+        success, validation_traces = tourney.validate_programs_under_test(submitter)
+        write_file(submission_dir, "validate_progs_results.txt", validation_traces)
 
     elif event_type == "submit":
         submission_dir = event["dir"]
         submitter = os.path.basename(submission_dir.rstrip('/'))
-        success = submit(submitter, submission_dir)
+
+        request = {"type": "submit", "submitter": submitter}
+        (success, submission_traces) = send_request(request)
+        write_file(submission_dir, "submission_results.txt", submission_traces)
 
     else:
         success = False
@@ -43,14 +49,6 @@ def main():
         exit(0)
     else:
         exit(1)
-
-
-def submit(submitter: str, submission_dir: str) -> bool:
-    request = {"type": "submit", "submitter": submitter, "dir": submission_dir}
-
-    (success, submission_traces) = send_request(request)
-    write_file(submission_dir, "submission_results.txt", submission_traces)
-    return success
 
 
 def write_file(submission_dir: str, filename: str, contents: str):
@@ -85,7 +83,6 @@ def send_request(request: Dict[str, str]) -> Tuple[bool, str]:
 
             print('Server not online')
             return False, "Error, the tournament server is not online.\nPlease contact a tutor and let them know."
-
 
 
 if __name__ == "__main__":

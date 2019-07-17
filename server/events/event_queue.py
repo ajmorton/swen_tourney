@@ -47,12 +47,13 @@ class EventQueue(queue.Queue):
             self.queue = ls
 
             if new_event['type'] == "submit":
+                pre_validation_dir = paths.PRE_VALIDATION_DIR + "/" + new_event['submitter']
                 staged_dest = paths.STAGING_DIR + "/" + new_event['submitter']
 
                 # TODO add check here to determine updated progs and tests
                 #      Can cut down on unnecessary re-computation
                 subprocess.run("rm -rf {}".format(staged_dest), shell=True)
-                subprocess.run("cp -rf {} {}".format(new_event['dir'], staged_dest), shell=True)
+                subprocess.run("cp -rf {} {}".format(pre_validation_dir, staged_dest), shell=True)
 
     def _get(self):
         """
