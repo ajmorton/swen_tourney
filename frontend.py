@@ -38,6 +38,9 @@ def main():
         submission_dir = event["dir"]
         submitter = os.path.basename(submission_dir.rstrip('/'))
 
+        tourney.detect_new_tests(submitter)
+        tourney.detect_new_progs(submitter)
+
         request = {"type": "submit", "submitter": submitter}
         (success, submission_traces) = send_request(request)
         write_file(submission_dir, "submission_results.txt", submission_traces)

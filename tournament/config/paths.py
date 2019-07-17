@@ -10,3 +10,6 @@ PRE_VALIDATION_DIR = tournament_submissions_path + "/pre_validation"
 STAGING_DIR = tournament_submissions_path + "/staged"
 TOURNEY_DIR = tournament_submissions_path + "/tourney"
 HEAD_TO_HEAD_DIR = tournament_submissions_path + "/head_to_head"
+
+NEW_TESTS_FILE = "new_tests.json"
+NEW_PROGS_FILE = "new_progs.json"

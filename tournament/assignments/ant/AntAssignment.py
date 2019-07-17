@@ -20,7 +20,7 @@ class AntAssignment(AbstractAssignment):
         return ["boundary", "partitioning"]
 
     @staticmethod
-    def get_programs_under_test_list() -> [str]:
+    def get_programs_list() -> [str]:
         return ["mutant-1", "mutant-2", "mutant-3", "mutant-4", "mutant-5"]
 
     @staticmethod
@@ -47,7 +47,7 @@ class AntAssignment(AbstractAssignment):
             , shell=True
         )
 
-        for program in AntAssignment.get_programs_under_test_list():
+        for program in AntAssignment.get_programs_list():
             # copy across the program
             subprocess.run("rm -rf {}".format(destination_dir + "/ant_assignment/programs/" + program), shell=True)
             subprocess.run(
@@ -57,6 +57,47 @@ class AntAssignment(AbstractAssignment):
                 , shell=True
             )
 
+    @staticmethod
+    def detect_new_tests(new_submission: str, old_submission: str) -> [str]:
+
+        if not os.path.isdir(old_submission):
+            # if there is no previous submission then all tests are new
+            return AntAssignment.get_test_list()
+
+        new_tests = []
+
+        tests = [("boundary", "/ant_assignment/test/swen90006/machine/BoundaryTests.java"),
+                 ("partitioning", "/ant_assignment/test/swen90006/machine/PartitioningTests.java")]
+
+        for (test, test_path) in tests:
+            diff = subprocess.run(
+                "diff {} {}".format(new_submission + test_path, old_submission + test_path),
+                stdout=subprocess.PIPE,
+                shell=True
+            )
+            if diff.returncode != 0:
+                new_tests.append(test)
+
+        return new_tests
+
+    @staticmethod
+    def detect_new_progs(new_submission: str, old_submission: str) -> [str]:
+        if not os.path.isdir(old_submission):
+            # if there is no previous submission then all tests are new
+            return AntAssignment.get_programs_list()
+
+        new_progs = []
+        programs_path = "/ant_assignment/programs/"
+        for prog in AntAssignment.get_programs_list():
+            diff = subprocess.run(
+                "diff -r {} {}".format(new_submission + programs_path + prog, old_submission + programs_path + prog),
+                stdout=subprocess.PIPE,
+                shell=True
+            )
+            if diff.returncode != 0:
+                new_progs.append(prog)
+
+        return new_progs
 
     @staticmethod
     def prep_test_stage(tester: str, testee: str, test_stage_dir: str):

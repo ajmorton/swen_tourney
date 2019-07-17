@@ -1,7 +1,9 @@
 from typing import Tuple
 import subprocess
 import os
+import json
 import multiprocessing
+from functools import partial
 from tournament.util.types.tourney_state import TourneyState
 from tournament.util.types.basetypes import TestResult
 import tournament.config.paths as paths
@@ -71,7 +73,7 @@ def validate_programs_under_test(submitter: str) -> Tuple[bool, str]:
     progs_valid = True
     validation_traces = "Validation results:"
 
-    for prog in assg.get_programs_under_test_list():
+    for prog in assg.get_programs_list():
         for test in assg.get_test_list():
             test_result = assg.run_test(test, prog, validation_dir)
 
@@ -89,20 +91,52 @@ def validate_programs_under_test(submitter: str) -> Tuple[bool, str]:
     return progs_valid, validation_traces
 
 
+def detect_new_tests(submitter: str):
+    new_submission_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
+    previous_submission_dir = paths.TOURNEY_DIR + "/" + submitter
+
+    new_tests = assg.detect_new_tests(new_submission_dir, previous_submission_dir)
+    new_tests_file_path = new_submission_dir + "/" + paths.NEW_TESTS_FILE
+
+    new_tests_file = open(new_tests_file_path, "w")
+    json.dump(new_tests, new_tests_file)
+
+
+def detect_new_progs(submitter: str):
+    new_submission_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
+    previous_submission_dir = paths.TOURNEY_DIR + "/" + submitter
+
+    new_progs = assg.detect_new_progs(new_submission_dir, previous_submission_dir)
+    new_progs_file_path = new_submission_dir + "/" + paths.NEW_PROGS_FILE
+
+    new_tests_file = open(new_progs_file_path, "w")
+    json.dump(new_progs, new_tests_file)
+
+
 def run_submission(submitter: str):
 
     # TODO No need to read on every submission? Needs to tie in with check_submitter_eligibility above
     tourney_state = TourneyState()
     other_submitters = [sub for sub in tourney_state.get_valid_submitters() if sub != submitter]
 
+    new_tests_file = paths.TOURNEY_DIR + "/" + submitter + "/" + paths.NEW_TESTS_FILE
+    new_tests = json.load(open(new_tests_file, "r"))
+
+    new_progs_file = paths.TOURNEY_DIR + "/" + submitter + "/" + paths.NEW_PROGS_FILE
+    new_progs = json.load(open(new_progs_file, "r"))
+
+    # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
+    # run_tests into a function with just one argument
+    rt = partial(run_tests, new_tests=new_tests, new_progs=new_progs, tourney_state=tourney_state)
+
     with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
         # run submitter tests against others progs
         tester_pairs = [(submitter, other) for other in other_submitters]
-        tester_results = p.map(run_tests, tester_pairs)
+        tester_results = p.map(rt, tester_pairs)
 
         # run others tests against submitters progs
         testee_pairs = [(other, submitter) for other in other_submitters]
-        testee_results = p.map(run_tests, testee_pairs)
+        testee_results = p.map(rt, testee_pairs)
 
     for (tester, testee, test_set) in tester_results + testee_results:
         tourney_state.set(tester, testee, test_set)
@@ -111,7 +145,12 @@ def run_submission(submitter: str):
     tourney_state.save_to_file()
 
 
-def run_tests(pair: Tuple[str, str]) -> [str, str, TestSet]:
+def run_tests(
+        pair: Tuple[str, str],
+        tourney_state: TourneyState,
+        new_tests: [str] = assg.get_test_list(),
+        new_progs: [str] = assg.get_programs_list()
+) -> [str, str, TestSet]:
     test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/test_stage_" + multiprocessing.current_process().name
     if not os.path.isdir(test_stage_dir):
         subprocess.run("mkdir {}".format(test_stage_dir), shell=True)
@@ -123,7 +162,11 @@ def run_tests(pair: Tuple[str, str]) -> [str, str, TestSet]:
     test_set = {}
     for test in assg.get_test_list():
         test_set[test] = {}
-        for prog in assg.get_programs_under_test_list():
-            test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
+        for prog in assg.get_programs_list():
+            if test not in new_tests and prog not in new_progs:
+                # no need to rerun this test, keep the results from the current tournament state
+                test_set[test][prog] = tourney_state.get(tester, testee, test, prog)
+            else:
+                test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
 
     return tester, testee, test_set

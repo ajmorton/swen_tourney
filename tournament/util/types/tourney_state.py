@@ -64,7 +64,7 @@ class TourneyState:
         testset = TestSet({})
         for test in config.assignment.get_test_list():
             testset[test] = {}
-            for prog in config.assignment.get_programs_under_test_list():
+            for prog in config.assignment.get_programs_list():
                 testset[test][prog] = TestResult.NOT_TESTED
         return testset
 
@@ -80,3 +80,6 @@ class TourneyState:
 
     def set(self, tester: str, testee: str, testset):
         self.state[tester][testee] = testset
+
+    def get(self, tester: str, testee: str, test: str, prog: str):
+        return self.state[tester][testee][test][prog]

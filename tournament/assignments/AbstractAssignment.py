@@ -23,7 +23,7 @@ class AbstractAssignment(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def get_programs_under_test_list() -> [str]:
+    def get_programs_list() -> [str]:
         """
         Get the list of programs under test in the assignment
         :return: The list of programs under test in the assignment
@@ -53,6 +53,26 @@ class AbstractAssignment(metaclass=ABCMeta):
                                 Assumed to be a copy of the original source assignment.
         """
         raise NotImplementedError("Error: prep_submission is not implemented")
+
+    @staticmethod
+    @abstractmethod
+    def detect_new_tests(new_submission: str, old_submission: str) -> [str]:
+        """
+        Compare an old submission with a new submission and identify which tests have been updated
+        :param old_submission: the directory of the old submission
+        :param new_submission: the directory of the new submission
+        :return: the list of tests that have been updated
+        """
+
+    @staticmethod
+    @abstractmethod
+    def detect_new_progs(new_submission: str, old_submission: str) -> [str]:
+        """
+        Compare an old submission with a new submission and identify which programs under test have been updated
+        :param old_submission: the directory of the old submission
+        :param new_submission: the directory of the new submission
+        :return: the list of programs under test that have been updated
+        """
 
     @staticmethod
     @abstractmethod
