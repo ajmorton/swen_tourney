@@ -17,7 +17,7 @@ class AntAssignment(AbstractAssignment):
 
     @staticmethod
     def get_test_list() -> [str]:
-        return ["boundary", "partitioning"]
+        return ["Boundary", "Partitioning"]
 
     @staticmethod
     def get_programs_list() -> [str]:
@@ -26,7 +26,7 @@ class AntAssignment(AbstractAssignment):
     @staticmethod
     def run_test(test: str, prog: str, submission_dir: str) -> TestResult:
         result = subprocess.run(
-            ['ant {} -Dprogram="{}"'.format(test, prog)], shell=True, cwd=submission_dir + "/ant_assignment",
+            ['ant test -Dtest="{}" -Dprogram="{}"'.format(test, prog)], shell=True, cwd=submission_dir + "/ant_assignment",
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
         )
 
@@ -40,10 +40,10 @@ class AntAssignment(AbstractAssignment):
     @staticmethod
     def prep_submission(submission_dir: str, destination_dir: str):
 
-        # copy across the test folder
-        subprocess.run("rm -rf {}".format(destination_dir + "/ant_assignment/test"), shell=True)
+        # copy across the tests folder
+        subprocess.run("rm -rf {}".format(destination_dir + "/ant_assignment/tests"), shell=True)
         subprocess.run(
-            "cp -rf {} {}".format(submission_dir + "/ant_assignment/test", destination_dir + "/ant_assignment")
+            "cp -rf {} {}".format(submission_dir + "/ant_assignment/tests", destination_dir + "/ant_assignment")
             , shell=True
         )
 
@@ -65,13 +65,10 @@ class AntAssignment(AbstractAssignment):
             return AntAssignment.get_test_list()
 
         new_tests = []
-
-        tests = [("boundary", "/ant_assignment/test/swen90006/machine/BoundaryTests.java"),
-                 ("partitioning", "/ant_assignment/test/swen90006/machine/PartitioningTests.java")]
-
-        for (test, test_path) in tests:
+        tests_path = "/ant_assignment/tests/"
+        for test in AntAssignment.get_test_list():
             diff = subprocess.run(
-                "diff {} {}".format(new_submission + test_path, old_submission + test_path),
+                "diff -r {} {}".format(new_submission + tests_path + test, old_submission + tests_path + test),
                 stdout=subprocess.PIPE,
                 shell=True
             )
@@ -114,7 +111,7 @@ class AntAssignment(AbstractAssignment):
             subprocess.run("mkdir {}".format(test_stage_code_dir + "/classes"), shell=True)
 
         # clean test_stage_dir of previous tests
-        tester_files = ["/.depcache/test", "/test", "/classes/test"]
+        tester_files = ["/.depcache/tests", "/tests", "/classes/tests"]
         testee_files = ["/.depcache/programs", "/programs", "/classes/programs"]
 
         # remove previous files
