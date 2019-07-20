@@ -1,4 +1,7 @@
 import os
+from datetime import datetime
+import tournament.config.config as config
+from tournament.util.types.basetypes import Submitter, FilePath
 
 config_dir_path = os.path.dirname(os.path.abspath(__file__))
 tournament_submissions_path = os.path.dirname(config_dir_path) + "/submissions"
@@ -14,3 +17,20 @@ HEAD_TO_HEAD_DIR = tournament_submissions_path + "/head_to_head"
 
 NEW_TESTS_FILE = "new_tests.json"
 NEW_PROGS_FILE = "new_progs.json"
+
+
+def get_staged_report_request_filename(time: str) -> FilePath:
+    dt = datetime.fromisoformat(time)
+    return FilePath(STAGING_DIR + "/report_request_" + dt.strftime(config.date_format) + ".json")
+
+
+def get_pre_validation_dir(submitter: Submitter) -> FilePath:
+    return FilePath(PRE_VALIDATION_DIR + "/" + submitter)
+
+
+def get_staging_dir(submitter: Submitter) -> FilePath:
+    return FilePath(STAGING_DIR + "/" + submitter)
+
+
+def get_tourney_dir(submitter: Submitter) -> FilePath:
+    return FilePath(TOURNEY_DIR + "/" + submitter)

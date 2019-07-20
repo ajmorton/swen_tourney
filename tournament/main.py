@@ -9,6 +9,7 @@ from tournament.util.types.tourney_state import TourneyState
 import tournament.config.paths as paths
 import tournament.config.config as config
 from tournament.util.types.basetypes import *
+from server.request_types import *
 
 
 assg = config.assignment
@@ -20,7 +21,7 @@ def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) 
 
     if submitter_eligible:
         # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
-        submitter_pre_validation_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
+        submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter)
         if os.path.isdir(submitter_pre_validation_dir):
             subprocess.run("rm -rf {}".format(submitter_pre_validation_dir), shell=True)
         subprocess.run("mkdir {}".format(submitter_pre_validation_dir), shell=True)
@@ -45,7 +46,7 @@ def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) 
 
 
 def validate_tests(submitter: Submitter) -> Tuple[bool, str]:
-    validation_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
+    validation_dir = paths.get_pre_validation_dir(submitter)
 
     tests_valid = True
     validation_traces = "Validation results:"
@@ -68,7 +69,7 @@ def validate_tests(submitter: Submitter) -> Tuple[bool, str]:
 
 
 def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
-    validation_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
+    validation_dir = paths.get_pre_validation_dir(submitter)
 
     progs_valid = True
     validation_traces = "Validation results:"
@@ -92,8 +93,8 @@ def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
 
 
 def detect_new_tests(submitter: Submitter):
-    new_submission_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
-    previous_submission_dir = paths.TOURNEY_DIR + "/" + submitter
+    new_submission_dir = paths.get_pre_validation_dir(submitter)
+    previous_submission_dir = paths.get_tourney_dir(submitter)
 
     new_tests = assg.detect_new_tests(new_submission_dir, previous_submission_dir)
     new_tests_file_path = new_submission_dir + "/" + paths.NEW_TESTS_FILE
@@ -103,8 +104,8 @@ def detect_new_tests(submitter: Submitter):
 
 
 def detect_new_progs(submitter: Submitter):
-    new_submission_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
-    previous_submission_dir = paths.TOURNEY_DIR + "/" + submitter
+    new_submission_dir = paths.get_pre_validation_dir(submitter)
+    previous_submission_dir = paths.get_tourney_dir(submitter)
 
     new_progs = assg.detect_new_progs(new_submission_dir, previous_submission_dir)
     new_progs_file_path = new_submission_dir + "/" + paths.NEW_PROGS_FILE
@@ -119,10 +120,10 @@ def run_submission(submitter: Submitter):
     tourney_state = TourneyState()
     other_submitters = [sub for sub in tourney_state.get_valid_submitters() if sub != submitter]
 
-    new_tests_file = paths.TOURNEY_DIR + "/" + submitter + "/" + paths.NEW_TESTS_FILE
+    new_tests_file = paths.get_tourney_dir(submitter) + "/" + paths.NEW_TESTS_FILE
     new_tests = json.load(open(new_tests_file, "r"))
 
-    new_progs_file = paths.TOURNEY_DIR + "/" + submitter + "/" + paths.NEW_PROGS_FILE
+    new_progs_file = paths.get_tourney_dir(submitter) + "/" + paths.NEW_PROGS_FILE
     new_progs = json.load(open(new_progs_file, "r"))
 
     print("Processing submission for {}.".format(submitter))
@@ -183,7 +184,7 @@ def generate_report(time: datetime):
         'result': tourney_state.get_results()
     }
 
-    report_file_path = paths.REPORT_DIR + "/report_" + time.strftime("%Y_%m_%d-%H:%M") + ".json"
+    report_file_path = paths.REPORT_DIR + "/report_" + time.strftime(config.date_format) + ".json"
 
     with open(report_file_path, 'w') as outfile:
         json.dump(report, outfile, indent=4)

@@ -41,15 +41,15 @@ class AntAssignment(AbstractAssignment):
     @staticmethod
     def prep_submission(submission_dir: FilePath, destination_dir: FilePath):
 
-        # copy across the tests folder
+        # copy across the tests
         subprocess.run("rm -rf {}".format(destination_dir + "/ant_assignment/tests"), shell=True)
         subprocess.run(
             "cp -rf {} {}".format(submission_dir + "/ant_assignment/tests", destination_dir + "/ant_assignment"),
             shell=True
         )
 
+        # copy across the programs
         for program in AntAssignment.get_programs_list():
-            # copy across the program
             subprocess.run("rm -rf {}".format(destination_dir + "/ant_assignment/programs/" + program), shell=True)
             subprocess.run(
                 "cp -rf {} {}".format(
@@ -101,8 +101,8 @@ class AntAssignment(AbstractAssignment):
     def prep_test_stage(tester: Submitter, testee: Submitter, test_stage_dir: FilePath):
 
         test_stage_code_dir = test_stage_dir + "/ant_assignment"
-        tester_code_dir = paths.TOURNEY_DIR + "/" + tester + "/ant_assignment"
-        testee_code_dir = paths.TOURNEY_DIR + "/" + testee + "/ant_assignment"
+        tester_code_dir = paths.get_tourney_dir(tester) + "/ant_assignment"
+        testee_code_dir = paths.get_tourney_dir(testee) + "/ant_assignment"
 
         # make sure folders that are required are present
         if not os.path.isdir(test_stage_code_dir + "/.depcache"):

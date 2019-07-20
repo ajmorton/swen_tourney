@@ -73,7 +73,7 @@ class TourneyState:
         Provide the list of submitters who have successfully made a valid submission
         :return:
         """
-        return [submitter for submitter in self.results.keys() if os.path.isdir(paths.TOURNEY_DIR + "/" + submitter)]
+        return [submitter for submitter in self.results.keys() if os.path.isdir(paths.get_tourney_dir(submitter))]
 
     def print(self):
         funcs.print_dict_sorted(self.results)

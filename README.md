@@ -11,5 +11,5 @@ Tournament code to be used for SWEN subjects with bug/test suite tournaments.
     - [ ] Setting up new assignments
 - [ ] Robustness
     - [ ] Crash handling
-    - [ ] Recovery of event queue on startup
+    - [x] Recovery of event queue on startup
 - [ ] Results emailer

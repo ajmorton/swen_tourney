@@ -21,7 +21,6 @@ class RequestProcessor(Thread):
     def run(self):
         """
         Pop requests from the RequestQueue and process them forever, or until process_requests flag is set to False
-        :return:
         """
 
         print("RequestProcessor started...")
@@ -29,7 +28,9 @@ class RequestProcessor(Thread):
             try:
                 request = self.queue.get(block=False)
                 if request.request_type == RequestType.SUBMIT:
+                    print("Processing submission by {}".format(request.submitter))
                     tourney.run_submission(request.submitter)
+
                 elif request.request_type == RequestType.REPORT:
                     print("Generating report for tournament submissions as of {}".format(request.time))
                     tourney.generate_report(datetime.fromisoformat(request.time))
@@ -46,7 +47,10 @@ class RequestProcessor(Thread):
         """
         Shutdown hook for the RequestProcessor
         """
-        print("RequestProcessor closing with queue: {}".format(self.queue.get_contents()))
+        print("RequestProcessor closing with queue:")
+        ls = self.queue.get_contents()
+        for request in ls:
+            print(request)
 
     def stop(self):
         """

@@ -47,11 +47,10 @@ def start_server():
     fifo_dequeuer = RequestProcessor(TourneyRequestHandler.queue)
 
     try:
-        # start up the fifo dequeuer
-        fifo_dequeuer.start()
 
-        # Create the server
         server = socketserver.TCPServer((host, port), TourneyRequestHandler)
+
+        fifo_dequeuer.start()
         server.serve_forever()
 
         # when server stops serving, close all threads
