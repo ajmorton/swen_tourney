@@ -5,6 +5,7 @@ tournament_submissions_path = os.path.dirname(config_dir_path) + "/submissions"
 
 SUBMITTERS_LIST = config_dir_path + "/approved_submitters.txt"
 TOURNEY_STATE_FILE = config_dir_path + "/tourney_state.json"
+REPORT_DIR = config_dir_path
 
 PRE_VALIDATION_DIR = tournament_submissions_path + "/pre_validation"
 STAGING_DIR = tournament_submissions_path + "/staged"

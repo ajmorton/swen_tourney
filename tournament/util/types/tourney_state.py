@@ -2,9 +2,9 @@ import os
 import json
 
 import tournament.config.config as config
-from tournament.util.types.basetypes import TestResult, TestSet
 import tournament.config.paths as paths
 import tournament.util.funcs as funcs
+from tournament.util.types.basetypes import *
 
 
 class TourneyState:
@@ -14,7 +14,7 @@ class TourneyState:
     """
 
     def __init__(self):
-        self.state = {}
+        self.results = {}
 
         # TODO check for missing approved_submitters.txt
         with open(paths.SUBMITTERS_LIST, 'r') as submitters_file:
@@ -30,29 +30,29 @@ class TourneyState:
 
     def initialise_state(self, submitters_list):
         for test_submitter in submitters_list:
-            self.state[test_submitter] = {}
+            self.results[test_submitter] = {}
             for prog_submitter in submitters_list:
                 if test_submitter == prog_submitter:
                     continue
 
-                self.state[test_submitter][prog_submitter] = self.create_default_testset()
+                self.results[test_submitter][prog_submitter] = self.create_default_testset()
 
     def initialise_state_from_file(self, submitters_list, state_from_file):
         # previous result may be able to be copied into new state
         for test_submitter in submitters_list:
-            self.state[test_submitter] = {}
+            self.results[test_submitter] = {}
             for prog_submitter in submitters_list:
                 if test_submitter == prog_submitter:
                     continue
                 if test_submitter in state_from_file.keys() and \
                         prog_submitter in state_from_file[test_submitter].keys():
-                    self.state[test_submitter][prog_submitter] = state_from_file[test_submitter][prog_submitter]
+                    self.results[test_submitter][prog_submitter] = state_from_file[test_submitter][prog_submitter]
                 else:
-                    self.state[test_submitter][prog_submitter] = self.create_default_testset()
+                    self.results[test_submitter][prog_submitter] = self.create_default_testset()
 
     def save_to_file(self):
         with open(paths.TOURNEY_STATE_FILE, 'w') as outfile:
-            json.dump(self.state, outfile)
+            json.dump(self.results, outfile, indent=4)
 
     @staticmethod
     def create_default_testset() -> TestSet:
@@ -73,13 +73,16 @@ class TourneyState:
         Provide the list of submitters who have successfully made a valid submission
         :return:
         """
-        return [submitter for submitter in self.state.keys() if os.path.isdir(paths.TOURNEY_DIR + "/" + submitter)]
+        return [submitter for submitter in self.results.keys() if os.path.isdir(paths.TOURNEY_DIR + "/" + submitter)]
 
     def print(self):
-        funcs.print_dict_sorted(self.state)
+        funcs.print_dict_sorted(self.results)
 
-    def set(self, tester: str, testee: str, testset):
-        self.state[tester][testee] = testset
+    def set(self, tester: Submitter, testee: Submitter, testset: TestSet):
+        self.results[tester][testee] = testset
 
-    def get(self, tester: str, testee: str, test: str, prog: str):
-        return self.state[tester][testee][test][prog]
+    def get(self, tester: Submitter, testee: Submitter, test: Test, prog: Prog):
+        return self.results[tester][testee][test][prog]
+
+    def get_results(self):
+        return self.results

@@ -1,53 +1,39 @@
-
-import socket
-import json
-import os
-import subprocess
+from datetime import datetime
 
 import cli.arg_parser as parser
-from server.config import server_config
-
-
-def start_server():
-    """
-    Spawn the server in a new process
-    """
-    print('starting server')
-    path = os.path.dirname(os.path.abspath(__file__))
-    # TODO determine how to ensure this is python 3.6
-    subprocess.run("python --version", shell=True)
-    process = subprocess.Popen(['python', path + '/start_server.py'], cwd=path)
-    print('spawned process PID: {}'.format(process.pid))
-
-
-def send_request(request: str):
-    """
-    Send a request to the request server. Print the received response
-    :param request: The request sent to the server.
-    """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-
-        try:
-            sock.connect((server_config.get_host(), server_config.get_port()))
-            sock.sendall(request.encode())
-
-            # Receive data from the server and shut down
-            received = sock.recv(1024).decode('utf-8')
-
-            print('Sent:     {}'.format(request))
-            print('Received: {}'.format(received))
-            sock.close()
-
-        except ConnectionRefusedError:
-            print('Server not online')
+from cli.arg_parser import BackendCommands
+from server import main as server
+from server.request_types import AliveRequest, ReportRequest, ShutdownRequest
+import tournament.main as tourney
 
 
 if __name__ == "__main__":
 
-    event = parser.parse_backend_args()
-    if event.type == 'start_server':
-        start_server()
-    else:
-        json = json.dumps(vars(event))
-        send_request(json)
+    command = parser.parse_backend_args()
 
+    if command.type == BackendCommands.START_SERVER:
+        success, traces = server.start_server()
+
+    elif command.type == BackendCommands.CLEAN:
+        server_online, traces = server.send_request(AliveRequest())
+
+        if server_online:
+            success = False
+            traces = "Error: Server is currently online."\
+                     "       Current submissions should not be removed unless the server is offline"
+        else:
+            tourney.clean()
+            success = True
+            traces = "All submissions and tournament results have been deleted"
+
+    elif command.type == BackendCommands.REPORT:
+        success, traces = server.send_request(ReportRequest(command.email, datetime.now().isoformat()))
+
+    elif command.type == BackendCommands.SHUTDOWN:
+        success, traces = server.send_request(ShutdownRequest())
+
+    else:
+        success = False
+        traces = "Error: unrecognised command {}".format(command.type)
+
+    print(traces)

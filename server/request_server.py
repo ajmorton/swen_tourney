@@ -1,9 +1,9 @@
 import socketserver
 import json
-from server.events.event_processor import EventProcessor
-from server.events.event_queue import EventQueue
-
+from server.request_processor import RequestProcessor
+from server.request_queue import RequestQueue
 from server.config import server_config
+from server.request_types import *
 
 
 class TourneyRequestHandler(socketserver.BaseRequestHandler):
@@ -11,7 +11,7 @@ class TourneyRequestHandler(socketserver.BaseRequestHandler):
     Handle request made to the Tourney server via the CLI and provide responses.
     """
 
-    queue = EventQueue()
+    queue = RequestQueue()
 
     def handle(self):
         """
@@ -20,38 +20,31 @@ class TourneyRequestHandler(socketserver.BaseRequestHandler):
         """
         # self.request is the TCP socket connected to the client
         data = self.request.recv(1024).decode()
-        event = json.loads(data)
+        req = request_from_json(json.loads(data))
+        request_type = req.get_request_type()
 
-        print('Event received: "{}"'.format(event))
-
-        event_type = event['type']
-
-        if event_type == "shutdown":
-            self.request.sendall("SHUTTING_DOWN_SERVER".encode())
+        if request_type == RequestType.SHUTDOWN:
             self.server._BaseServer__shutdown_request = True
-        elif event_type == "submit":
-            result = self.handle_submission(event)
-            self.request.sendall(result.encode())
-        elif event_type == "report":
-            self.queue.put(event)
-            return_string = "\n".join([json.dumps(x) for x in list(self.queue.queue)])
-            self.request.sendall(return_string.encode())
+            self.request.sendall(ServerResponse.SERVER_SHUTDOWN.encode())
+        elif request_type == RequestType.SUBMIT:
+            print("Submission received from {}".format(req.submitter))
+            self.queue.put(req)
+            self.request.sendall(ServerResponse.SUBMISSION_SUCCESS.encode())
+        elif request_type == RequestType.REPORT:
+            self.queue.put(req)
+            self.request.sendall(ServerResponse.REPORT_SUCCESS.encode())
+        elif request_type == RequestType.ALIVE:
+            self.request.sendall(ServerResponse.ALIVE.encode())
         else:
-            print("Event type '{}' is not currently handled".format(event_type))
-
-    def handle_submission(self, submission_event):
-        submitter = submission_event['submitter']
-        print("SUBMISSION FROM {}".format(submitter))
-        self.queue.put(submission_event)
-        return "SUBMISSION_SUCCESSFUL"
+            print("Request type '{}' is not currently handled".format(request_type))
 
 
 def start_server():
     """
-    Create the EventProcessor and SocketServer threads
+    Create the RequestProcessor and SocketServer threads
     """
     host, port = server_config.get_host(), server_config.get_port()
-    fifo_dequeuer = EventProcessor(TourneyRequestHandler.queue)
+    fifo_dequeuer = RequestProcessor(TourneyRequestHandler.queue)
 
     try:
         # start up the fifo dequeuer

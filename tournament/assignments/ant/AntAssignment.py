@@ -1,50 +1,51 @@
 from tournament.assignments.AbstractAssignment import AbstractAssignment
 import os
 import subprocess
-from tournament.util.types.basetypes import TestResult
+from tournament.util.types.basetypes import *
 import tournament.config.paths as paths
 
 
 path = os.path.dirname(os.path.abspath(__file__))
-source_assg = path + "/ant_assignment"
+source_assg = FilePath(path + "/ant_assignment")
 
 
 class AntAssignment(AbstractAssignment):
 
     @staticmethod
-    def get_source_assg_dir() -> str:
+    def get_source_assg_dir() -> FilePath:
         return source_assg
 
     @staticmethod
-    def get_test_list() -> [str]:
+    def get_test_list() -> [Test]:
         return ["Boundary", "Partitioning"]
 
     @staticmethod
-    def get_programs_list() -> [str]:
+    def get_programs_list() -> [Prog]:
         return ["mutant-1", "mutant-2", "mutant-3", "mutant-4", "mutant-5"]
 
     @staticmethod
-    def run_test(test: str, prog: str, submission_dir: str) -> TestResult:
+    def run_test(test: Test, prog: Prog, submission_dir: FilePath) -> TestResult:
         result = subprocess.run(
-            ['ant test -Dtest="{}" -Dprogram="{}"'.format(test, prog)], shell=True, cwd=submission_dir + "/ant_assignment",
+            "ant test -Dtest=\"{}\" -Dprogram=\"{}\"".format(test, prog),
+            shell=True, cwd=submission_dir + "/ant_assignment",
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
         )
 
         if "Parallel execution timed out" in result.stderr:
             return TestResult.TIMEOUT
         elif result.returncode == 0:
-            return TestResult.TEST_PASSED
+            return TestResult.NO_BUGS_DETECTED
         else:
-            return TestResult.TEST_FAILED
+            return TestResult.BUG_FOUND
 
     @staticmethod
-    def prep_submission(submission_dir: str, destination_dir: str):
+    def prep_submission(submission_dir: FilePath, destination_dir: FilePath):
 
         # copy across the tests folder
         subprocess.run("rm -rf {}".format(destination_dir + "/ant_assignment/tests"), shell=True)
         subprocess.run(
-            "cp -rf {} {}".format(submission_dir + "/ant_assignment/tests", destination_dir + "/ant_assignment")
-            , shell=True
+            "cp -rf {} {}".format(submission_dir + "/ant_assignment/tests", destination_dir + "/ant_assignment"),
+            shell=True
         )
 
         for program in AntAssignment.get_programs_list():
@@ -53,12 +54,12 @@ class AntAssignment(AbstractAssignment):
             subprocess.run(
                 "cp -rf {} {}".format(
                     submission_dir + "/ant_assignment/programs/" + program,
-                    destination_dir + "/ant_assignment/programs")
-                , shell=True
+                    destination_dir + "/ant_assignment/programs"),
+                shell=True
             )
 
     @staticmethod
-    def detect_new_tests(new_submission: str, old_submission: str) -> [str]:
+    def detect_new_tests(new_submission: FilePath, old_submission: FilePath) -> [Test]:
 
         if not os.path.isdir(old_submission):
             # if there is no previous submission then all tests are new
@@ -78,7 +79,7 @@ class AntAssignment(AbstractAssignment):
         return new_tests
 
     @staticmethod
-    def detect_new_progs(new_submission: str, old_submission: str) -> [str]:
+    def detect_new_progs(new_submission: FilePath, old_submission: FilePath) -> [Prog]:
         if not os.path.isdir(old_submission):
             # if there is no previous submission then all tests are new
             return AntAssignment.get_programs_list()
@@ -97,7 +98,7 @@ class AntAssignment(AbstractAssignment):
         return new_progs
 
     @staticmethod
-    def prep_test_stage(tester: str, testee: str, test_stage_dir: str):
+    def prep_test_stage(tester: Submitter, testee: Submitter, test_stage_dir: FilePath):
 
         test_stage_code_dir = test_stage_dir + "/ant_assignment"
         tester_code_dir = paths.TOURNEY_DIR + "/" + tester + "/ant_assignment"

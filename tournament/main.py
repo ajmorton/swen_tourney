@@ -1,20 +1,20 @@
 from typing import Tuple
 import subprocess
+from datetime import datetime
 import os
 import json
 import multiprocessing
 from functools import partial
 from tournament.util.types.tourney_state import TourneyState
-from tournament.util.types.basetypes import TestResult
 import tournament.config.paths as paths
 import tournament.config.config as config
-from tournament.util.types.basetypes import TestSet
+from tournament.util.types.basetypes import *
 
 
 assg = config.assignment
 
 
-def check_submitter_eligibility(submitter: str, submission_dir: str) -> Tuple[bool, str]:
+def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Tuple[bool, str]:
     submitter_eligible = submitter in open(paths.SUBMITTERS_LIST).read()
     assg_folder = os.path.basename(assg.get_source_assg_dir().rstrip("/"))
 
@@ -44,7 +44,7 @@ def check_submitter_eligibility(submitter: str, submission_dir: str) -> Tuple[bo
     return submitter_eligible, eligibility_check_traces
 
 
-def validate_tests(submitter: str) -> Tuple[bool, str]:
+def validate_tests(submitter: Submitter) -> Tuple[bool, str]:
     validation_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
 
     tests_valid = True
@@ -54,20 +54,20 @@ def validate_tests(submitter: str) -> Tuple[bool, str]:
 
         if test_result == TestResult.TIMEOUT:
             validation_traces += "\n{} {} test FAIL - Timeout".format("original", test)
-        elif test_result == TestResult.TEST_PASSED:
+        elif test_result == TestResult.NO_BUGS_DETECTED:
             validation_traces += "\n{} {} test SUCCESS - No bugs detected in original program".format("original", test)
-        elif test_result == TestResult.TEST_FAILED:
+        elif test_result == TestResult.BUG_FOUND:
             validation_traces += \
                 "\n{} {} test FAIL - Test falsely reports an error in original code".format("original", test)
         else:
             validation_traces += "\n{} {} ERROR - unexpected test result: {}".format("original", test, test_result)
 
-        tests_valid = tests_valid and test_result == TestResult.TEST_PASSED
+        tests_valid = tests_valid and test_result == TestResult.NO_BUGS_DETECTED
 
     return tests_valid, validation_traces
 
 
-def validate_programs_under_test(submitter: str) -> Tuple[bool, str]:
+def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
     validation_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
 
     progs_valid = True
@@ -79,19 +79,19 @@ def validate_programs_under_test(submitter: str) -> Tuple[bool, str]:
 
             if test_result == TestResult.TIMEOUT:
                 validation_traces += "\n{} {} test FAIL - Timeout".format(prog, test)
-            elif test_result == TestResult.TEST_PASSED:
+            elif test_result == TestResult.NO_BUGS_DETECTED:
                 validation_traces += "\n{} {} test FAIL - Test suite does not detect error".format(prog, test)
-            elif test_result == TestResult.TEST_FAILED:
+            elif test_result == TestResult.BUG_FOUND:
                 validation_traces += "\n{} {} test SUCCESS - Test suite detects error".format(prog, test)
             else:
                 validation_traces += "\n{} {} ERROR - unexpected test result: {}".format(prog, test, test_result)
 
-            progs_valid = progs_valid and test_result == TestResult.TEST_FAILED
+            progs_valid = progs_valid and test_result == TestResult.BUG_FOUND
 
     return progs_valid, validation_traces
 
 
-def detect_new_tests(submitter: str):
+def detect_new_tests(submitter: Submitter):
     new_submission_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
     previous_submission_dir = paths.TOURNEY_DIR + "/" + submitter
 
@@ -102,7 +102,7 @@ def detect_new_tests(submitter: str):
     json.dump(new_tests, new_tests_file)
 
 
-def detect_new_progs(submitter: str):
+def detect_new_progs(submitter: Submitter):
     new_submission_dir = paths.PRE_VALIDATION_DIR + "/" + submitter
     previous_submission_dir = paths.TOURNEY_DIR + "/" + submitter
 
@@ -113,7 +113,7 @@ def detect_new_progs(submitter: str):
     json.dump(new_progs, new_tests_file)
 
 
-def run_submission(submitter: str):
+def run_submission(submitter: Submitter):
 
     # TODO No need to read on every submission? Needs to tie in with check_submitter_eligibility above
     tourney_state = TourneyState()
@@ -124,6 +124,10 @@ def run_submission(submitter: str):
 
     new_progs_file = paths.TOURNEY_DIR + "/" + submitter + "/" + paths.NEW_PROGS_FILE
     new_progs = json.load(open(new_progs_file, "r"))
+
+    print("Processing submission for {}.".format(submitter))
+    print("New tests: {}".format(new_tests))
+    print("New progs: {}".format(new_progs))
 
     # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
     # run_tests into a function with just one argument
@@ -141,16 +145,16 @@ def run_submission(submitter: str):
     for (tester, testee, test_set) in tester_results + testee_results:
         tourney_state.set(tester, testee, test_set)
 
-    tourney_state.print()
+    print("Submission from {} tested".format(submitter))
     tourney_state.save_to_file()
 
 
 def run_tests(
-        pair: Tuple[str, str],
+        pair: Tuple[Submitter, Submitter],
         tourney_state: TourneyState,
-        new_tests: [str] = assg.get_test_list(),
-        new_progs: [str] = assg.get_programs_list()
-) -> [str, str, TestSet]:
+        new_tests: [Test] = assg.get_test_list(),
+        new_progs: [Prog] = assg.get_programs_list()
+) -> [Submitter, Submitter, TestSet]:
     test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/test_stage_" + multiprocessing.current_process().name
     if not os.path.isdir(test_stage_dir):
         subprocess.run("mkdir {}".format(test_stage_dir), shell=True)
@@ -170,3 +174,29 @@ def run_tests(
                 test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
 
     return tester, testee, test_set
+
+
+def generate_report(time: datetime):
+    tourney_state = TourneyState()
+    report = {
+        'datetime': time.isoformat(),
+        'result': tourney_state.get_results()
+    }
+
+    report_file_path = paths.REPORT_DIR + "/report_" + time.strftime("%Y_%m_%d-%H:%M") + ".json"
+
+    with open(report_file_path, 'w') as outfile:
+        json.dump(report, outfile, indent=4)
+
+    print("Report written to {}".format(report_file_path))
+
+
+def clean():
+    """
+    Remove all submissions and reset the tourney state
+    """
+    subprocess.run("rm -rf {}".format(paths.PRE_VALIDATION_DIR + "/*"), shell=True)
+    subprocess.run("rm -rf {}".format(paths.STAGING_DIR + "/*"), shell=True)
+    subprocess.run("rm -rf {}".format(paths.TOURNEY_DIR + "/*"), shell=True)
+    subprocess.run("rm -rf {}".format(paths.HEAD_TO_HEAD_DIR + "/*"), shell=True)
+    subprocess.run("rm -f  {}".format(paths.TOURNEY_STATE_FILE), shell=True)
