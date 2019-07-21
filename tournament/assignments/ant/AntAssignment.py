@@ -126,3 +126,14 @@ class AntAssignment(AbstractAssignment):
         # link in files from testee
         for file in testee_files:
             subprocess.run("ln -s {} {}".format(testee_code_dir + file, test_stage_code_dir + file), shell=True)
+
+    @staticmethod
+    def compute_normalised_prog_score(submitter_score: int, best_score: int) -> float:
+        score = (submitter_score / best_score) * 5.0
+        return round(score, 2)
+
+    @staticmethod
+    def compute_normalised_test_score(submitter_score: int, best_score: int) -> float:
+        score = (submitter_score / best_score) * 5.0
+        return round(score, 2)
+

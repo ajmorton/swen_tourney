@@ -17,6 +17,7 @@ HEAD_TO_HEAD_DIR = tournament_submissions_path + "/head_to_head"
 
 METADATA_FILE = "submission_metadata.json"
 
+
 def get_staged_report_request_filename(time: str) -> FilePath:
     dt = datetime.fromisoformat(time)
     return FilePath(STAGING_DIR + "/report_request_" + dt.strftime(config.date_format) + ".json")

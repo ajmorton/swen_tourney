@@ -63,6 +63,7 @@ class AbstractAssignment(metaclass=ABCMeta):
         :param new_submission: the directory of the new submission
         :return: the list of tests that have been updated
         """
+        raise NotImplementedError("Error: detect_new_tests is not implemented")
 
     @staticmethod
     @abstractmethod
@@ -73,6 +74,7 @@ class AbstractAssignment(metaclass=ABCMeta):
         :param new_submission: the directory of the new submission
         :return: the list of programs under test that have been updated
         """
+        raise NotImplementedError("Error: detect_new_progs is not implemented")
 
     @staticmethod
     @abstractmethod
@@ -83,3 +85,22 @@ class AbstractAssignment(metaclass=ABCMeta):
         :param testee: the name of the submitter whose programs under test are to be tested
         :param test_stage_dir: the directory of the test staging area
         """
+        raise NotImplementedError("Error: prep_test_stage is not implemented")
+
+    @staticmethod
+    @abstractmethod
+    def compute_normalised_test_score(submitter_score: int, best_score: int) -> float:
+        """
+        Compute a submitters test score normalised against the best test score in the tournament.
+        :return:
+        """
+        raise NotImplementedError("Error: compute_normalised_test_score is not implemented")
+
+    @staticmethod
+    @abstractmethod
+    def compute_normalised_prog_score(submitter_score: int, best_score: int) -> float:
+        """
+        Compute a submitters prog score normalised against the best prog score in the tournament.
+        :return:
+        """
+        raise NotImplementedError("Error: compute_normalised_test_score is not implemented")
