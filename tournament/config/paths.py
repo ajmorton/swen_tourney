@@ -16,6 +16,7 @@ TOURNEY_DIR = tournament_submissions_path + "/tourney"
 HEAD_TO_HEAD_DIR = tournament_submissions_path + "/head_to_head"
 
 METADATA_FILE = "submission_metadata.json"
+SUBMISSION_TIME = "submission_time.json"
 
 
 def get_staged_report_request_filename(time: str) -> FilePath:

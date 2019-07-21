@@ -95,16 +95,30 @@ def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
     return progs_valid, validation_traces
 
 
-def write_metadata(submitter: Submitter):
+def get_most_recent_staged_submission(submitter) -> FilePath:
+    ls = subprocess.run("ls -t {}".format(paths.STAGING_DIR), shell=True, stdout=subprocess.PIPE, universal_newlines=True)
+    folders = [folder_name for folder_name in ls.stdout.split("\n") if submitter in folder_name]
+
+    if len(folders) == 0:
+        return paths.STAGING_DIR + "/" + submitter
+    else:
+        return paths.STAGING_DIR + "/" + folders[0]
+
+
+def write_submission_time(submitter: Submitter):
     new_submission_dir = paths.get_pre_validation_dir(submitter)
-    previous_submission_dir = paths.get_tourney_dir(submitter)
 
-    metadata = {'new_tests': assg.detect_new_tests(new_submission_dir, previous_submission_dir),
-                'new_progs': assg.detect_new_progs(new_submission_dir, previous_submission_dir),
-                'time_of_submission': datetime.now().isoformat()}
+    time_file_path = new_submission_dir + "/" + paths.SUBMISSION_TIME
+    json.dump(datetime.now().isoformat(), open(time_file_path, 'w'), indent=4)
 
-    metadata_file_path = new_submission_dir + "/" + paths.METADATA_FILE
-    json.dump(metadata, open(metadata_file_path, "w"), indent=4)
+
+def write_metadata(submitter: Submitter):
+    staged_dir = paths.get_staging_dir(submitter)
+    tourney_dest = paths.get_tourney_dir(submitter)
+
+    metadata = {'new_tests': config.assignment.detect_new_tests(staged_dir, tourney_dest),
+                'new_progs': config.assignment.detect_new_progs(staged_dir, tourney_dest)}
+    json.dump(metadata, open(paths.get_staging_dir(submitter) + "/" + paths.METADATA_FILE, 'w'), indent=4)
 
 
 def run_submission(submitter: Submitter):
@@ -113,17 +127,20 @@ def run_submission(submitter: Submitter):
     other_submitters = [sub for sub in tourney_state.get_valid_submitters() if sub != submitter]
 
     metadata_file = paths.get_tourney_dir(submitter) + "/" + paths.METADATA_FILE
-    metadata = json.load(open(metadata_file, "r"))
+    metadata = json.load(open(metadata_file, 'r'))
+
+    submission_time_file = paths.get_tourney_dir(submitter) + "/" + paths.SUBMISSION_TIME
+    submission_time = json.load(open(submission_time_file, 'r'))
 
     new_tests = metadata['new_tests']
     new_progs = metadata['new_progs']
 
     print("Processing submission for {}.".format(submitter))
-    print("\tSubmission made at {}".format(metadata['time_of_submission']))
+    print("\tSubmission made at {}".format(submission_time))
     print("\tNew tests: {}".format(new_tests))
     print("\tNew progs: {}".format(new_progs))
 
-    tourney_state.set_time_of_submission(submitter, metadata['time_of_submission'])
+    tourney_state.set_time_of_submission(submitter, submission_time)
 
     # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
     # run_tests into a function with just one argument

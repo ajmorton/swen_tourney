@@ -6,7 +6,6 @@ import tournament.config.paths as paths
 import tournament.util.funcs as funcs
 from tournament.util.types.basetypes import *
 
-
 class TourneyState:
     """
     Maintain a record of which students tests have detected or missed which student's bugged progs.
@@ -86,18 +85,19 @@ class TourneyState:
 
     def get_bugs_detected(self, tester: Submitter, test: Test) -> int:
         bugs_detected = 0
-        for testee in self.get_submitter_results(tester).keys():
+        for testee in self.get_submitters():
             if testee != tester:
-                for prog in self.get_submitter_results(tester)[testee][test].keys():
+                for prog in config.assignment.get_programs_list():
                     if self.get(tester, testee, test, prog) in [TestResult.BUG_FOUND, TestResult.TIMEOUT]:
                         bugs_detected += 1
         return bugs_detected
 
     def get_tests_evaded(self, testee: Submitter, prog: Prog) -> int:
         tests_evaded = 0
-        for tester in self.state.keys():
-            if tester != testee:
-                for test in self.get_submitter_results(tester)[testee].keys():
+
+        for tester in self.get_submitters():
+            if testee != tester:
+                for test in config.assignment.get_test_list():
                     if self.get(tester, testee, test, prog) == TestResult.NO_BUGS_DETECTED:
                         tests_evaded += 1
         return tests_evaded
@@ -113,6 +113,9 @@ class TourneyState:
 
     def get(self, tester: Submitter, testee: Submitter, test: Test, prog: Prog) -> TestResult:
         return self.get_submitter_results(tester)[testee][test][prog]
+
+    def get_submitters(self) -> [Submitter]:
+        return self.state.keys()
 
     def get_submitter_results(self, submitter: Submitter):
         return self.state[submitter]['test_results']

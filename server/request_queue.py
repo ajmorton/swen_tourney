@@ -4,6 +4,8 @@ import os
 import threading
 from collections import deque
 import tournament.config.paths as paths
+import tournament.config.config as config
+import tournament.main as tourney
 import subprocess
 
 from server.request_types import *
@@ -72,7 +74,11 @@ class RequestQueue(queue.Queue):
             # no 'report' request between them then remove it
             if queued_request == submission_request \
                     and submission_request.request_type == RequestType.SUBMIT and not report_found:
-                pass
+                # remove the previous submission
+                subprocess.run(
+                    "rm -rf {}".format(tourney.get_most_recent_staged_submission(submission_request.submitter)),
+                    shell=True
+                )
             else:
                 ls.append(queued_request)
 
@@ -115,6 +121,9 @@ class RequestQueue(queue.Queue):
             if request.request_type == RequestType.SUBMIT:
                 staged_dir = paths.get_staging_dir(request.submitter)
                 tourney_dest = paths.get_tourney_dir(request.submitter)
+
+                tourney.write_metadata(request.submitter)
+
                 subprocess.run("rm -rf {}".format(tourney_dest), shell=True)
                 subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True)
                 self.update_vers(request.submitter)

@@ -36,7 +36,7 @@ def main():
         submission_dir = command.dir
         submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
 
-        tourney.write_metadata(submitter)
+        tourney.write_submission_time(submitter)
 
         (success, submission_traces) = server.send_request(SubmissionRequest(submitter))
         write_file(submission_dir, "submission_results.txt", submission_traces)

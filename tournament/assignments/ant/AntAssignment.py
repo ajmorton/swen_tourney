@@ -129,11 +129,17 @@ class AntAssignment(AbstractAssignment):
 
     @staticmethod
     def compute_normalised_prog_score(submitter_score: int, best_score: int) -> float:
-        score = (submitter_score / best_score) * 5.0
+        if best_score == 0:
+            return 0
+        else:
+            score = (submitter_score / best_score) * 5.0
         return round(score, 2)
 
     @staticmethod
     def compute_normalised_test_score(submitter_score: int, best_score: int) -> float:
-        score = (submitter_score / best_score) * 5.0
+        if best_score == 0:
+            return 0
+        else:
+            score = (submitter_score / best_score) * 5.0
         return round(score, 2)
 
