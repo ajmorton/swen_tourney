@@ -36,8 +36,7 @@ def main():
         submission_dir = command.dir
         submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
 
-        tourney.detect_new_tests(submitter)
-        tourney.detect_new_progs(submitter)
+        tourney.write_metadata(submitter)
 
         (success, submission_traces) = server.send_request(SubmissionRequest(submitter))
         write_file(submission_dir, "submission_results.txt", submission_traces)

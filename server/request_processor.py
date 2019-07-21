@@ -4,6 +4,7 @@ import queue
 from datetime import datetime
 import tournament.main as tourney
 from server.request_types import *
+import tournament.state.reporting as reporting
 
 
 class RequestProcessor(Thread):
@@ -33,7 +34,7 @@ class RequestProcessor(Thread):
 
                 elif request.request_type == RequestType.REPORT:
                     print("Generating report for tournament submissions as of {}".format(request.time))
-                    tourney.generate_report(datetime.fromisoformat(request.time))
+                    reporting.generate_report(datetime.fromisoformat(request.time))
 
                 else:
                     pass

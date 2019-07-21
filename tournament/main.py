@@ -5,7 +5,7 @@ import os
 import json
 import multiprocessing
 from functools import partial
-from tournament.util.types.tourney_state import TourneyState
+from tournament.state.tourney_state import TourneyState
 import tournament.config.paths as paths
 import tournament.config.config as config
 from tournament.util.types.basetypes import *
@@ -16,7 +16,10 @@ assg = config.assignment
 
 
 def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Tuple[bool, str]:
-    submitter_eligible = submitter in open(paths.SUBMITTERS_LIST).read()
+
+    eligible_submitters = json.load(open(paths.SUBMITTERS_LIST, "r"))
+    submitter_eligible = submitter in eligible_submitters.keys()
+
     assg_folder = os.path.basename(assg.get_source_assg_dir().rstrip("/"))
 
     if submitter_eligible:
@@ -92,43 +95,35 @@ def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
     return progs_valid, validation_traces
 
 
-def detect_new_tests(submitter: Submitter):
+def write_metadata(submitter: Submitter):
     new_submission_dir = paths.get_pre_validation_dir(submitter)
     previous_submission_dir = paths.get_tourney_dir(submitter)
 
-    new_tests = assg.detect_new_tests(new_submission_dir, previous_submission_dir)
-    new_tests_file_path = new_submission_dir + "/" + paths.NEW_TESTS_FILE
+    metadata = {'new_tests': assg.detect_new_tests(new_submission_dir, previous_submission_dir),
+                'new_progs': assg.detect_new_progs(new_submission_dir, previous_submission_dir),
+                'time_of_submission': datetime.now().isoformat()}
 
-    new_tests_file = open(new_tests_file_path, "w")
-    json.dump(new_tests, new_tests_file)
-
-
-def detect_new_progs(submitter: Submitter):
-    new_submission_dir = paths.get_pre_validation_dir(submitter)
-    previous_submission_dir = paths.get_tourney_dir(submitter)
-
-    new_progs = assg.detect_new_progs(new_submission_dir, previous_submission_dir)
-    new_progs_file_path = new_submission_dir + "/" + paths.NEW_PROGS_FILE
-
-    new_tests_file = open(new_progs_file_path, "w")
-    json.dump(new_progs, new_tests_file)
+    metadata_file_path = new_submission_dir + "/" + paths.METADATA_FILE
+    json.dump(metadata, open(metadata_file_path, "w"), indent=4)
 
 
 def run_submission(submitter: Submitter):
 
-    # TODO No need to read on every submission? Needs to tie in with check_submitter_eligibility above
     tourney_state = TourneyState()
     other_submitters = [sub for sub in tourney_state.get_valid_submitters() if sub != submitter]
 
-    new_tests_file = paths.get_tourney_dir(submitter) + "/" + paths.NEW_TESTS_FILE
-    new_tests = json.load(open(new_tests_file, "r"))
+    metadata_file = paths.get_tourney_dir(submitter) + "/" + paths.METADATA_FILE
+    metadata = json.load(open(metadata_file, "r"))
 
-    new_progs_file = paths.get_tourney_dir(submitter) + "/" + paths.NEW_PROGS_FILE
-    new_progs = json.load(open(new_progs_file, "r"))
+    new_tests = metadata['new_tests']
+    new_progs = metadata['new_progs']
 
     print("Processing submission for {}.".format(submitter))
-    print("New tests: {}".format(new_tests))
-    print("New progs: {}".format(new_progs))
+    print("\tSubmission made at {}".format(metadata['time_of_submission']))
+    print("\tNew tests: {}".format(new_tests))
+    print("\tNew progs: {}".format(new_progs))
+
+    tourney_state.set_time_of_submission(submitter, metadata['time_of_submission'])
 
     # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
     # run_tests into a function with just one argument
@@ -175,21 +170,6 @@ def run_tests(
                 test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
 
     return tester, testee, test_set
-
-
-def generate_report(time: datetime):
-    tourney_state = TourneyState()
-    report = {
-        'datetime': time.isoformat(),
-        'result': tourney_state.get_results()
-    }
-
-    report_file_path = paths.REPORT_DIR + "/report_" + time.strftime(config.date_format) + ".json"
-
-    with open(report_file_path, 'w') as outfile:
-        json.dump(report, outfile, indent=4)
-
-    print("Report written to {}".format(report_file_path))
 
 
 def clean():

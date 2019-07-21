@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 import socket
@@ -39,7 +40,9 @@ def send_request(request: ServerRequest) -> Tuple[bool, str]:
             sock.close()
 
             if received == ServerResponse.SUBMISSION_SUCCESS:
-                return True, "Submission successful"
+                return True, "Submission successfully made at {}".format(
+                    datetime.now().strftime("%a %d %b %I:%M.%S %p")
+                )
             elif received == ServerResponse.ALIVE:
                 return True, "Server is online"
             elif received == ServerResponse.REPORT_SUCCESS:
