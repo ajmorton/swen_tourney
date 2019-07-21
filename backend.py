@@ -5,6 +5,7 @@ from cli.arg_parser import BackendCommands
 from server import main as server
 from server.request_types import AliveRequest, ReportRequest, ShutdownRequest
 import tournament.main as tourney
+import emailer.emailer as emailer
 
 
 if __name__ == "__main__":

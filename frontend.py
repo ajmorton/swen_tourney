@@ -51,7 +51,7 @@ def main():
 
 
 def write_file(submission_dir: str, filename: str, contents: str):
-    results_file = open(submission_dir + "/" + filename, "w")
+    results_file = open(submission_dir + "/" + filename, 'w')
     results_file.write(contents)
     results_file.close()
 

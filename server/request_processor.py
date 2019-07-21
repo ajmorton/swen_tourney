@@ -34,7 +34,7 @@ class RequestProcessor(Thread):
 
                 elif request.request_type == RequestType.REPORT:
                     print("Generating report for tournament submissions as of {}".format(request.time))
-                    reporting.generate_report(datetime.fromisoformat(request.time))
+                    reporting.generate_report(datetime.fromisoformat(request.time), request.email)
 
                 else:
                     pass

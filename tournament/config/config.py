@@ -4,4 +4,7 @@ from tournament.assignments.ant.AntAssignment import AntAssignment
 assignment = AntAssignment()
 
 # Format of the datestring to append to report files
-date_format = "%Y_%m_%d-%H:%M"
+date_file_format = "%Y_%m_%d__%H:%M"
+
+# Format of the datestring for sending in emails
+date_readable_format = "%a %d %b %H:%M"

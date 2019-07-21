@@ -4,7 +4,6 @@ import os
 import threading
 from collections import deque
 import tournament.config.paths as paths
-import tournament.config.config as config
 import tournament.main as tourney
 import subprocess
 
@@ -35,7 +34,7 @@ class RequestQueue(queue.Queue):
 
         for file in ls.stdout.split("\n"):
             if file.startswith("report_request"):
-                report_file = json.load(open(paths.STAGING_DIR + "/" + file, "r"))
+                report_file = json.load(open(paths.STAGING_DIR + "/" + file, 'r'))
                 self.queue.append(request_from_json(report_file))
             elif file != "":
                 if file[-3:] in self.version_numbers:

@@ -17,7 +17,7 @@ assg = config.assignment
 
 def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Tuple[bool, str]:
 
-    eligible_submitters = json.load(open(paths.SUBMITTERS_LIST, "r"))
+    eligible_submitters = json.load(open(paths.SUBMITTERS_LIST, 'r'))
     submitter_eligible = submitter in eligible_submitters.keys()
 
     assg_folder = os.path.basename(assg.get_source_assg_dir().rstrip("/"))
@@ -96,7 +96,8 @@ def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
 
 
 def get_most_recent_staged_submission(submitter) -> FilePath:
-    ls = subprocess.run("ls -t {}".format(paths.STAGING_DIR), shell=True, stdout=subprocess.PIPE, universal_newlines=True)
+    ls = subprocess.run("ls -t {}".format(paths.STAGING_DIR),
+                        shell=True, stdout=subprocess.PIPE, universal_newlines=True)
     folders = [folder_name for folder_name in ls.stdout.split("\n") if submitter in folder_name]
 
     if len(folders) == 0:

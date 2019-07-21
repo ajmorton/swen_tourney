@@ -6,6 +6,7 @@ import tournament.config.paths as paths
 import tournament.util.funcs as funcs
 from tournament.util.types.basetypes import *
 
+
 class TourneyState:
     """
     Maintain a record of which students tests have detected or missed which student's bugged progs.
@@ -16,7 +17,7 @@ class TourneyState:
         self.state = {}
 
         # TODO check for missing approved_submitters file
-        approved_submitters = json.load(open(paths.SUBMITTERS_LIST, "r"))
+        approved_submitters = json.load(open(paths.SUBMITTERS_LIST, 'r'))
 
         if os.path.isfile(paths.TOURNEY_STATE_FILE):
             state_from_file = json.load(open(paths.TOURNEY_STATE_FILE, 'r'))
