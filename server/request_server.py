@@ -4,6 +4,7 @@ from server.request_processor import RequestProcessor
 from server.request_queue import RequestQueue
 from server.config import server_config
 from server.request_types import *
+import os
 
 
 class TourneyRequestHandler(socketserver.BaseRequestHandler):
@@ -58,7 +59,7 @@ def start_server():
         fifo_dequeuer.stop()
 
     except OSError as os_error:
-        if os_error.errno == 48:
+        if os_error.errno in [48, 98]:
             # OSError 48: Socket address already in use
             # This occurs when the server is closed, and a restart is attempted
             # before the socket can be garbage collected
@@ -68,6 +69,8 @@ def start_server():
             print("This resource can take some time to be freed when the "
                   "server is shutdown, try waiting a minute before running "
                   "again")
+        else:
+            print("Unexpected OSError raised while starting server: {} {}".format(os_error.errno, os_error.strerror))
 
-            fifo_dequeuer.stop()
+        fifo_dequeuer.stop()
 

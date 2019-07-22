@@ -54,10 +54,12 @@ def generate_report(report_time: datetime, reporter_email):
 
     generate_normalised_scores(report_file_path)
 
-    emailer.send_tournament_report_to_submitters(report_file_path)
-    emailer.send_confirmation_email(
-        reporter_email, report_file_path, socket.gethostname()
-    )
+    try:
+        emailer.send_tournament_report_to_submitters(report_file_path)
+        emailer.send_confirmation_email(reporter_email, report_file_path, socket.gethostname())
+    except OSError as os_error:
+        print("Error while sending emails: {} {}".format(os_error.errno, os_error.strerror))
+        print("Email sending has been aborted.")
 
     print("Report written to {}".format(report_file_path))
 
