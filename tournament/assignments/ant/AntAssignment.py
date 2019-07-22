@@ -1,9 +1,8 @@
 from tournament.assignments.AbstractAssignment import AbstractAssignment
 import os
 import subprocess
-from tournament.util.types.basetypes import *
 import tournament.config.paths as paths
-
+from tournament.types.basetypes import *
 
 path = os.path.dirname(os.path.abspath(__file__))
 source_assg = FilePath(path + "/ant_assignment")

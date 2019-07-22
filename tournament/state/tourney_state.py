@@ -3,8 +3,7 @@ import json
 
 import tournament.config.config as config
 import tournament.config.paths as paths
-import tournament.util.funcs as funcs
-from tournament.util.types.basetypes import *
+from tournament.types.basetypes import *
 
 
 class TourneyState:
@@ -102,9 +101,6 @@ class TourneyState:
                     if self.get(tester, testee, test, prog) == TestResult.NO_BUGS_DETECTED:
                         tests_evaded += 1
         return tests_evaded
-
-    def print(self):
-        funcs.print_dict_sorted(self.state)
 
     def set_time_of_submission(self, submitter: Submitter, time_of_submission: str):
         self.state[submitter]['latest_submission_date'] = time_of_submission

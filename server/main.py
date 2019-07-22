@@ -15,9 +15,7 @@ def start_server() -> Tuple[bool, str]:
     """
     print("Starting server")
     path = os.path.dirname(os.path.abspath(__file__))
-    # TODO determine how to ensure this is python 3.7
-    subprocess.run("python --version", shell=True)
-    process = subprocess.Popen("python {}/../start_server.py".format(path), cwd=path, shell=True)
+    process = subprocess.Popen("python3 {}/../start_server.py".format(path), cwd=path, shell=True)
     print("Spawned process PID: {}".format(process.pid))
 
     return True, "Server started"

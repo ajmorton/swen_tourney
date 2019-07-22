@@ -6,7 +6,7 @@ import tournament.config.paths as paths
 import json
 import time
 
-from tournament.util.types.basetypes import FilePath
+from tournament.types.basetypes import FilePath
 import tournament.config.config as config
 
 
@@ -100,16 +100,25 @@ def send_tournament_report_to_submitters(report_file_path: FilePath):
     report_date = report['report_date']
     num_submitters = int(report['num_submitters'])
 
+    if num_submitters < 2:
+        # no submissions have been run against each other. No email to send
+        return
+
     results = report['results']
 
     # gmail rate limits emails. After sending 50 wait for 5 minutes to avoid this
     send_count = 0
 
-    for submitter in results.keys():
+    for submitter in sorted(results.keys()):
+        submitter_report = results[submitter]
+        if submitter_report['latest_submission_date'] is None:
+            # don't send an email to a submitter who has not made a submission
+            continue
+
         if send_count >= 50:
             time.sleep(300)
             send_count = 0
-        submitter_report = results[submitter]
+
         email_body = generate_mail_body(submitter, submitter_report, report_date, num_submitters,
                                         report['best_average_bugs_detected'], report['best_average_tests_evaded'])
 
@@ -117,13 +126,18 @@ def send_tournament_report_to_submitters(report_file_path: FilePath):
         send_count += 1
 
 
-def send_confirmation_email(receiver_email: str, report_time: str, report_file_name: FilePath, hostname: str):
+def send_confirmation_email(receiver_email: str, report_file_path: FilePath, hostname: str):
+
+    report = json.load(open(report_file_path, 'r'))
+    num_submitters = report['num_submitters']
+    report_time = report['report_date']
 
     body = ""
     body += "Hi,\n"
-    body += "A report for the state of the swen-tournament as of {} has been sent to students.\n".format(report_time)
+    body += "A report for the state of the swen-tournament as of {} has been sent to" \
+            " the {} students who have made a valid submission.\n".format(report_time, num_submitters)
     body += "The results of this tournament can be found on the tournament server at {} on {}.".format(
-        report_file_name, hostname
+        report_file_path, hostname
     )
 
     send_email("", receiver_email, "SWEN Tournament results", body)

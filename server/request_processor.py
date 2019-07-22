@@ -5,6 +5,7 @@ from datetime import datetime
 import tournament.main as tourney
 from server.request_types import *
 import tournament.state.reporting as reporting
+from tournament.config import config
 
 
 class RequestProcessor(Thread):
@@ -34,7 +35,7 @@ class RequestProcessor(Thread):
 
                 elif request.request_type == RequestType.REPORT:
                     print("Generating report for tournament submissions as of {}".format(request.time))
-                    reporting.generate_report(datetime.fromisoformat(request.time), request.email)
+                    reporting.generate_report(datetime.strptime(request.time, config.date_iso_format), request.email)
 
                 else:
                     pass

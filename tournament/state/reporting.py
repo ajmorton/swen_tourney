@@ -1,12 +1,12 @@
 import json
 import os
 from datetime import datetime
-from tournament.util.types.basetypes import *
 from tournament.state.tourney_state import TourneyState
 import tournament.config.paths as paths
 import tournament.config.config as config
 import emailer.emailer as emailer
 import socket
+from tournament.types.basetypes import FilePath
 
 
 def generate_report(report_time: datetime, reporter_email):
@@ -56,7 +56,7 @@ def generate_report(report_time: datetime, reporter_email):
 
     emailer.send_tournament_report_to_submitters(report_file_path)
     emailer.send_confirmation_email(
-        reporter_email, report_time.strftime(config.date_readable_format), report_file_path, socket.gethostname()
+        reporter_email, report_file_path, socket.gethostname()
     )
 
     print("Report written to {}".format(report_file_path))

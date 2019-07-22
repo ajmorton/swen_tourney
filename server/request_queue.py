@@ -8,6 +8,7 @@ import tournament.main as tourney
 import subprocess
 
 from server.request_types import *
+from tournament.types.basetypes import Submitter
 
 
 class RequestQueue(queue.Queue):

@@ -8,9 +8,7 @@ from functools import partial
 from tournament.state.tourney_state import TourneyState
 import tournament.config.paths as paths
 import tournament.config.config as config
-from tournament.util.types.basetypes import *
-from server.request_types import *
-
+from tournament.types.basetypes import *
 
 assg = config.assignment
 

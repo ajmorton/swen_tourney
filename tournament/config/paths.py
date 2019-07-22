@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
-import tournament.config.config as config
-from tournament.util.types.basetypes import Submitter, FilePath
+from tournament.config import config
+from tournament.types.basetypes import Submitter, FilePath
 
 config_dir_path = os.path.dirname(os.path.abspath(__file__))
 tournament_submissions_path = os.path.dirname(config_dir_path) + "/submissions"
@@ -22,7 +22,7 @@ EMAIL_CONFIG = config_dir_path + "/email_config.json"
 
 
 def get_staged_report_request_filename(time: str) -> FilePath:
-    dt = datetime.fromisoformat(time)
+    dt = datetime.strptime(time, config.date_iso_format)
     return FilePath(STAGING_DIR + "/report_request_" + dt.strftime(config.date_file_format) + ".json")
 
 
