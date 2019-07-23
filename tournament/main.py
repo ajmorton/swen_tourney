@@ -55,14 +55,14 @@ def validate_tests(submitter: Submitter) -> Tuple[bool, str]:
         test_result = assg.run_test(test, "original", validation_dir)
 
         if test_result == TestResult.TIMEOUT:
-            validation_traces += "\n{} {} test FAIL - Timeout".format("original", test)
+            validation_traces += "\n\t{} test FAIL - Timeout".format(test)
         elif test_result == TestResult.NO_BUGS_DETECTED:
-            validation_traces += "\n{} {} test SUCCESS - No bugs detected in original program".format("original", test)
+            validation_traces += "\n\t{} test SUCCESS - No bugs detected in original program".format(test)
         elif test_result == TestResult.BUG_FOUND:
             validation_traces += \
-                "\n{} {} test FAIL - Test falsely reports an error in original code".format("original", test)
+                "\n{} test FAIL - Test falsely reports an error in original code".format(test)
         else:
-            validation_traces += "\n{} {} ERROR - unexpected test result: {}".format("original", test, test_result)
+            validation_traces += "\n\t{} ERROR - unexpected test result: {}".format(test, test_result)
 
         tests_valid = tests_valid and test_result == TestResult.NO_BUGS_DETECTED
 
@@ -80,13 +80,13 @@ def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
             test_result = assg.run_test(test, prog, validation_dir)
 
             if test_result == TestResult.TIMEOUT:
-                validation_traces += "\n{} {} test FAIL - Timeout".format(prog, test)
+                validation_traces += "\n\t{} {} test FAIL - Timeout".format(prog, test)
             elif test_result == TestResult.NO_BUGS_DETECTED:
-                validation_traces += "\n{} {} test FAIL - Test suite does not detect error".format(prog, test)
+                validation_traces += "\n\t{} {} test FAIL - Test suite does not detect error".format(prog, test)
             elif test_result == TestResult.BUG_FOUND:
-                validation_traces += "\n{} {} test SUCCESS - Test suite detects error".format(prog, test)
+                validation_traces += "\n\t{} {} test SUCCESS - Test suite detects error".format(prog, test)
             else:
-                validation_traces += "\n{} {} ERROR - unexpected test result: {}".format(prog, test, test_result)
+                validation_traces += "\n\t{} {} ERROR - unexpected test result: {}".format(prog, test, test_result)
 
             progs_valid = progs_valid and test_result == TestResult.BUG_FOUND
 

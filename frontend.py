@@ -15,32 +15,50 @@ def main():
     command = parser.parse_frontend_args()
 
     if command.type == FrontEndCommand.CHECK_ELIGIBILITY:
+        print()
+        print("Checking submitter eligibility  ")
+        print("==================================")
         submission_dir = command.dir
         submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
         success, eligibility_check_traces = tourney.check_submitter_eligibility(submitter, submission_dir)
-        if os.path.isdir(submission_dir):
-            write_file(submission_dir, "check_eligibility_results.txt", eligibility_check_traces)
+        print(eligibility_check_traces)
+        print("==================================")
+        print()
 
     elif command.type == FrontEndCommand.VALIDATE_TESTS:
+        print()
+        print("Validating submitted tests    ")
+        print("==================================")
+
         submission_dir = command.dir
         submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
         success, validation_traces = tourney.validate_tests(submitter)
-        write_file(submission_dir, "validate_tests_results.txt", validation_traces)
+        print(validation_traces)
+        print("==================================")
+        print()
 
     elif command.type == FrontEndCommand.VALIDATE_PROGS:
+        print()
+        print("Validating submitted programs  ")
+        print("==================================")
         submission_dir = command.dir
         submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
         success, validation_traces = tourney.validate_programs_under_test(submitter)
-        write_file(submission_dir, "validate_progs_results.txt", validation_traces)
+        print(validation_traces)
+        print("==================================")
+        print()
 
     elif command.type == FrontEndCommand.SUBMIT:
+        print()
+        print("Validating submitted programs  ")
+        print("==================================")
         submission_dir = command.dir
         submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
-
         tourney.write_submission_time(submitter)
-
         (success, submission_traces) = server.send_request(SubmissionRequest(submitter))
-        write_file(submission_dir, "submission_results.txt", submission_traces)
+        print(submission_traces)
+        print("==================================")
+        print()
 
     else:
         success = False
