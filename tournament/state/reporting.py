@@ -5,7 +5,6 @@ from tournament.state.tourney_state import TourneyState
 import tournament.config.paths as paths
 import tournament.config.config as config
 import emailer.emailer as emailer
-import socket
 from tournament.types.basetypes import FilePath
 
 
@@ -51,17 +50,10 @@ def generate_report(report_time: datetime, reporter_email):
     report_file_path = paths.REPORT_DIR + "/report_" + report_time.strftime(config.date_file_format) + ".json"
 
     json.dump(report, open(report_file_path, 'w'), indent=4)
-
     generate_normalised_scores(report_file_path)
-
-    try:
-        emailer.send_tournament_report_to_submitters(report_file_path)
-        emailer.send_confirmation_email(reporter_email, report_file_path, socket.gethostname())
-    except OSError as os_error:
-        print("Error while sending emails: {} {}".format(os_error.errno, os_error.strerror))
-        print("Email sending has been aborted.")
-
     print("Report written to {}".format(report_file_path))
+
+    emailer.email_results(report_file_path, reporter_email)
 
 
 def generate_normalised_scores(report_file: FilePath):

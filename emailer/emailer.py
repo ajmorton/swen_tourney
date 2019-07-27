@@ -1,59 +1,36 @@
-import smtplib
-from smtplib import SMTP_SSL as SMTP  # SSL connection
+from smtplib import SMTP
+from smtplib import SMTPHeloError, SMTPAuthenticationError
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import tournament.config.paths as paths
 import json
 import time
+import socket
 
 from tournament.types.basetypes import FilePath
 import tournament.config.config as config
 
 
-def send_email(receiver: str, receiver_email: str, subject: str, message: str):
+def open_smtp_connection() -> SMTP:
 
-    email_config = json.load(open(paths.EMAIL_CONFIG, 'r'))
-    sender = email_config['email']
-    password = email_config['password']
-    smtp_server = email_config['smtp_server']
-    port = email_config['port']
+    cfg = json.load(open(paths.EMAIL_CONFIG, 'r'))
 
-    try:
-        smtp_server = SMTP(smtp_server, port)
-        smtp_server.login(sender, password)
+    smtp = SMTP(cfg['smtp_server'], cfg['port'], timeout=10)
+    smtp.starttls()
+    smtp.login(cfg['email'], cfg['password'])
 
-        print("Sending email to {} ({})".format(receiver, receiver_email))
-
-        msg = MIMEMultipart()
-        msg['From'] = sender
-        msg['To'] = receiver_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(message))
-
-        try:
-            smtp_server.sendmail(sender, receiver_email, msg.as_string())
-        except smtplib.SMTPException as e:
-            print("Error: unable to send email {}".format(e))
-        smtp_server.close()
-
-    except smtplib.SMTPHeloError:
-        print("Server did not reply")
-    except smtplib.SMTPAuthenticationError:
-        print("Login attempt returned SMTPAuthenticationError")
-    except smtplib.SMTPException:
-        print("Authentication failed")
+    return smtp
 
 
-def send_report_ready_email(receiver_email: str, report_time: str, report_file_path: FilePath, hostname: str):
-    subject = "swen-tournament report ready"
+def send_email(smtp: SMTP, sender_email: str, receiver_email: str, subject: str, message: str):
 
-    body = ""
-    body += "Hi,\n"
-    body += "\n"
-    body += "A report has been generated for the status of swen-tournament as of {}.\n".format(report_time)
-    body += "It can be found at {} on the {} VPS.".format(report_file_path, hostname)
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(message))
 
-    send_email("", receiver_email, subject, body)
+    smtp.sendmail(sender_email, receiver_email, msg.as_string())
 
 
 def generate_mail_body(submitter: str, submitter_report, report_date: str, num_submitters: int,
@@ -68,12 +45,12 @@ def generate_mail_body(submitter: str, submitter_report, report_date: str, num_s
     body += "Your submission was run against {} others. Your results are:\n".format(num_submitters - 1)
     body += "\n"
     body += "Tests\n"
-    for test in submitter_report['tests'].keys():
+    for test in sorted(submitter_report['tests'].keys()):
         body += "  - {}: test detected {} of {} bugs\n".format(test, submitter_report['tests'][test], other_programs)
     body += "Detecting an average of {} bugs per test\n".format(submitter_report['average_bugs_detected'])
     body += "\n"
     body += "Mutants\n"
-    for prog in submitter_report['progs'].keys():
+    for prog in sorted(submitter_report['progs'].keys()):
         body += "  - {}: mutant evaded detection in {} of {} tests\n".format(
             prog, submitter_report['progs'][prog], other_tests
         )
@@ -93,7 +70,7 @@ def generate_mail_body(submitter: str, submitter_report, report_date: str, num_s
     return body
 
 
-def send_tournament_report_to_submitters(report_file_path: FilePath):
+def send_results_to_submitters(smtp_connection: SMTP, sender_email: str, report_file_path: FilePath):
 
     report = json.load(open(report_file_path, 'r'))
 
@@ -110,8 +87,8 @@ def send_tournament_report_to_submitters(report_file_path: FilePath):
     send_count = 0
 
     for submitter in sorted(results.keys()):
-        submitter_report = results[submitter]
-        if submitter_report['latest_submission_date'] is None:
+        submitter_results = results[submitter]
+        if submitter_results['latest_submission_date'] is None:
             # don't send an email to a submitter who has not made a submission
             continue
 
@@ -119,18 +96,21 @@ def send_tournament_report_to_submitters(report_file_path: FilePath):
             time.sleep(300)
             send_count = 0
 
-        email_body = generate_mail_body(submitter, submitter_report, report_date, num_submitters,
+        email_body = generate_mail_body(submitter, submitter_results, report_date, num_submitters,
                                         report['best_average_bugs_detected'], report['best_average_tests_evaded'])
 
-        send_email(submitter, submitter_report['email'], "SWEN Tournament results", email_body)
+        submitter_email = submitter_results['email']
+        print("\tSending email to {} ({})".format(submitter, submitter_email))
+        send_email(smtp_connection, sender_email, submitter_email, "SWEN Tournament results", email_body)
         send_count += 1
 
 
-def send_confirmation_email(receiver_email: str, report_file_path: FilePath, hostname: str):
+def send_confirmation_email(smtp_connection: SMTP, sender_email, receiver_email: str, report_file_path: FilePath):
 
     report = json.load(open(report_file_path, 'r'))
     num_submitters = report['num_submitters']
     report_time = report['report_date']
+    hostname = socket.gethostname()
 
     body = ""
     body += "Hi,\n"
@@ -140,6 +120,27 @@ def send_confirmation_email(receiver_email: str, report_file_path: FilePath, hos
         report_file_path, hostname
     )
 
-    send_email("", receiver_email, "SWEN Tournament results", body)
+    send_email(smtp_connection, sender_email, receiver_email, "SWEN Tournament results", body)
     pass
 
+
+def email_results(results_file_path: FilePath, reporter_email: str):
+
+    cfg = json.load(open(paths.EMAIL_CONFIG, 'r'))
+    sender_email = cfg['email']
+
+    print("Sending results from {}".format(sender_email))
+    try:
+        smtp_connection = open_smtp_connection()
+        send_results_to_submitters(smtp_connection, sender_email, results_file_path)
+        send_confirmation_email(smtp_connection, sender_email, reporter_email, results_file_path)
+        smtp_connection.close()
+    except socket.timeout:
+        print("Error: Timeout while trying to connect to SMTP server")
+    except OSError as os_error:
+        print("OSError while sending emails: {} {}".format(os_error.errno, os_error.strerror))
+        print("Email sending has been aborted.")
+    except SMTPHeloError:
+        print("No reply from SMTP server")
+    except SMTPAuthenticationError:
+        print("Login attempt failed")

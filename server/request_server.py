@@ -4,7 +4,6 @@ from server.request_processor import RequestProcessor
 from server.request_queue import RequestQueue
 from server.config import server_config
 from server.request_types import *
-import os
 
 
 class TourneyRequestHandler(socketserver.BaseRequestHandler):

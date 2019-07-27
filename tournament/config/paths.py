@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from tournament.config import config
+from config import config
 from tournament.types.basetypes import Submitter, FilePath
 
 config_dir_path = os.path.dirname(os.path.abspath(__file__))
