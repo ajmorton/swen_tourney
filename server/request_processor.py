@@ -3,12 +3,12 @@ import time
 import queue
 from datetime import datetime
 
-import config.format as fmt
+import util.format as fmt
 import tournament.main as tourney
 from server.request_types import *
 from tournament.state.tourney_snapshot import TourneySnapshot
 from emailer import emailer
-from config import paths
+from util import paths
 
 
 class RequestProcessor(Thread):

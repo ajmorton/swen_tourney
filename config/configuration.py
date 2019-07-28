@@ -1,6 +1,6 @@
 from config.assignments.ant.AntAssignment import AntAssignment
 from config.exceptions import NoConfigDefined
-from tournament.types.basetypes import Result
+from util.types import Result
 from config.files.server_config import ServerConfig
 from config.files.approved_submitters import ApprovedSubmitters
 from config.files.email_config import EmailConfig

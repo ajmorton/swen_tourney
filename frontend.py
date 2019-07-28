@@ -1,11 +1,11 @@
 import os
-import cli.util
-import cli.arg_parser as parser
+import util.funcs
+import util.cli_arg_parser as parser
 import tournament.main as tourney
 import server.main as server
 from server.request_types import SubmissionRequest
-from cli.arg_parser import FrontEndCommand
-from tournament.types.basetypes import Submitter
+from util.cli_arg_parser import FrontEndCommand
+from util.types import Submitter
 
 
 def main():
@@ -76,5 +76,5 @@ def write_file(submission_dir: str, filename: str, contents: str):
 
 
 if __name__ == "__main__":
-    cli.util.assert_python_version(3, 5, 2)
+    util.funcs.assert_python_version(3, 5, 2)
     main()

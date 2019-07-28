@@ -3,8 +3,8 @@ import json
 
 import config.configuration as config
 from config.configuration import ApprovedSubmitters
-from config import paths
-from tournament.types.basetypes import *
+from util import paths
+from util.types import *
 
 
 class TourneyState:

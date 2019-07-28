@@ -1,6 +1,6 @@
 from enum import Enum
 
-from tournament.types.basetypes import Submitter
+from util.types import Submitter
 
 
 class ServerResponse(str, Enum):

@@ -1,4 +1,4 @@
-from config import paths
+from util import paths
 import os
 import json
 

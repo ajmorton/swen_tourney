@@ -3,12 +3,12 @@ import queue
 import os
 import threading
 from collections import deque
-from config import paths
+from util import paths
 import tournament.main as tourney
 import subprocess
 
 from server.request_types import *
-from tournament.types.basetypes import Submitter
+from util.types import Submitter
 
 
 class RequestQueue(queue.Queue):

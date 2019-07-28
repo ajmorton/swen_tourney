@@ -1,8 +1,8 @@
 from config.exceptions import NoConfigDefined
 import os
 import json
-from config import paths
-from tournament.types.basetypes import Result
+from util import paths
+from util.types import Result
 
 
 class ApprovedSubmitters:

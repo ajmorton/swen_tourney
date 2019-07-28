@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
 
-import config.format as fmt
-from tournament.types.basetypes import Submitter, FilePath
+import util.format as fmt
+from util.types import Submitter, FilePath
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

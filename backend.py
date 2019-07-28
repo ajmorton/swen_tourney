@@ -1,11 +1,11 @@
 from datetime import datetime
 
-import cli.arg_parser as parser
-from cli.arg_parser import BackendCommands
+import util.cli_arg_parser as parser
+from util.cli_arg_parser import BackendCommands
 from server.request_types import AliveRequest, ReportRequest, ShutdownRequest
 import server.main as server
 import tournament.main as tourney
-import cli.util
+import util.funcs
 from config import configuration as cfg
 
 
@@ -41,5 +41,5 @@ def main():
 
 
 if __name__ == "__main__":
-    cli.util.assert_python_version(3, 5, 2)
+    util.funcs.assert_python_version(3, 5, 2)
     main()

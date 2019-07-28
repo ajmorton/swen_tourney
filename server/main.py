@@ -2,11 +2,11 @@ from datetime import datetime
 import json
 import socket
 import subprocess
-from tournament.types.basetypes import Result
-from config import paths
+from util.types import Result
+from util import paths
 from config.configuration import ServerConfig
 from server.request_types import *
-import config.format as fmt
+import util.format as fmt
 
 
 def start_server() -> Result:

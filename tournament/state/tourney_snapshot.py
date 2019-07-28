@@ -1,11 +1,10 @@
 
-from tournament.types.basetypes import FilePath
+from util.types import FilePath
 from tournament.state.tourney_state import TourneyState
 from datetime import datetime
 import json
 from config import configuration as cfg
-from config import paths
-from config import format as fmt
+from util import format as fmt, paths
 
 
 class TourneySnapshot:

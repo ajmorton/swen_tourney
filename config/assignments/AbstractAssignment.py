@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from tournament.types.basetypes import *
+from util.types import *
 
 
 class AbstractAssignment(metaclass=ABCMeta):

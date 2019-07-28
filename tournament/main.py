@@ -5,9 +5,9 @@ import json
 import multiprocessing
 from functools import partial
 from tournament.state.tourney_state import TourneyState
-from config import paths
+from util import paths
 from config.configuration import ApprovedSubmitters, assignment
-from tournament.types.basetypes import *
+from util.types import *
 
 
 def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Result:
