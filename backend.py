@@ -2,8 +2,8 @@ from datetime import datetime
 
 import cli.arg_parser as parser
 from cli.arg_parser import BackendCommands
-from server import main as server
 from server.request_types import AliveRequest, ReportRequest, ShutdownRequest
+import server.main as server
 import tournament.main as tourney
 import cli.util
 

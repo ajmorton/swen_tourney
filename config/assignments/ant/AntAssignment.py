@@ -1,7 +1,7 @@
-from tournament.assignments.AbstractAssignment import AbstractAssignment
+from config.assignments.AbstractAssignment import AbstractAssignment
 import os
 import subprocess
-import tournament.config.paths as paths
+import config.paths as paths
 from tournament.types.basetypes import *
 
 path = os.path.dirname(os.path.abspath(__file__))

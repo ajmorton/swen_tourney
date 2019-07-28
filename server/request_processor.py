@@ -2,10 +2,13 @@ from threading import Thread
 import time
 import queue
 from datetime import datetime
+
+import config.format as fmt
 import tournament.main as tourney
 from server.request_types import *
-import tournament.state.reporting as reporting
-from tournament.config import config
+from tournament.state.tourney_snapshot import TourneySnapshot
+from emailer import emailer
+from config import paths
 
 
 class RequestProcessor(Thread):
@@ -35,7 +38,10 @@ class RequestProcessor(Thread):
 
                 elif request.request_type == RequestType.REPORT:
                     print("Generating report for tournament submissions as of {}".format(request.time))
-                    reporting.generate_report(datetime.strptime(request.time, config.date_iso_format), request.email)
+                    report_time = datetime.strptime(request.time, fmt.datetime_iso_string)
+                    snapshot = TourneySnapshot(report_time=report_time)
+                    snapshot.write_snapshot()
+                    emailer.email_results(paths.get_report_file_path(report_time), request.email)
 
                 else:
                     pass

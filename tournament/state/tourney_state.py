@@ -1,8 +1,9 @@
 import os
 import json
 
-import tournament.config.config as config
-import tournament.config.paths as paths
+import config.configs as config
+from config.configs import ApprovedSubmitters
+from config import paths
 from tournament.types.basetypes import *
 
 
@@ -16,7 +17,7 @@ class TourneyState:
         self.state = {}
 
         # TODO check for missing approved_submitters file
-        approved_submitters = json.load(open(paths.SUBMITTERS_LIST, 'r'))
+        approved_submitters = ApprovedSubmitters().get_list()
 
         if os.path.isfile(paths.TOURNEY_STATE_FILE):
             state_from_file = json.load(open(paths.TOURNEY_STATE_FILE, 'r'))

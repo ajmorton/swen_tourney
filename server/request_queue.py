@@ -3,7 +3,7 @@ import queue
 import os
 import threading
 from collections import deque
-import tournament.config.paths as paths
+from config import paths
 import tournament.main as tourney
 import subprocess
 
@@ -142,7 +142,7 @@ class RequestQueue(queue.Queue):
         for i in range(1, len(self.version_numbers)):
             old_dir = paths.get_staging_dir(submitter) + self.version_numbers[i]
             if os.path.isdir(old_dir):
-                new_dir = paths.get_staging_dir(submitter) + self.version_numbers[i-1]
+                new_dir = paths.get_staging_dir(submitter) + self.version_numbers[i - 1]
                 # Use cp -p to preserve timestamp information, used in restore_queue()
                 subprocess.run("cp -rp {} {}".format(old_dir, new_dir), shell=True)
                 subprocess.run("rm -rf {}".format(old_dir), shell=True)

@@ -2,8 +2,8 @@ import socketserver
 import json
 from server.request_processor import RequestProcessor
 from server.request_queue import RequestQueue
-from server.config import server_config
 from server.request_types import *
+from config.configs import ServerConfig
 
 
 class TourneyRequestHandler(socketserver.BaseRequestHandler):
@@ -43,12 +43,13 @@ def start_server():
     """
     Create the RequestProcessor and SocketServer threads
     """
-    host, port = server_config.get_host(), server_config.get_port()
+    server = ServerConfig()
+
     fifo_dequeuer = RequestProcessor(TourneyRequestHandler.queue)
 
     try:
 
-        server = socketserver.TCPServer((host, port), TourneyRequestHandler)
+        server = socketserver.TCPServer((server.host(), server.port()), TourneyRequestHandler)
 
         fifo_dequeuer.start()
         server.serve_forever()
@@ -63,8 +64,7 @@ def start_server():
             # This occurs when the server is closed, and a restart is attempted
             # before the socket can be garbage collected
             print("Cannot allocate socket, already in use.")
-            print("By default the server uses port", server_config.get_port(),
-                  "on the loopback address", server_config.get_host(), ".")
+            print("By default the server uses port {} on the loopback address {}.".format(server.port(), server.host()))
             print("This resource can take some time to be freed when the "
                   "server is shutdown, try waiting a minute before running "
                   "again")

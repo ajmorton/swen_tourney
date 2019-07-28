@@ -6,19 +6,18 @@ import json
 import multiprocessing
 from functools import partial
 from tournament.state.tourney_state import TourneyState
-import tournament.config.paths as paths
-import tournament.config.config as config
+from config import paths
+from config.configs import ApprovedSubmitters, assignment
 from tournament.types.basetypes import *
-
-assg = config.assignment
 
 
 def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Tuple[bool, str]:
 
-    eligible_submitters = json.load(open(paths.SUBMITTERS_LIST, 'r'))
+    eligible_submitters = ApprovedSubmitters().get_list()
     submitter_eligible = submitter in eligible_submitters.keys()
 
-    assg_folder = os.path.basename(assg.get_source_assg_dir().rstrip("/"))
+    # the name of the assignment repo (e.g. ant_assignment)
+    assg_name = os.path.basename(assignment.get_source_assg_dir().rstrip("/"))
 
     if submitter_eligible:
         # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
@@ -28,10 +27,10 @@ def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) 
         subprocess.run("mkdir {}".format(submitter_pre_validation_dir), shell=True)
 
         subprocess.run(
-            "cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir + "/" + assg_folder),
+            "cp -rf {} {}".format(assignment.get_source_assg_dir(), submitter_pre_validation_dir + "/" + assg_name),
             shell=True
         )
-        assg.prep_submission(submission_dir, submitter_pre_validation_dir)
+        assignment.prep_submission(submission_dir, submitter_pre_validation_dir)
 
     if submitter_eligible:
         eligibility_check_traces = "Submitter is eligible for the tournament"
@@ -51,8 +50,8 @@ def validate_tests(submitter: Submitter) -> Tuple[bool, str]:
 
     tests_valid = True
     validation_traces = "Validation results:"
-    for test in assg.get_test_list():
-        test_result = assg.run_test(test, "original", validation_dir)
+    for test in assignment.get_test_list():
+        test_result = assignment.run_test(test, "original", validation_dir)
 
         if test_result == TestResult.TIMEOUT:
             validation_traces += "\n\t{} test FAIL - Timeout".format(test)
@@ -75,9 +74,9 @@ def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
     progs_valid = True
     validation_traces = "Validation results:"
 
-    for prog in assg.get_programs_list():
-        for test in assg.get_test_list():
-            test_result = assg.run_test(test, prog, validation_dir)
+    for prog in assignment.get_programs_list():
+        for test in assignment.get_test_list():
+            test_result = assignment.run_test(test, prog, validation_dir)
 
             if test_result == TestResult.TIMEOUT:
                 validation_traces += "\n\t{} {} test FAIL - Timeout".format(prog, test)
@@ -115,8 +114,8 @@ def write_metadata(submitter: Submitter):
     staged_dir = paths.get_staging_dir(submitter)
     tourney_dest = paths.get_tourney_dir(submitter)
 
-    metadata = {'new_tests': config.assignment.detect_new_tests(staged_dir, tourney_dest),
-                'new_progs': config.assignment.detect_new_progs(staged_dir, tourney_dest)}
+    metadata = {'new_tests': assignment.detect_new_tests(staged_dir, tourney_dest),
+                'new_progs': assignment.detect_new_progs(staged_dir, tourney_dest)}
     json.dump(metadata, open(paths.get_staging_dir(submitter) + "/" + paths.METADATA_FILE, 'w'), indent=4)
 
 
@@ -164,26 +163,26 @@ def run_submission(submitter: Submitter):
 def run_tests(
         pair: Tuple[Submitter, Submitter],
         tourney_state: TourneyState,
-        new_tests: [Test] = assg.get_test_list(),
-        new_progs: [Prog] = assg.get_programs_list()
+        new_tests: [Test] = assignment.get_test_list(),
+        new_progs: [Prog] = assignment.get_programs_list()
 ) -> [Submitter, Submitter, TestSet]:
     test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/test_stage_" + multiprocessing.current_process().name
     if not os.path.isdir(test_stage_dir):
         subprocess.run("mkdir {}".format(test_stage_dir), shell=True)
-        subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), test_stage_dir), shell=True)
+        subprocess.run("cp -rf {} {}".format(assignment.get_source_assg_dir(), test_stage_dir), shell=True)
 
     (tester, testee) = pair
 
-    assg.prep_test_stage(tester, testee, test_stage_dir)
+    assignment.prep_test_stage(tester, testee, test_stage_dir)
     test_set = {}
-    for test in assg.get_test_list():
+    for test in assignment.get_test_list():
         test_set[test] = {}
-        for prog in assg.get_programs_list():
+        for prog in assignment.get_programs_list():
             if test not in new_tests and prog not in new_progs:
                 # no need to rerun this test, keep the results from the current tournament state
                 test_set[test][prog] = tourney_state.get(tester, testee, test, prog)
             else:
-                test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
+                test_set[test][prog] = assignment.run_test(test, prog, test_stage_dir)
 
     return tester, testee, test_set
 

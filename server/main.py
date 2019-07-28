@@ -5,7 +5,7 @@ import socket
 import subprocess
 from typing import Tuple
 
-from server.config import server_config
+from config.configs import ServerConfig
 from server.request_types import *
 
 
@@ -29,9 +29,10 @@ def send_request(request: ServerRequest) -> Tuple[bool, str]:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
         request = json.dumps(request)
+        server = ServerConfig()
 
         try:
-            sock.connect((server_config.get_host(), server_config.get_port()))
+            sock.connect((server.host(), server.port()))
             sock.sendall(request.encode())
 
             received = sock.recv(1024).decode('utf-8')

@@ -1,11 +1,11 @@
+import os
+import cli.util
 import cli.arg_parser as parser
 import tournament.main as tourney
-import os
 import server.main as server
 from server.request_types import SubmissionRequest
 from cli.arg_parser import FrontEndCommand
 from tournament.types.basetypes import Submitter
-import cli.util
 
 
 def main():
