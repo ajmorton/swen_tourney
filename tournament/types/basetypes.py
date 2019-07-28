@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import NewType, Dict
+from typing import NewType, Dict, Tuple
 
 FilePath = NewType("FilePath", str)
 Submitter = NewType("Submitter", str)
@@ -16,3 +16,4 @@ class TestResult(str, Enum):
 
 
 TestSet = NewType("TestSet", Dict[Submitter, Dict[Submitter, TestResult]])
+Result = NewType("Result", Tuple[bool, str])

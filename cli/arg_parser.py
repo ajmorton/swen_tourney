@@ -17,6 +17,7 @@ class BackendCommands(str, Enum):
     SHUTDOWN = 'shutdown'
     REPORT = 'report'
     CLEAN = 'clean'
+    CHECK_CONFIG = 'check_config'
 
 
 def create_backend_parser(parser_list):
@@ -55,6 +56,14 @@ def create_backend_parser(parser_list):
     )
     clean_parser.set_defaults(type=command_name)
     parser_list[command_name] = clean_parser
+
+    # add the parser for the set_up command
+    command_name = BackendCommands.CHECK_CONFIG.value
+    check_config_parser = subparsers.add_parser(
+        command_name, help='Check the configuration of the tournament.'
+    )
+    check_config_parser.set_defaults(type=command_name)
+    parser_list[command_name] = check_config_parser
 
     return parser
 

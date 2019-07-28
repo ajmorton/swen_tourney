@@ -7,19 +7,25 @@ from tournament.types.basetypes import Submitter, FilePath
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # The list of submitters, and their emails, who are eligible to participate in the tournament
-APPROVED_SUBMITTERS_LIST = root_dir + "/config/approved_submitters.json"
+APPROVED_SUBMITTERS_LIST = root_dir + "/config/data/approved_submitters.json"
 
 # The settings for emailing results to submitters. Email, password, smtp server details.
-EMAIL_CONFIG = root_dir + "/config/email_config.json"
+EMAIL_CONFIG = root_dir + "/config/data/email_config.json"
 
 # the host and port of the request server
-SERVER_CONFIG = root_dir + "/config/server_config.json"
+SERVER_CONFIG = root_dir + "/config/data/server_config.json"
 
 # The file that stores the current state of the tournament
 TOURNEY_STATE_FILE = root_dir + "/tournament/state/tourney_state.json"
 
 # The directory to write tournament snapshots to
 REPORT_DIR = root_dir + "/tournament/state"
+
+# The python file to start up the request server
+START_SERVER_FILE = root_dir + "/start_server.py"
+
+# The root of the project
+ROOT_DIR = root_dir
 
 # Directories that store student submissions for validation, submission, and testing
 tournament_submissions_path = root_dir + "/tournament/submissions"
@@ -50,5 +56,5 @@ def get_tourney_dir(submitter: Submitter) -> FilePath:
     return FilePath(TOURNEY_DIR + "/" + submitter)
 
 
-def get_report_file_path(report_time: datetime):
-    return REPORT_DIR + "/report_" + report_time.strftime(fmt.datetime_file_string) + ".json"
+def get_snapshot_file_path(report_time: datetime):
+    return REPORT_DIR + "/snapshot_" + report_time.strftime(fmt.datetime_file_string) + ".json"

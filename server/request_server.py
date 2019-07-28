@@ -3,7 +3,7 @@ import json
 from server.request_processor import RequestProcessor
 from server.request_queue import RequestQueue
 from server.request_types import *
-from config.configs import ServerConfig
+from config.configuration import ServerConfig
 
 
 class TourneyRequestHandler(socketserver.BaseRequestHandler):

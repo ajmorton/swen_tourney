@@ -3,7 +3,7 @@ from tournament.types.basetypes import FilePath
 from tournament.state.tourney_state import TourneyState
 from datetime import datetime
 import json
-from config import configs as cfg
+from config import configuration as cfg
 from config import paths
 from config import format as fmt
 
@@ -43,7 +43,7 @@ class TourneySnapshot:
 
     def write_snapshot(self):
         report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_iso_string)
-        report_file_path = paths.get_report_file_path(report_time)
+        report_file_path = paths.get_snapshot_file_path(report_time)
         json.dump(self.snapshot, open(report_file_path, 'w'), indent=4)
         print("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
 

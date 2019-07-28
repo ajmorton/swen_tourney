@@ -1,4 +1,3 @@
-from typing import Tuple
 import subprocess
 from datetime import datetime
 import os
@@ -7,11 +6,11 @@ import multiprocessing
 from functools import partial
 from tournament.state.tourney_state import TourneyState
 from config import paths
-from config.configs import ApprovedSubmitters, assignment
+from config.configuration import ApprovedSubmitters, assignment
 from tournament.types.basetypes import *
 
 
-def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Tuple[bool, str]:
+def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Result:
 
     eligible_submitters = ApprovedSubmitters().get_list()
     submitter_eligible = submitter in eligible_submitters.keys()
@@ -42,10 +41,10 @@ def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) 
             "If this is an individual assignment please check with your tutors that"\
             " you are added to the approved_submitters list".format(submitter)
 
-    return submitter_eligible, eligibility_check_traces
+    return Result((submitter_eligible, eligibility_check_traces))
 
 
-def validate_tests(submitter: Submitter) -> Tuple[bool, str]:
+def validate_tests(submitter: Submitter) -> Result:
     validation_dir = paths.get_pre_validation_dir(submitter)
 
     tests_valid = True
@@ -65,10 +64,10 @@ def validate_tests(submitter: Submitter) -> Tuple[bool, str]:
 
         tests_valid = tests_valid and test_result == TestResult.NO_BUGS_DETECTED
 
-    return tests_valid, validation_traces
+    return Result((tests_valid, validation_traces))
 
 
-def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
+def validate_programs_under_test(submitter: Submitter) -> Result:
     validation_dir = paths.get_pre_validation_dir(submitter)
 
     progs_valid = True
@@ -89,7 +88,7 @@ def validate_programs_under_test(submitter: Submitter) -> Tuple[bool, str]:
 
             progs_valid = progs_valid and test_result == TestResult.BUG_FOUND
 
-    return progs_valid, validation_traces
+    return Result((progs_valid, validation_traces))
 
 
 def get_most_recent_staged_submission(submitter) -> FilePath:

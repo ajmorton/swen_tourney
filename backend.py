@@ -6,13 +6,14 @@ from server.request_types import AliveRequest, ReportRequest, ShutdownRequest
 import server.main as server
 import tournament.main as tourney
 import cli.util
+from config import configuration as cfg
 
 
 def main():
     command = parser.parse_backend_args()
 
-    if command.type == BackendCommands.START_SERVER:
-        success, traces = server.start_server()
+    if command.type == BackendCommands.CHECK_CONFIG:
+        success, traces = cfg.check_configuration()
 
     elif command.type == BackendCommands.CLEAN:
         server_online, traces = server.send_request(AliveRequest())
@@ -29,6 +30,9 @@ def main():
 
     elif command.type == BackendCommands.SHUTDOWN:
         success, traces = server.send_request(ShutdownRequest())
+
+    elif command.type == BackendCommands.START_SERVER:
+        success, traces = server.start_server()
 
     else:
         traces = "Error: unrecognised command {}".format(command.type)

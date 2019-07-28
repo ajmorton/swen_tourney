@@ -1,8 +1,8 @@
 import os
 import json
 
-import config.configs as config
-from config.configs import ApprovedSubmitters
+import config.configuration as config
+from config.configuration import ApprovedSubmitters
 from config import paths
 from tournament.types.basetypes import *
 

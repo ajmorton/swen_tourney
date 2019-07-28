@@ -1,27 +1,26 @@
 from datetime import datetime
 import json
-import os
 import socket
 import subprocess
-from typing import Tuple
-
-from config.configs import ServerConfig
+from tournament.types.basetypes import Result
+from config import paths
+from config.configuration import ServerConfig
 from server.request_types import *
+import config.format as fmt
 
 
-def start_server() -> Tuple[bool, str]:
+def start_server() -> Result:
     """
     Spawn the server in a new process
     """
     print("Starting server")
-    path = os.path.dirname(os.path.abspath(__file__))
-    process = subprocess.Popen("python3 {}/../start_server.py".format(path), cwd=path, shell=True)
+    process = subprocess.Popen("python3 {}".format(paths.START_SERVER_FILE), cwd=paths.ROOT_DIR, shell=True)
     print("Spawned process PID: {}".format(process.pid))
 
-    return True, "Server started"
+    return Result((True, "Server started"))
 
 
-def send_request(request: ServerRequest) -> Tuple[bool, str]:
+def send_request(request: ServerRequest) -> Result:
     """
     Send a submission request to the request server.
     :param request: The request sent to the server
@@ -39,17 +38,19 @@ def send_request(request: ServerRequest) -> Tuple[bool, str]:
             sock.close()
 
             if received == ServerResponse.SUBMISSION_SUCCESS:
-                return True, "Submission successfully made at {}".format(
-                    datetime.now().strftime("%a %d %b %I:%M.%S %p")
-                )
+                result, trace = True, "Submission successfully made at {}".format(
+                    datetime.now().strftime(fmt.datetime_readable_string))
             elif received == ServerResponse.ALIVE:
-                return True, "Server is online"
+                result, trace = True, "Server is online"
             elif received == ServerResponse.REPORT_SUCCESS:
-                return True, "Report is scheduled."
+                result, trace = True, "Report is scheduled."
             elif received == ServerResponse.SERVER_SHUTDOWN:
-                return True, "Server shutting down"
+                result, trace = True, "Server shutting down"
             else:
-                return False, "An unknown error occurred"
+                result, trace = False, "An unknown error occurred"
 
+            return Result((result, trace))
         except ConnectionRefusedError:
-            return False, "Error, the tournament server is not online.\nPlease contact a tutor and let them know."
+            return Result(
+                (False, "Error, the tournament server is not online.\nPlease contact a tutor and let them know.")
+            )
