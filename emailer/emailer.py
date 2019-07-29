@@ -2,22 +2,22 @@ from smtplib import SMTP
 from smtplib import SMTPHeloError, SMTPAuthenticationError
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import tournament.config.paths as paths
-import json
 import time
 import socket
 
-from tournament.types.basetypes import FilePath
-import tournament.config.config as config
+from util import format as fmt
+from tournament.state.tourney_snapshot import TourneySnapshot
+from util.types import FilePath
+from config.configuration import EmailConfig, AssignmentConfig
 
 
 def open_smtp_connection() -> SMTP:
 
-    cfg = json.load(open(paths.EMAIL_CONFIG, 'r'))
+    email_cfg = EmailConfig()
 
-    smtp = SMTP(cfg['smtp_server'], cfg['port'], timeout=10)
+    smtp = SMTP(email_cfg.smtp_server(), email_cfg.port(), timeout=10)
     smtp.starttls()
-    smtp.login(cfg['email'], cfg['password'])
+    smtp.login(email_cfg.sender(), email_cfg.password())
 
     return smtp
 
@@ -36,8 +36,10 @@ def send_email(smtp: SMTP, sender_email: str, receiver_email: str, subject: str,
 def generate_mail_body(submitter: str, submitter_report, report_date: str, num_submitters: int,
                        best_average_bugs_detected: float, best_average_tests_evaded: float,) -> str:
 
-    other_programs = len(config.assignment.get_programs_list()) * (num_submitters - 1)
-    other_tests = len(config.assignment.get_test_list()) * (num_submitters - 1)
+    assg = AssignmentConfig().get_assignment()
+
+    other_programs = len(assg.get_programs_list()) * (num_submitters - 1)
+    other_tests = len(assg.get_test_list()) * (num_submitters - 1)
 
     body = ""
     body += "Hi {}\n".format(submitter)
@@ -70,25 +72,24 @@ def generate_mail_body(submitter: str, submitter_report, report_date: str, num_s
     return body
 
 
-def send_results_to_submitters(smtp_connection: SMTP, sender_email: str, report_file_path: FilePath):
+def send_results_to_submitters(smtp_connection: SMTP, sender_email: str, snapshot_file_path: FilePath):
 
-    report = json.load(open(report_file_path, 'r'))
-
-    report_date = report['report_date']
-    num_submitters = int(report['num_submitters'])
+    snapshot = TourneySnapshot(snapshot_file=snapshot_file_path)
+    snapshot_date = snapshot.date().strftime(fmt.datetime_readable_string)
+    num_submitters = snapshot.num_submitters()
 
     if num_submitters < 2:
         # no submissions have been run against each other. No email to send
         return
 
-    results = report['results']
+    results = snapshot.results()
 
     # gmail rate limits emails. After sending 50 wait for 5 minutes to avoid this
     send_count = 0
 
     for submitter in sorted(results.keys()):
         submitter_results = results[submitter]
-        if submitter_results['latest_submission_date'] is None:
+        if submitter_results['latest_submission_date'] == TourneySnapshot.NO_DATE:
             # don't send an email to a submitter who has not made a submission
             continue
 
@@ -96,8 +97,8 @@ def send_results_to_submitters(smtp_connection: SMTP, sender_email: str, report_
             time.sleep(300)
             send_count = 0
 
-        email_body = generate_mail_body(submitter, submitter_results, report_date, num_submitters,
-                                        report['best_average_bugs_detected'], report['best_average_tests_evaded'])
+        email_body = generate_mail_body(submitter, submitter_results, snapshot_date, num_submitters,
+                                        snapshot.best_average_bugs_detected(), snapshot.best_average_tests_evaded())
 
         submitter_email = submitter_results['email']
         print("\tSending email to {} ({})".format(submitter, submitter_email))
@@ -105,29 +106,29 @@ def send_results_to_submitters(smtp_connection: SMTP, sender_email: str, report_
         send_count += 1
 
 
-def send_confirmation_email(smtp_connection: SMTP, sender_email, receiver_email: str, report_file_path: FilePath):
+def send_confirmation_email(smtp_connection: SMTP, sender_email: str, receiver_email: str,
+                            snapshot_file_path: FilePath):
 
-    report = json.load(open(report_file_path, 'r'))
-    num_submitters = report['num_submitters']
-    report_time = report['report_date']
+    snapshot = TourneySnapshot(snapshot_file=snapshot_file_path)
     hostname = socket.gethostname()
 
     body = ""
     body += "Hi,\n"
     body += "A report for the state of the swen-tournament as of {} has been sent to" \
-            " the {} students who have made a valid submission.\n".format(report_time, num_submitters)
-    body += "The results of this tournament can be found on the tournament server at {} on {}.".format(
-        report_file_path, hostname
+            " the {} students who have made a valid submission.\n".format(snapshot.date(), snapshot.num_submitters())
+    body += "The details of this snapshot can be found on the tournament server {}:{}.".format(
+        hostname, snapshot_file_path
     )
 
+    print("\tSending confirmation email to {}".format(receiver_email))
     send_email(smtp_connection, sender_email, receiver_email, "SWEN Tournament results", body)
     pass
 
 
 def email_results(results_file_path: FilePath, reporter_email: str):
 
-    cfg = json.load(open(paths.EMAIL_CONFIG, 'r'))
-    sender_email = cfg['email']
+    email_cfg = EmailConfig()
+    sender_email = email_cfg.sender()
 
     print("Sending results from {}".format(sender_email))
     try:
@@ -138,7 +139,7 @@ def email_results(results_file_path: FilePath, reporter_email: str):
     except socket.timeout:
         print("Error: Timeout while trying to connect to SMTP server")
     except OSError as os_error:
-        print("OSError while sending emails: {} {}".format(os_error.errno, os_error.strerror))
+        print("Error raised while sending emails: {}".format(os_error))
         print("Email sending has been aborted.")
     except SMTPHeloError:
         print("No reply from SMTP server")

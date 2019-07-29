@@ -9,6 +9,9 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # The list of submitters, and their emails, who are eligible to participate in the tournament
 APPROVED_SUBMITTERS_LIST = root_dir + "/config/data/approved_submitters.json"
 
+# Which assignment type the tournament is configured for
+ASSIGNMENT_CONFIG = root_dir + "/config/data/assignment_config.json"
+
 # The settings for emailing results to submitters. Email, password, smtp server details.
 EMAIL_CONFIG = root_dir + "/config/data/email_config.json"
 

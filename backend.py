@@ -7,6 +7,7 @@ import server.main as server
 import tournament.main as tourney
 import util.funcs
 from config import configuration as cfg
+from config.files.assignment_config import AssignmentConfig
 
 
 def main():
@@ -30,6 +31,9 @@ def main():
 
     elif command.type == BackendCommands.SHUTDOWN:
         success, traces = server.send_request(ShutdownRequest())
+
+    elif command.type == BackendCommands.SET_ASSG:
+        success, traces = AssignmentConfig.write_assg_type(command.assg_type)
 
     elif command.type == BackendCommands.START_SERVER:
         success, traces = server.start_server()

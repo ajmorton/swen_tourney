@@ -1,8 +1,7 @@
 import os
 import json
 
-import config.configuration as config
-from config.configuration import ApprovedSubmitters
+from config.configuration import ApprovedSubmitters, AssignmentConfig
 from util import paths
 from util.types import *
 
@@ -16,7 +15,6 @@ class TourneyState:
     def __init__(self):
         self.state = {}
 
-        # TODO check for missing approved_submitters file
         approved_submitters = ApprovedSubmitters().get_list()
 
         if os.path.isfile(paths.TOURNEY_STATE_FILE):
@@ -70,10 +68,11 @@ class TourneyState:
         testset[test][prog] = TestResult
         :return:
         """
+        assg = AssignmentConfig().get_assignment()
         testset = TestSet({})
-        for test in config.assignment.get_test_list():
+        for test in assg.get_test_list():
             testset[test] = {}
-            for prog in config.assignment.get_programs_list():
+            for prog in assg.get_programs_list():
                 testset[test][prog] = TestResult.NOT_TESTED
         return testset
 
@@ -88,7 +87,7 @@ class TourneyState:
         bugs_detected = 0
         for testee in self.get_submitters():
             if testee != tester:
-                for prog in config.assignment.get_programs_list():
+                for prog in AssignmentConfig().get_assignment().get_programs_list():
                     if self.get(tester, testee, test, prog) in [TestResult.BUG_FOUND, TestResult.TIMEOUT]:
                         bugs_detected += 1
         return bugs_detected
@@ -98,7 +97,7 @@ class TourneyState:
 
         for tester in self.get_submitters():
             if testee != tester:
-                for test in config.assignment.get_test_list():
+                for test in AssignmentConfig().get_assignment().get_test_list():
                     if self.get(tester, testee, test, prog) == TestResult.NO_BUGS_DETECTED:
                         tests_evaded += 1
         return tests_evaded

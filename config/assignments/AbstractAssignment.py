@@ -89,7 +89,7 @@ class AbstractAssignment(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def compute_normalised_test_score(submitter_score: int, best_score: int) -> float:
+    def compute_normalised_test_score(submitter_score: float, best_score: float) -> float:
         """
         Compute a submitters test score normalised against the best test score in the tournament.
         :return:
@@ -98,7 +98,7 @@ class AbstractAssignment(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def compute_normalised_prog_score(submitter_score: int, best_score: int) -> float:
+    def compute_normalised_prog_score(submitter_score: float, best_score: float) -> float:
         """
         Compute a submitters prog score normalised against the best prog score in the tournament.
         :return:

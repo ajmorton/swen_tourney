@@ -3,8 +3,10 @@ from util.types import FilePath
 from tournament.state.tourney_state import TourneyState
 from datetime import datetime
 import json
-from config import configuration as cfg
+from config.configuration import AssignmentConfig
 from util import format as fmt, paths
+
+assg = AssignmentConfig().get_assignment()
 
 
 class TourneySnapshot:
@@ -59,15 +61,15 @@ class TourneySnapshot:
             submitter_result['latest_submission_date'] = tourney_state.get_state()[submitter]['latest_submission_date']
 
             total_bugs_detected = 0
-            num_tests = len(cfg.assignment.get_test_list())
-            for test in cfg.assignment.get_test_list():
+            num_tests = len(assg.get_test_list())
+            for test in assg.get_test_list():
                 submitter_result['tests'][test] = tourney_state.get_bugs_detected(submitter, test)
                 total_bugs_detected += submitter_result['tests'][test]
             submitter_result['average_bugs_detected'] = total_bugs_detected / float(num_tests)
 
             total_tests_evaded = 0
-            num_progs = len(cfg.assignment.get_programs_list())
-            for prog in cfg.assignment.get_programs_list():
+            num_progs = len(assg.get_programs_list())
+            for prog in assg.get_programs_list():
                 submitter_result['progs'][prog] = tourney_state.get_tests_evaded(submitter, prog)
                 total_tests_evaded += submitter_result['progs'][prog]
             submitter_result['average_tests_evaded'] = total_tests_evaded / float(num_progs)
@@ -88,11 +90,11 @@ class TourneySnapshot:
             submitter_bugs_detected = float(results[submitter]['average_bugs_detected'])
             submitter_tests_escaped = float(results[submitter]['average_tests_evaded'])
 
-            results[submitter]['normalised_test_score'] = cfg.assignment.compute_normalised_test_score(
+            results[submitter]['normalised_test_score'] = assg.compute_normalised_test_score(
                 submitter_bugs_detected, self.snapshot['best_average_bugs_detected']
             )
 
-            results[submitter]['normalised_prog_score'] = cfg.assignment.compute_normalised_prog_score(
+            results[submitter]['normalised_prog_score'] = assg.compute_normalised_prog_score(
                 submitter_tests_escaped, self.snapshot['best_average_tests_evaded']
             )
 

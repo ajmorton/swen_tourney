@@ -127,7 +127,7 @@ class AntAssignment(AbstractAssignment):
             subprocess.run("ln -s {} {}".format(testee_code_dir + file, test_stage_code_dir + file), shell=True)
 
     @staticmethod
-    def compute_normalised_prog_score(submitter_score: int, best_score: int) -> float:
+    def compute_normalised_prog_score(submitter_score: float, best_score: float) -> float:
         if best_score == 0:
             return 0
         else:
@@ -135,7 +135,7 @@ class AntAssignment(AbstractAssignment):
         return round(score, 2)
 
     @staticmethod
-    def compute_normalised_test_score(submitter_score: int, best_score: int) -> float:
+    def compute_normalised_test_score(submitter_score: float, best_score: float) -> float:
         if best_score == 0:
             return 0
         else:

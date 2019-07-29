@@ -1,13 +1,9 @@
-from config.assignments.ant.AntAssignment import AntAssignment
 from config.exceptions import NoConfigDefined
 from util.types import Result
 from config.files.server_config import ServerConfig
 from config.files.approved_submitters import ApprovedSubmitters
 from config.files.email_config import EmailConfig
-
-# Which assignment the tournament is configured for
-# TODO how to hotswap assignment imports?
-assignment = AntAssignment()
+from config.files.assignment_config import AssignmentConfig
 
 
 def check_configuration() -> Result:
@@ -16,6 +12,12 @@ def check_configuration() -> Result:
 
     try:
         ServerConfig()
+
+        # check assignment config is valid
+        assignment_config = AssignmentConfig()
+        assg_valid, assg_trace = assignment_config.check_non_default()
+        configs_valid = configs_valid and assg_valid
+        traces += assg_trace
 
         # check email config is valid
         email_config = EmailConfig()
