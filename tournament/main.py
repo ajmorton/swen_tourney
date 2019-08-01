@@ -8,6 +8,7 @@ from tournament.state.tourney_state import TourneyState
 from util import paths
 from config.configuration import ApprovedSubmitters, AssignmentConfig
 from util.types import *
+from util.funcs import print_tourney_trace
 
 
 def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Result:
@@ -23,7 +24,8 @@ def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) 
         # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
         submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter)
         if os.path.isdir(submitter_pre_validation_dir):
-            subprocess.run("rm -rf {}".format(submitter_pre_validation_dir), shell=True)
+            return Result((False, "Error: A prior submission is still being validated. "
+                                  "Please wait until it has finished to push a new commit."))
         subprocess.run("mkdir {}".format(submitter_pre_validation_dir), shell=True)
 
         subprocess.run(
@@ -135,16 +137,15 @@ def run_submission(submitter: Submitter):
     new_tests = metadata['new_tests']
     new_progs = metadata['new_progs']
 
-    print("Processing submission for {}.".format(submitter))
-    print("\tSubmission made at {}".format(submission_time))
-    print("\tNew tests: {}".format(new_tests))
-    print("\tNew progs: {}".format(new_progs))
+    print_tourney_trace("Processing submission for {}.".format(submitter))
+    print_tourney_trace("\tNew tests: {}".format(new_tests))
+    print_tourney_trace("\tNew progs: {}".format(new_progs))
 
     tourney_state.set_time_of_submission(submitter, submission_time)
 
     # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
     # run_tests into a function with just one argument
-    rt = partial(run_tests, new_tests=new_tests, new_progs=new_progs, tourney_state=tourney_state)
+    rt = partial(run_tests, tourney_state, new_tests, new_progs)
 
     with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
         # run submitter tests against others progs
@@ -158,7 +159,7 @@ def run_submission(submitter: Submitter):
     for (tester, testee, test_set) in tester_results + testee_results:
         tourney_state.set(tester, testee, test_set)
 
-    print("Submission from {} tested".format(submitter))
+    print_tourney_trace("Submission from {} tested".format(submitter))
     tourney_state.save_to_file()
 
 
@@ -201,3 +202,4 @@ def clean():
     subprocess.run("rm -rf {}".format(paths.TOURNEY_DIR + "/*"), shell=True)
     subprocess.run("rm -rf {}".format(paths.HEAD_TO_HEAD_DIR + "/*"), shell=True)
     subprocess.run("rm -f  {}".format(paths.TOURNEY_STATE_FILE), shell=True)
+    subprocess.run("rm -f  {}".format(paths.TRACE_FILE))

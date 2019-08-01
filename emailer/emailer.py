@@ -1,5 +1,4 @@
-from smtplib import SMTP
-from smtplib import SMTPHeloError, SMTPAuthenticationError
+from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import time
@@ -9,6 +8,7 @@ from util import format as fmt
 from tournament.state.tourney_snapshot import TourneySnapshot
 from util.types import FilePath
 from config.configuration import EmailConfig, AssignmentConfig
+from util.funcs import print_tourney_trace, print_tourney_error
 
 
 def open_smtp_connection() -> SMTP:
@@ -101,7 +101,7 @@ def send_results_to_submitters(smtp_connection: SMTP, sender_email: str, snapsho
                                         snapshot.best_average_bugs_detected(), snapshot.best_average_tests_evaded())
 
         submitter_email = submitter_results['email']
-        print("\tSending email to {} ({})".format(submitter, submitter_email))
+        print_tourney_trace("\tSending email to {} ({})".format(submitter, submitter_email))
         send_email(smtp_connection, sender_email, submitter_email, "SWEN Tournament results", email_body)
         send_count += 1
 
@@ -120,7 +120,7 @@ def send_confirmation_email(smtp_connection: SMTP, sender_email: str, receiver_e
         hostname, snapshot_file_path
     )
 
-    print("\tSending confirmation email to {}".format(receiver_email))
+    print_tourney_trace("\tSending confirmation email to {}".format(receiver_email))
     send_email(smtp_connection, sender_email, receiver_email, "SWEN Tournament results", body)
     pass
 
@@ -130,18 +130,18 @@ def email_results(results_file_path: FilePath, reporter_email: str):
     email_cfg = EmailConfig()
     sender_email = email_cfg.sender()
 
-    print("Sending results from {}".format(sender_email))
+    print_tourney_trace("Sending results from {}".format(sender_email))
     try:
         smtp_connection = open_smtp_connection()
         send_results_to_submitters(smtp_connection, sender_email, results_file_path)
         send_confirmation_email(smtp_connection, sender_email, reporter_email, results_file_path)
         smtp_connection.close()
     except socket.timeout:
-        print("Error: Timeout while trying to connect to SMTP server")
+        print_tourney_error("Timeout while trying to connect to SMTP server")
     except OSError as os_error:
-        print("Error raised while sending emails: {}".format(os_error))
-        print("Email sending has been aborted.")
+        print_tourney_error("Error raised while sending emails: {}".format(os_error))
+        print_tourney_error("Email sending has been aborted.")
     except SMTPHeloError:
-        print("No reply from SMTP server")
+        print_tourney_error("No reply from SMTP server")
     except SMTPAuthenticationError:
-        print("Login attempt failed")
+        print_tourney_error("Login attempt failed")

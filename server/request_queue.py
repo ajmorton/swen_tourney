@@ -9,6 +9,7 @@ import subprocess
 
 from server.request_types import *
 from util.types import Submitter
+from util.funcs import print_tourney_error
 
 
 class RequestQueue(queue.Queue):
@@ -50,7 +51,7 @@ class RequestQueue(queue.Queue):
             elif request.request_type == RequestType.REPORT:
                 self.put_report(request)
             else:
-                print("Error: Unexpected {} request being added to request_queue".format(request.request_type))
+                print_tourney_error("Unexpected {} request being added to request_queue".format(request.request_type))
 
     def put_submission(self, submission_request: SubmissionRequest):
         """

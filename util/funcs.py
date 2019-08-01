@@ -1,4 +1,7 @@
 import sys
+from datetime import datetime
+from util import paths
+from util import format as fmt
 
 
 def assert_python_version(major: int, minor: int, micro: int):
@@ -9,3 +12,21 @@ def assert_python_version(major: int, minor: int, micro: int):
         )
         print("Please run this program using Python {}.{}.{}".format(major, minor, micro))
         exit(1)
+
+
+def timestamp() -> str:
+    return datetime.now().strftime(fmt.datetime_trace_string) + " | "
+
+
+def error() -> str:
+    return datetime.now().strftime(fmt.datetime_trace_string) + " | ERROR: "
+
+
+def print_tourney_trace(trace: str):
+    with open(paths.TRACE_FILE, 'a') as file:
+        file.write(timestamp() + trace + "\n")
+
+
+def print_tourney_error(trace: str):
+    with open(paths.TRACE_FILE, 'a') as file:
+        file.write(error() + trace + "\n")

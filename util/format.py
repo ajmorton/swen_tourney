@@ -6,3 +6,6 @@ datetime_readable_string = "%a %d %b %H:%M"
 
 # Format of a datestring is ISO format
 datetime_iso_string = "%Y-%m-%dT%H:%M:%S.%f"
+
+# Format of a datestring for timestamping the trace file
+datetime_trace_string = "%Y-%m-%d %H:%M:%S"

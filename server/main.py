@@ -13,11 +13,9 @@ def start_server() -> Result:
     """
     Spawn the server in a new process
     """
-    print("Starting server")
-    process = subprocess.Popen("python3 {}".format(paths.START_SERVER_FILE), cwd=paths.ROOT_DIR, shell=True)
-    print("Spawned process PID: {}".format(process.pid))
+    subprocess.Popen("python3 {}".format(paths.START_SERVER_FILE), cwd=paths.ROOT_DIR, shell=True)
 
-    return Result((True, "Server started"))
+    return Result((True, "Server starting.\nTraces are being written to {}".format(paths.TRACE_FILE)))
 
 
 def send_request(request: ServerRequest) -> Result:

@@ -4,7 +4,9 @@ from tournament.state.tourney_state import TourneyState
 from datetime import datetime
 import json
 from config.configuration import AssignmentConfig
-from util import format as fmt, paths
+from util import format as fmt
+from util import paths
+from util.funcs import print_tourney_trace
 
 assg = AssignmentConfig().get_assignment()
 
@@ -46,7 +48,7 @@ class TourneySnapshot:
         report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_iso_string)
         report_file_path = paths.get_snapshot_file_path(report_time)
         json.dump(self.snapshot, open(report_file_path, 'w'), indent=4)
-        print("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
+        print_tourney_trace("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
 
     def create_snapshot_from_tourney_state(self, report_time: datetime):
         tourney_state = TourneyState()

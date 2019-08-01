@@ -1,6 +1,7 @@
 from util import paths
 import os
 import json
+from util.funcs import print_tourney_trace
 
 
 class ServerConfig:
@@ -14,7 +15,8 @@ class ServerConfig:
 
     def __init__(self):
         if not os.path.exists(paths.SERVER_CONFIG):
-            print("No server configuration file found at {}. Using default configuration.".format(paths.SERVER_CONFIG))
+            print_tourney_trace("No server configuration file found at {}. Using default configuration.".format(
+                paths.SERVER_CONFIG))
             ServerConfig.write_default()
             self.server_config = self.default_server_config
         else:

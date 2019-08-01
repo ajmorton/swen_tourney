@@ -24,6 +24,9 @@ TOURNEY_STATE_FILE = root_dir + "/tournament/state/tourney_state.json"
 # The directory to write tournament snapshots to
 REPORT_DIR = root_dir + "/tournament/state"
 
+# Trace file for tournament logs
+TRACE_FILE = REPORT_DIR + "/tournament_log.txt"
+
 # The python file to start up the request server
 START_SERVER_FILE = root_dir + "/start_server.py"
 
