@@ -2,7 +2,6 @@ from config.exceptions import NoConfigDefined
 import os
 import json
 from util import paths
-from util.types import Result
 
 
 class ApprovedSubmitters:
@@ -30,11 +29,43 @@ class ApprovedSubmitters:
     def write_default():
         json.dump(ApprovedSubmitters.default_approved_submitters, open(paths.APPROVED_SUBMITTERS_LIST, 'w'), indent=4)
 
-    def check_non_default(self) -> Result:
+    def check_non_default(self) -> bool:
         if self.approved_submitters != ApprovedSubmitters.default_approved_submitters:
-            return Result((True, ""))
+            print("Approved submitters file format has been written:")
+            return True
         else:
-            return Result((False, "ERROR: Approved submitters list has not been set.\n"
-                                  "       Please update {} with the correct details\n"
-                                  .format(paths.APPROVED_SUBMITTERS_LIST)))
+            print("ERROR: Approved submitters list has not been set. Please update {} with the correct details"
+                  .format(paths.APPROVED_SUBMITTERS_LIST))
+
+    def check_num_submitters(self):
+        num_submitters = len(self.approved_submitters)
+        if num_submitters < 2:
+            print("\tERROR: There are less than 2 submitters in the approved submitters list")
+            return False
+        else:
+            print("\tThere are {} approved submitters for the tournament".format(num_submitters))
+            return True
+
+    def check_valid(self) -> bool:
+
+        valid = self.check_non_default()
+
+        if valid:
+            valid = self.check_num_submitters()
+
+        if valid:
+            valid = self.check_submitters_have_emails()
+
+        print()
+        return valid
+
+    def check_submitters_have_emails(self) -> bool:
+        submitter_list = self.get_list()
+        try:
+            emails = [submitter_list[submitter]['email'] for submitter in self.get_list()]
+            print("\tAll submitters have an associated email")
+            return True
+        except KeyError:
+            print("\tERROR: Some submitters are missing an associated email")
+            return False
 

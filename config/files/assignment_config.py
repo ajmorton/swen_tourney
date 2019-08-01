@@ -1,28 +1,23 @@
 
 from enum import Enum
-from config.assignments.DefaultAssignment import DefaultAssignment
 from config.assignments.AbstractAssignment import AbstractAssignment
 from config.assignments.ant.AntAssignment import AntAssignment
 import json
 import os
 from util import paths
-from util.types import Result
 from config.exceptions import NoConfigDefined
 
 
 class AssignmentType(Enum):
-    default = DefaultAssignment()
     ant_assignment = AntAssignment()
 
 
 class AssignmentConfig:
 
-    default_assignment = AssignmentType.default.name
-
     def __init__(self):
         if not os.path.exists(paths.ASSIGNMENT_CONFIG):
             AssignmentConfig.write_default()
-            raise NoConfigDefined("No email configuration file found at {}. A default one has been created"
+            raise NoConfigDefined("No assignment configuration file found at {}. A default one has been created"
                                   .format(paths.ASSIGNMENT_CONFIG))
         else:
             self.assignment = json.load(open(paths.ASSIGNMENT_CONFIG, 'r'))
@@ -32,19 +27,37 @@ class AssignmentConfig:
 
     @staticmethod
     def write_default():
-        json.dump(AssignmentConfig.default_assignment, open(paths.ASSIGNMENT_CONFIG, 'w'), indent=4)
+        json.dump("enter_assignment_type_here", open(paths.ASSIGNMENT_CONFIG, 'w'), indent=4)
 
-    @staticmethod
-    def write_assg_type(assg_type: str) -> Result:
-        json.dump(assg_type, open(paths.ASSIGNMENT_CONFIG, 'w'), indent=4)
-        return Result((True, "{} assignment configuration set".format(assg_type)))
+    def check_assignment_valid(self) -> bool:
+        valid = self.check_assignment_type()
 
-    def check_non_default(self) -> Result:
-        if self.assignment != AssignmentConfig.default_assignment:
-            return Result((True, "Tournament is configured for: {}\n".format(self.assignment)))
+        if valid:
+            valid = self.check_source_assg_exists()
+
+        print()
+        return valid
+
+    def check_assignment_type(self) -> bool:
+        assignment_types = [assg.name for assg in AssignmentType]
+
+        if self.assignment in assignment_types:
+            print("Tournament is configured for: {}".format(self.assignment))
+            return True
         else:
-            return Result((False, "ERROR: Assignment configuration has not been configured.\n"
-                                  "       Please update {} with the correct details\n".format(paths.ASSIGNMENT_CONFIG)))
+            print("ERROR: Assignment configuration has not been configured properly.\n"
+                  "       Please update {} with one of: {}"
+                  .format(paths.ASSIGNMENT_CONFIG, assignment_types))
+            return False
+
+    def check_source_assg_exists(self) -> bool:
+        source_assg_dir = self.get_assignment().get_source_assg_dir()
+        if os.path.exists(source_assg_dir):
+            print("\tSource assg dir exists")
+            return True
+        else:
+            print("ERROR: Source assg dir {} does not exist".format(source_assg_dir))
+            return False
 
 
 

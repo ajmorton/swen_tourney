@@ -1,4 +1,4 @@
-from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError
+from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError, SMTPConnectError
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import time
@@ -11,13 +11,11 @@ from config.configuration import EmailConfig, AssignmentConfig
 from util.funcs import print_tourney_trace, print_tourney_error
 
 
-def open_smtp_connection() -> SMTP:
+def open_smtp_connection(email: str, password: str, smtp_server: str, port: str) -> SMTP:
 
-    email_cfg = EmailConfig()
-
-    smtp = SMTP(email_cfg.smtp_server(), email_cfg.port(), timeout=10)
+    smtp = SMTP(smtp_server, port, timeout=10)
     smtp.starttls()
-    smtp.login(email_cfg.sender(), email_cfg.password())
+    smtp.login(email, password)
 
     return smtp
 
@@ -132,7 +130,10 @@ def email_results(results_file_path: FilePath, reporter_email: str):
 
     print_tourney_trace("Sending results from {}".format(sender_email))
     try:
-        smtp_connection = open_smtp_connection()
+        email_cfg = EmailConfig()
+        smtp_connection = open_smtp_connection(
+            email_cfg.sender(), email_cfg.password(), email_cfg.smtp_server(), email_cfg.port()
+        )
         send_results_to_submitters(smtp_connection, sender_email, results_file_path)
         send_confirmation_email(smtp_connection, sender_email, reporter_email, results_file_path)
         smtp_connection.close()
@@ -141,7 +142,7 @@ def email_results(results_file_path: FilePath, reporter_email: str):
     except OSError as os_error:
         print_tourney_error("Error raised while sending emails: {}".format(os_error))
         print_tourney_error("Email sending has been aborted.")
-    except SMTPHeloError:
-        print_tourney_error("No reply from SMTP server")
+    except (SMTPHeloError, SMTPConnectError):
+        print_tourney_error("Cannot connect to SMTP server")
     except SMTPAuthenticationError:
         print_tourney_error("Login attempt failed")

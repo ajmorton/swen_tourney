@@ -1,41 +1,39 @@
 from config.exceptions import NoConfigDefined
-from util.types import Result
 from config.files.server_config import ServerConfig
 from config.files.approved_submitters import ApprovedSubmitters
 from config.files.email_config import EmailConfig
 from config.files.assignment_config import AssignmentConfig
 
 
-def check_configuration() -> Result:
-    configs_valid = True
-    traces = ""
+def configuration_valid() -> bool:
 
     try:
         ServerConfig()
 
         # check assignment config is valid
-        assignment_config = AssignmentConfig()
-        assg_valid, assg_trace = assignment_config.check_non_default()
-        configs_valid = configs_valid and assg_valid
-        traces += assg_trace
+        valid = AssignmentConfig().check_assignment_valid()
 
-        # check email config is valid
-        email_config = EmailConfig()
-        email_valid, email_trace = email_config.check_non_default()
-        configs_valid = configs_valid and email_valid
-        traces += email_trace
+        if valid:
+            # check email config is valid
+            valid = EmailConfig().check_email_valid()
 
-        # check approved submitters list is valid
-        approved_submitters = ApprovedSubmitters()
-        submitters_valid, submitters_trace = approved_submitters.check_non_default()
-        configs_valid = configs_valid and submitters_valid
-        traces += submitters_trace
+        if valid:
+            # check approved submitters list is valid
+            valid = ApprovedSubmitters().check_valid()
 
-        if configs_valid:
-            traces += "Tournament configuration is valid"
+        if valid:
+            # print server configs
+            valid = ServerConfig().check_server_config()
+
+        print("=================================")
+
+        if valid:
+            print("Tournament configuration is valid")
+        else:
+            print("Tournament has not been configured correctly. Please correct the above errors")
 
     except NoConfigDefined as no_config_error:
-        configs_valid = False
-        traces = no_config_error.message
+        print(no_config_error)
+        return False
 
-    return Result((configs_valid, traces))
+    return valid

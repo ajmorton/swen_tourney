@@ -1,7 +1,6 @@
 import argparse
 import sys
 from enum import Enum
-from config.files.assignment_config import AssignmentType
 
 
 # Formats the help message, removes some annoying text
@@ -19,7 +18,6 @@ class BackendCommands(str, Enum):
     REPORT = 'report'
     CLEAN = 'clean'
     CHECK_CONFIG = 'check_config'
-    SET_ASSG = 'set_assignment'
 
 
 def create_backend_parser(parser_list):
@@ -67,15 +65,6 @@ def create_backend_parser(parser_list):
     check_config_parser.set_defaults(type=command_name)
     parser_list[command_name] = check_config_parser
 
-    # add the parser for the send_report command
-    command_name = BackendCommands.SET_ASSG.value
-    set_assg_parser = subparsers.add_parser(
-        command_name, help='Get the results of the tournament.'
-    )
-    set_assg_parser.add_argument('assg_type', help='Which assignment type to configure the tournament for',
-                                 choices=[assg.name for assg in AssignmentType])
-    set_assg_parser.set_defaults(type=command_name)
-    parser_list[command_name] = set_assg_parser
     return parser
 
 

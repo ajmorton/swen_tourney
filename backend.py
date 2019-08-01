@@ -7,14 +7,14 @@ import server.main as server
 import tournament.main as tourney
 import util.funcs
 from config import configuration as cfg
-from config.files.assignment_config import AssignmentConfig
 
 
 def main():
     command = parser.parse_backend_args()
+    traces = ""
 
     if command.type == BackendCommands.CHECK_CONFIG:
-        success, traces = cfg.check_configuration()
+        cfg.configuration_valid()
 
     elif command.type == BackendCommands.CLEAN:
         server_online, traces = server.send_request(AliveRequest())
@@ -32,11 +32,9 @@ def main():
     elif command.type == BackendCommands.SHUTDOWN:
         success, traces = server.send_request(ShutdownRequest())
 
-    elif command.type == BackendCommands.SET_ASSG:
-        success, traces = AssignmentConfig.write_assg_type(command.assg_type)
-
     elif command.type == BackendCommands.START_SERVER:
-        success, traces = server.start_server()
+        if cfg.configuration_valid():
+            success, traces = server.start_server()
 
     else:
         traces = "Error: unrecognised command {}".format(command.type)

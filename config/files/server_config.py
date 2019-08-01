@@ -28,6 +28,11 @@ class ServerConfig:
     def port(self) -> int:
         return self.server_config['port']
 
+    def check_server_config(self) -> bool:
+        print("Server is listening on {}:{}".format(self.host(), self.port()))
+        print()
+        return True
+
     @staticmethod
     def write_default():
         json.dump(ServerConfig.default_server_config, open(paths.SERVER_CONFIG, 'w'), indent=4)
