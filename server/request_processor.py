@@ -7,8 +7,6 @@ import util.format as fmt
 import tournament.main as tourney
 from server.request_types import *
 from tournament.state.tourney_snapshot import TourneySnapshot
-from emailer import emailer
-from util import paths
 from util.funcs import print_tourney_trace
 
 
@@ -42,7 +40,6 @@ class RequestProcessor(Thread):
                     report_time = datetime.strptime(request.time, fmt.datetime_iso_string)
                     snapshot = TourneySnapshot(report_time=report_time)
                     snapshot.write_snapshot()
-                    emailer.email_results(paths.get_snapshot_file_path(report_time), request.email)
 
                 else:
                     pass

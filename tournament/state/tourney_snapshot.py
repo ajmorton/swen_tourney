@@ -7,6 +7,7 @@ from config.configuration import AssignmentConfig
 from util import format as fmt
 from util import paths
 from util.funcs import print_tourney_trace
+import copy
 
 assg = AssignmentConfig().get_assignment()
 
@@ -24,7 +25,6 @@ class TourneySnapshot:
     }
 
     default_submitter_result = {
-        'email': "",
         'latest_submission_date': NO_DATE,
         'tests': {},
         'progs': {},
@@ -47,7 +47,8 @@ class TourneySnapshot:
     def write_snapshot(self):
         report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_iso_string)
         report_file_path = paths.get_snapshot_file_path(report_time)
-        json.dump(self.snapshot, open(report_file_path, 'w'), indent=4)
+        json.dump(self.snapshot, open(report_file_path, 'w'), indent=4, sort_keys=True)
+        json.dump(self.snapshot, open(paths.RESULTS_FILE, 'w'), indent=4, sort_keys=True)
         print_tourney_trace("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
 
     def create_snapshot_from_tourney_state(self, report_time: datetime):
@@ -58,8 +59,7 @@ class TourneySnapshot:
 
         for submitter in tourney_state.get_submitters():
 
-            submitter_result = TourneySnapshot.default_submitter_result
-            submitter_result['email'] = tourney_state.get_state()[submitter]['email']
+            submitter_result = copy.deepcopy(TourneySnapshot.default_submitter_result)
             submitter_result['latest_submission_date'] = tourney_state.get_state()[submitter]['latest_submission_date']
 
             total_bugs_detected = 0

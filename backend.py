@@ -27,7 +27,7 @@ def main():
             traces = "All submissions and tournament results have been deleted"
 
     elif command.type == BackendCommands.REPORT:
-        success, traces = server.send_request(ReportRequest(command.email, datetime.now().isoformat()))
+        success, traces = server.send_request(ReportRequest(datetime.now().isoformat()))
 
     elif command.type == BackendCommands.SHUTDOWN:
         success, traces = server.send_request(ShutdownRequest())

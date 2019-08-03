@@ -24,15 +24,14 @@ class TourneyState:
             self.initialise_state(approved_submitters)
 
     def initialise_state(self, approved_submitters):
-        for test_submitter in approved_submitters.keys():
+        for test_submitter in approved_submitters:
             self.state[test_submitter] = {
-                'email': approved_submitters[test_submitter]['email'],
                 'latest_submission_date': None,
                 'test_results': {}
             }
 
             test_results = {}
-            for prog_submitter in approved_submitters.keys():
+            for prog_submitter in approved_submitters:
                 if test_submitter != prog_submitter:
                     test_results[prog_submitter] = self.create_default_testset()
 
@@ -40,13 +39,11 @@ class TourneyState:
 
     def initialise_state_from_file(self, approved_submitters, state_from_file):
         # previous result may be able to be copied into new state
-        for test_submitter in approved_submitters.keys():
-            self.state[test_submitter] = {'email': approved_submitters[test_submitter]['email'],
-                                          'latest_submission_date': None,
-                                          'test_results': {}
-                                          }
+        for test_submitter in approved_submitters:
+            self.state[test_submitter] = {'latest_submission_date': None,
+                                          'test_results': {}}
 
-            for prog_submitter in approved_submitters.keys():
+            for prog_submitter in approved_submitters:
                 if test_submitter == prog_submitter:
                     continue
                 if test_submitter in state_from_file.keys() and \

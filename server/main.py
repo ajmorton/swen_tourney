@@ -37,7 +37,7 @@ def send_request(request: ServerRequest) -> Result:
 
             if received == ServerResponse.SUBMISSION_SUCCESS:
                 result, trace = True, "Submission successfully made at {}".format(
-                    datetime.now().strftime(fmt.datetime_readable_string))
+                    datetime.now().strftime(fmt.datetime_trace_string))
             elif received == ServerResponse.ALIVE:
                 result, trace = True, "Server is online"
             elif received == ServerResponse.REPORT_SUCCESS:

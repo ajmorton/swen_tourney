@@ -15,7 +15,7 @@ def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) 
 
     assg = AssignmentConfig().get_assignment()
     eligible_submitters = ApprovedSubmitters().get_list()
-    submitter_eligible = submitter in eligible_submitters.keys()
+    submitter_eligible = submitter in eligible_submitters
 
     # the name of the assignment repo (e.g. ant_assignment)
     assg_name = os.path.basename(assg.get_source_assg_dir().rstrip("/"))
@@ -144,17 +144,18 @@ def run_submission(submitter: Submitter):
     tourney_state.set_time_of_submission(submitter, submission_time)
 
     # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
-    # run_tests into a function with just one argument
-    rt = partial(run_tests, tourney_state, new_tests, new_progs)
+    # run_tests into functions with just one argument
+    rt_new_tests = partial(run_tests, tourney_state=tourney_state, new_tests=new_tests, new_progs=[])
+    rt_new_progs = partial(run_tests, tourney_state=tourney_state, new_tests=[], new_progs=new_progs)
 
     with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
         # run submitter tests against others progs
         tester_pairs = [(submitter, other) for other in other_submitters]
-        tester_results = p.map(rt, tester_pairs)
+        tester_results = p.map(rt_new_tests, tester_pairs)
 
         # run others tests against submitters progs
         testee_pairs = [(other, submitter) for other in other_submitters]
-        testee_results = p.map(rt, testee_pairs)
+        testee_results = p.map(rt_new_progs, testee_pairs)
 
     for (tester, testee, test_set) in tester_results + testee_results:
         tourney_state.set(tester, testee, test_set)
@@ -184,11 +185,12 @@ def run_tests(
     for test in assg.get_test_list():
         test_set[test] = {}
         for prog in assg.get_programs_list():
-            if test not in new_tests and prog not in new_progs:
+            if test in new_tests or prog in new_progs:
+                print("test: {} {}    -    prog: {} {}".format(tester, test, testee, prog))
+                test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
+            else:
                 # no need to rerun this test, keep the results from the current tournament state
                 test_set[test][prog] = tourney_state.get(tester, testee, test, prog)
-            else:
-                test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
 
     return tester, testee, test_set
 
@@ -202,4 +204,7 @@ def clean():
     subprocess.run("rm -rf {}".format(paths.TOURNEY_DIR + "/*"), shell=True)
     subprocess.run("rm -rf {}".format(paths.HEAD_TO_HEAD_DIR + "/*"), shell=True)
     subprocess.run("rm -f  {}".format(paths.TOURNEY_STATE_FILE), shell=True)
-    subprocess.run("rm -f  {}".format(paths.TRACE_FILE))
+    subprocess.run("rm -f  {}".format(paths.TRACE_FILE), shell=True)
+    subprocess.run("rm -f  {}".format(paths.RESULTS_FILE), shell=True)
+    subprocess.run("rm -f {}/snapshot*.json".format(paths.REPORT_DIR), shell=True)
+

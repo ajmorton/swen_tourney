@@ -45,7 +45,6 @@ def create_backend_parser(parser_list):
     report_parser = subparsers.add_parser(
         command_name, help='Get the results of the tournament.'
     )
-    report_parser.add_argument('email', help='Who to notify when the report is generated')
     report_parser.set_defaults(type=command_name)
     parser_list[command_name] = report_parser
 

@@ -34,9 +34,8 @@ class SubmissionRequest(ServerRequest):
 
 
 class ReportRequest(ServerRequest):
-    def __init__(self, email: str, time: str):
-        super().__init__(RequestType.REPORT, email=email, time=time)
-        self.email = email
+    def __init__(self, time: str):
+        super().__init__(RequestType.REPORT, time=time)
         self.time = time
 
 
@@ -60,5 +59,5 @@ def request_from_json(json):
         if json["request_type"] == RequestType.SUBMIT:
             return SubmissionRequest(json["submitter"])
         if json["request_type"] == RequestType.REPORT:
-            return ReportRequest(json["email"], json["time"])
+            return ReportRequest(json["time"])
     return ServerRequest(RequestType.NONE)

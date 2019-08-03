@@ -6,14 +6,11 @@ from util.types import Submitter, FilePath
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# The list of submitters, and their emails, who are eligible to participate in the tournament
+# The list of submitters who are eligible to participate in the tournament
 APPROVED_SUBMITTERS_LIST = root_dir + "/config/data/approved_submitters.json"
 
 # Which assignment type the tournament is configured for
 ASSIGNMENT_CONFIG = root_dir + "/config/data/assignment_config.json"
-
-# The settings for emailing results to submitters. Email, password, smtp server details.
-EMAIL_CONFIG = root_dir + "/config/data/email_config.json"
 
 # the host and port of the request server
 SERVER_CONFIG = root_dir + "/config/data/server_config.json"
@@ -26,6 +23,9 @@ REPORT_DIR = root_dir + "/tournament/state"
 
 # Trace file for tournament logs
 TRACE_FILE = REPORT_DIR + "/tournament_log.txt"
+
+# Snapshot used by the results server
+RESULTS_FILE = REPORT_DIR + "/tourney_results.json"
 
 # The python file to start up the request server
 START_SERVER_FILE = root_dir + "/start_server.py"

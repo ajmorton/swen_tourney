@@ -1,7 +1,6 @@
 from config.exceptions import NoConfigDefined
 from config.files.server_config import ServerConfig
 from config.files.approved_submitters import ApprovedSubmitters
-from config.files.email_config import EmailConfig
 from config.files.assignment_config import AssignmentConfig
 
 
@@ -12,10 +11,6 @@ def configuration_valid() -> bool:
 
         # check assignment config is valid
         valid = AssignmentConfig().check_assignment_valid()
-
-        if valid:
-            # check email config is valid
-            valid = EmailConfig().check_email_valid()
 
         if valid:
             # check approved submitters list is valid
