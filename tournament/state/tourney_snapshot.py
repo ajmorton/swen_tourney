@@ -9,8 +9,6 @@ from util import paths
 from util.funcs import print_tourney_trace
 import copy
 
-assg = AssignmentConfig().get_assignment()
-
 
 class TourneySnapshot:
 
@@ -53,6 +51,7 @@ class TourneySnapshot:
 
     def create_snapshot_from_tourney_state(self, report_time: datetime):
         tourney_state = TourneyState()
+        assg = AssignmentConfig().get_assignment()
 
         self.snapshot['num_submitters'] = len(tourney_state.get_valid_submitters())
         self.snapshot['snapshot_date'] = report_time.strftime(fmt.datetime_trace_string)
@@ -81,6 +80,7 @@ class TourneySnapshot:
     def compute_normalised_scores(self):
 
         results = self.snapshot['results']
+        assg = AssignmentConfig().get_assignment()
 
         if results:
             self.snapshot['best_average_bugs_detected'] = \

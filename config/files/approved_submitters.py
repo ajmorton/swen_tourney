@@ -2,15 +2,16 @@ from config.exceptions import NoConfigDefined
 import os
 import json
 from util import paths
+from util.types import Submitter
 
 
 class ApprovedSubmitters:
 
-    default_approved_submitters = {
+    default_approved_submitters = [
         "student_a",
         "student_b",
         "student_c",
-    }
+    ]
 
     approved_submitters = {}
 
@@ -22,7 +23,7 @@ class ApprovedSubmitters:
         else:
             self.approved_submitters = json.load(open(paths.APPROVED_SUBMITTERS_LIST, 'r'))
 
-    def get_list(self) -> dict:
+    def get_list(self) -> [Submitter]:
         return self.approved_submitters
 
     @staticmethod
@@ -34,7 +35,8 @@ class ApprovedSubmitters:
             print("Approved submitters file format has been written:")
             return True
         else:
-            print("ERROR: Approved submitters list has not been set. Please update {} with the correct details"
+            print("ERROR: Approved submitters list has not been changed from the default provided.\n"
+                  "       Please update {} with the correct details"
                   .format(paths.APPROVED_SUBMITTERS_LIST))
 
     def check_num_submitters(self) -> bool:
