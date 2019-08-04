@@ -14,7 +14,7 @@ assg = AssignmentConfig().get_assignment()
 
 class TourneySnapshot:
 
-    NO_DATE = datetime.isoformat(datetime.min)
+    NO_DATE = datetime.strftime(datetime.min, fmt.datetime_trace_string)
 
     default_snapshot = {
         'snapshot_date': NO_DATE,
@@ -45,7 +45,7 @@ class TourneySnapshot:
             self.compute_normalised_scores()
 
     def write_snapshot(self):
-        report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_iso_string)
+        report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_trace_string)
         report_file_path = paths.get_snapshot_file_path(report_time)
         json.dump(self.snapshot, open(report_file_path, 'w'), indent=4, sort_keys=True)
         json.dump(self.snapshot, open(paths.RESULTS_FILE, 'w'), indent=4, sort_keys=True)
@@ -55,7 +55,7 @@ class TourneySnapshot:
         tourney_state = TourneyState()
 
         self.snapshot['num_submitters'] = len(tourney_state.get_valid_submitters())
-        self.snapshot['snapshot_date'] = report_time.isoformat()
+        self.snapshot['snapshot_date'] = report_time.strftime(fmt.datetime_trace_string)
 
         for submitter in tourney_state.get_submitters():
 
@@ -101,7 +101,7 @@ class TourneySnapshot:
             )
 
     def date(self) -> datetime:
-        return datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_iso_string)
+        return datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_trace_string)
 
     def num_submitters(self) -> int:
         return self.snapshot['num_submitters']

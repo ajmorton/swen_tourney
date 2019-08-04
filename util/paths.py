@@ -27,8 +27,8 @@ TRACE_FILE = REPORT_DIR + "/tournament_log.txt"
 # Snapshot used by the results server
 RESULTS_FILE = REPORT_DIR + "/tourney_results.json"
 
-# The python file to start up the request server
-START_SERVER_FILE = root_dir + "/start_server.py"
+# The python file to start up the tournament daemon
+START_DAEMON_FILE = root_dir + "/start_daemon.py"
 
 # The root of the project
 ROOT_DIR = root_dir
@@ -43,11 +43,6 @@ HEAD_TO_HEAD_DIR = tournament_submissions_path + "/head_to_head"
 # Metadata files with additional information about submissions. These are created for each submission
 METADATA_FILE = "submission_metadata.json"
 SUBMISSION_TIME = "submission_time.json"
-
-
-def get_staged_report_request_filename(time: str) -> FilePath:
-    dt = datetime.strptime(time, fmt.datetime_iso_string)
-    return FilePath(STAGING_DIR + "/report_request_" + dt.strftime(fmt.datetime_file_string) + ".json")
 
 
 def get_pre_validation_dir(submitter: Submitter) -> FilePath:

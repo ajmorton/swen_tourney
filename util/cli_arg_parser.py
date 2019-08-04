@@ -13,11 +13,12 @@ class SubcommandHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
 
 class BackendCommands(str, Enum):
-    START_SERVER = 'start_server'
+    START_TOURNAMENT = 'start_tournament'
     SHUTDOWN = 'shutdown'
     REPORT = 'report'
     CLEAN = 'clean'
     CHECK_CONFIG = 'check_config'
+    CLOSE_SUBS = 'close_submissions'
 
 
 def create_backend_parser(parser_list):
@@ -25,7 +26,7 @@ def create_backend_parser(parser_list):
     subparsers = parser.add_subparsers(title='commands')
 
     # add the parser for the start_server command
-    command_name = BackendCommands.START_SERVER.value
+    command_name = BackendCommands.START_TOURNAMENT.value
     start_server_parser = subparsers.add_parser(
         command_name, help='Start the tournament server'
     )
@@ -56,13 +57,21 @@ def create_backend_parser(parser_list):
     clean_parser.set_defaults(type=command_name)
     parser_list[command_name] = clean_parser
 
-    # add the parser for the set_up command
+    # add the parser for the check_config command
     command_name = BackendCommands.CHECK_CONFIG.value
     check_config_parser = subparsers.add_parser(
         command_name, help='Check the configuration of the tournament.'
     )
     check_config_parser.set_defaults(type=command_name)
     parser_list[command_name] = check_config_parser
+
+    # add the parser for the set_up command
+    command_name = BackendCommands.CLOSE_SUBS.value
+    close_subs_parser = subparsers.add_parser(
+        command_name, help='Close new submissions to the tournament.'
+    )
+    close_subs_parser.set_defaults(type=command_name)
+    parser_list[command_name] = close_subs_parser
 
     return parser
 

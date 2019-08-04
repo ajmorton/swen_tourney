@@ -4,7 +4,7 @@ from datetime import datetime
 from util import format as fmt
 from tournament.state.tourney_snapshot import TourneySnapshot
 from util import paths
-from config.configuration import AssignmentConfig
+from config.configuration import AssignmentConfig, ServerConfig
 
 
 class TourneyResultsHandler(http.server.SimpleHTTPRequestHandler):
@@ -62,7 +62,7 @@ def html_table_from_results(snapshot) -> str:
             table += table_row(submitter, "No submission", "N/A", "N/A")
         else:
             latest_submission_date = datetime.strptime(sub_data['latest_processed_submission'],
-                                                       fmt.datetime_iso_string)
+                                                       fmt.datetime_trace_string)
 
             prog_scores = [sub_data['progs'][prog] for prog in sorted(sub_data['progs'])]
             test_scores = [sub_data['tests'][test] for test in sorted(sub_data['tests'])]
@@ -92,7 +92,8 @@ def table_row(*args) -> str:
 
 
 def start_server():
-    server_address = ('', 11014)
+    server_config = ServerConfig()
+    server_address = ('', server_config.port())
     httpd = http.server.HTTPServer(server_address, TourneyResultsHandler)
     httpd.serve_forever()
 

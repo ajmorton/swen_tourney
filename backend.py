@@ -2,11 +2,11 @@ from datetime import datetime
 
 import util.cli_arg_parser as parser
 from util.cli_arg_parser import BackendCommands
-from server.request_types import AliveRequest, ReportRequest, ShutdownRequest
-import server.main as server
 import tournament.main as tourney
 import util.funcs
 from config import configuration as cfg
+
+import daemon.main as daemon
 
 
 def main():
@@ -17,24 +17,26 @@ def main():
         cfg.configuration_valid()
 
     elif command.type == BackendCommands.CLEAN:
-        server_online, traces = server.send_request(AliveRequest())
+        server_online, traces = daemon.is_alive()
 
         if server_online:
-            traces = "Error: Server is currently online."\
-                     "       Current submissions should not be removed unless the server is offline"
+            traces += "\nCurrent submissions should not be removed unless the server is offline"
         else:
             tourney.clean()
             traces = "All submissions and tournament results have been deleted"
 
     elif command.type == BackendCommands.REPORT:
-        success, traces = server.send_request(ReportRequest(datetime.now().isoformat()))
+        success, traces = daemon.make_report_request(datetime.now())
 
     elif command.type == BackendCommands.SHUTDOWN:
-        success, traces = server.send_request(ShutdownRequest())
+        success, traces = daemon.shutdown()
 
-    elif command.type == BackendCommands.START_SERVER:
+    elif command.type == BackendCommands.START_TOURNAMENT:
         if cfg.configuration_valid():
-            success, traces = server.start_server()
+            success, traces = daemon.start()
+
+    elif command.type == BackendCommands.CLOSE_SUBS:
+        success, traces = daemon.close_submissions()
 
     else:
         traces = "Error: unrecognised command {}".format(command.type)

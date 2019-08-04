@@ -1,7 +1,5 @@
 import subprocess
-from datetime import datetime
 import os
-import json
 import multiprocessing
 from functools import partial
 from tournament.state.tourney_state import TourneyState
@@ -9,42 +7,48 @@ from util import paths
 from config.configuration import ApprovedSubmitters, AssignmentConfig
 from util.types import *
 from util.funcs import print_tourney_trace
+from daemon import flags
+from datetime import datetime
+from util import format as fmt
 
 
 def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Result:
 
     assg = AssignmentConfig().get_assignment()
     eligible_submitters = ApprovedSubmitters().get_list()
+
     submitter_eligible = submitter in eligible_submitters
+    if not submitter_eligible:
+        return Result(
+            (False,
+             "Submitter '{}' is not on the approved submitters list.\n"
+             "If this is a group assignment please check that you are committing to "
+             "the repo of your designated team representative.\n"
+             "If this is an individual assignment please check with your tutors that"
+             " you are added to the approved_submitters list".format(submitter))
+        )
+
+    submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
+    if submissions_closed:
+        return Result((False, "Cannot make a new submission at {}. Submissions have been closed"
+                       .format(datetime.now().strftime(fmt.datetime_trace_string))))
+
+    # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
+    submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter)
+    if os.path.isdir(submitter_pre_validation_dir):
+        return Result((False, "Error: A prior submission is still being validated. "
+                              "Please wait until it has finished to push a new commit."))
+    subprocess.run("mkdir {}".format(submitter_pre_validation_dir), shell=True)
 
     # the name of the assignment repo (e.g. ant_assignment)
     assg_name = os.path.basename(assg.get_source_assg_dir().rstrip("/"))
+    subprocess.run(
+        "cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir + "/" + assg_name),
+        shell=True
+    )
+    assg.prep_submission(submission_dir, submitter_pre_validation_dir)
 
-    if submitter_eligible:
-        # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
-        submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter)
-        if os.path.isdir(submitter_pre_validation_dir):
-            return Result((False, "Error: A prior submission is still being validated. "
-                                  "Please wait until it has finished to push a new commit."))
-        subprocess.run("mkdir {}".format(submitter_pre_validation_dir), shell=True)
-
-        subprocess.run(
-            "cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir + "/" + assg_name),
-            shell=True
-        )
-        assg.prep_submission(submission_dir, submitter_pre_validation_dir)
-
-    if submitter_eligible:
-        eligibility_check_traces = "Submitter is eligible for the tournament"
-    else:
-        eligibility_check_traces = \
-            "Submitter '{}' is not on the approved submitters list.\n"\
-            "If this is a group assignment please check that you are committing to "\
-            "the repo of your designated team representative.\n"\
-            "If this is an individual assignment please check with your tutors that"\
-            " you are added to the approved_submitters list".format(submitter)
-
-    return Result((submitter_eligible, eligibility_check_traces))
+    return Result((True, "Submitter is eligible for the tournament"))
 
 
 def validate_tests(submitter: Submitter) -> Result:
@@ -67,6 +71,9 @@ def validate_tests(submitter: Submitter) -> Result:
             validation_traces += "\n\t{} ERROR - unexpected test result: {}".format(test, test_result)
 
         tests_valid = tests_valid and test_result == TestResult.NO_BUGS_DETECTED
+
+    if not tests_valid:
+        subprocess.run("rm -rf {}".format(validation_dir), shell=True)
 
     return Result((tests_valid, validation_traces))
 
@@ -92,6 +99,9 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
 
             progs_valid = progs_valid and test_result == TestResult.BUG_FOUND
 
+    if not progs_valid:
+        subprocess.run("rm -rf {}".format(validation_dir), shell=True)
+
     return Result((progs_valid, validation_traces))
 
 
@@ -106,36 +116,10 @@ def get_most_recent_staged_submission(submitter) -> FilePath:
         return paths.STAGING_DIR + "/" + folders[0]
 
 
-def write_submission_time(submitter: Submitter):
-    new_submission_dir = paths.get_pre_validation_dir(submitter)
-
-    time_file_path = new_submission_dir + "/" + paths.SUBMISSION_TIME
-    json.dump(datetime.now().isoformat(), open(time_file_path, 'w'), indent=4)
-
-
-def write_metadata(submitter: Submitter):
-    staged_dir = paths.get_staging_dir(submitter)
-    tourney_dest = paths.get_tourney_dir(submitter)
-    assg = AssignmentConfig().get_assignment()
-
-    metadata = {'new_tests': assg.detect_new_tests(staged_dir, tourney_dest),
-                'new_progs': assg.detect_new_progs(staged_dir, tourney_dest)}
-    json.dump(metadata, open(paths.get_staging_dir(submitter) + "/" + paths.METADATA_FILE, 'w'), indent=4)
-
-
-def run_submission(submitter: Submitter):
+def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test], new_progs: [Prog]):
 
     tourney_state = TourneyState()
     other_submitters = [sub for sub in tourney_state.get_valid_submitters() if sub != submitter]
-
-    metadata_file = paths.get_tourney_dir(submitter) + "/" + paths.METADATA_FILE
-    metadata = json.load(open(metadata_file, 'r'))
-
-    submission_time_file = paths.get_tourney_dir(submitter) + "/" + paths.SUBMISSION_TIME
-    submission_time = json.load(open(submission_time_file, 'r'))
-
-    new_tests = metadata['new_tests']
-    new_progs = metadata['new_progs']
 
     print_tourney_trace("Processing submission for {}.".format(submitter))
     print_tourney_trace("\tNew tests: {}".format(new_tests))
@@ -186,7 +170,6 @@ def run_tests(
         test_set[test] = {}
         for prog in assg.get_programs_list():
             if test in new_tests or prog in new_progs:
-                print("test: {} {}    -    prog: {} {}".format(tester, test, testee, prog))
                 test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
             else:
                 # no need to rerun this test, keep the results from the current tournament state
@@ -207,4 +190,5 @@ def clean():
     subprocess.run("rm -f  {}".format(paths.TRACE_FILE), shell=True)
     subprocess.run("rm -f  {}".format(paths.RESULTS_FILE), shell=True)
     subprocess.run("rm -f {}/snapshot*.json".format(paths.REPORT_DIR), shell=True)
+    flags.clear_all()
 

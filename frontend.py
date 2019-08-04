@@ -2,10 +2,9 @@ import os
 import util.funcs
 import util.cli_arg_parser as parser
 import tournament.main as tourney
-import server.main as server
-from server.request_types import SubmissionRequest
 from util.cli_arg_parser import FrontEndCommand
 from util.types import Submitter
+import daemon.main as daemon
 
 
 def main():
@@ -54,8 +53,7 @@ def main():
         print("==================================")
         submission_dir = command.dir
         submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
-        tourney.write_submission_time(submitter)
-        (success, submission_traces) = server.send_request(SubmissionRequest(submitter))
+        (success, submission_traces) = daemon.make_submission(submitter)
         print(submission_traces)
         print("==================================")
         print()
