@@ -13,7 +13,7 @@ SUBMISSION_REQUEST_PREFIX = "submission."
 
 def get_next_request() -> FilePath:
     # get files ordered by creation date
-    submissions = sorted(os.scandir(paths.STAGING_DIR), key=lambda folder: folder.stat().st_birthtime)
+    submissions = sorted(os.scandir(paths.STAGING_DIR), key=lambda folder: folder.stat().st_mtime)
 
     if len(submissions) > 0:
         return submissions[0].name
@@ -22,7 +22,7 @@ def get_next_request() -> FilePath:
 
 
 def remove_previous_occurrences(submitter: Submitter):
-    submissions = sorted(os.scandir(paths.STAGING_DIR), key=lambda folder: folder.stat().st_birthtime, reverse=True)
+    submissions = sorted(os.scandir(paths.STAGING_DIR), key=lambda folder: folder.stat().st_mtime, reverse=True)
     pre_request_submissions = []
     for request in submissions:
         if is_report(request.name):

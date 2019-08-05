@@ -15,6 +15,9 @@ ASSIGNMENT_CONFIG = root_dir + "/config/data/assignment_config.json"
 # the host and port of the request server
 SERVER_CONFIG = root_dir + "/config/data/server_config.json"
 
+# the config for sending emails
+EMAIL_CONFIG = root_dir + "/config/data/email_config.json"
+
 # The file that stores the current state of the tournament
 TOURNEY_STATE_FILE = root_dir + "/tournament/state/tourney_state.json"
 

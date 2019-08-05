@@ -15,6 +15,7 @@ from daemon import fs
 from time import sleep
 from datetime import datetime
 import subprocess
+from reporting import emailer
 
 
 def process_report_request(file_path: FilePath):
@@ -129,7 +130,7 @@ def main():
         print_tourney_error(str(e))
         import traceback
         print_tourney_error(traceback.format_exc())
-        pass
+        emailer.email_crash_report()
 
     # shutdown hook
     print_tourney_trace("TourneyDaemon shutting down.")

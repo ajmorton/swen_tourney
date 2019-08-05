@@ -193,5 +193,6 @@ def clean():
     subprocess.run("rm -f {}".format(paths.ASSIGNMENT_CONFIG), shell=True)
     subprocess.run("rm -f {}".format(paths.APPROVED_SUBMITTERS_LIST), shell=True)
     subprocess.run("rm -f {}".format(paths.SERVER_CONFIG), shell=True)
+    subprocess.run("rm -f {}".format(paths.EMAIL_CONFIG), shell=True)
     flags.clear_all()
 

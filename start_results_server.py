@@ -1,4 +1,4 @@
-import server.results_server
+import reporting.results_server
 import util.funcs
 
 # The server is started in backend.py in a new thread via Popen.
@@ -6,4 +6,4 @@ import util.funcs
 # in order to have visibility on all packages. Hence, this file just calls start_server() in server.request_server
 if __name__ == "__main__":
     util.funcs.assert_python_version(3, 5, 2)
-    server.results_server.start_server()
+    reporting.results_server.start_server()
