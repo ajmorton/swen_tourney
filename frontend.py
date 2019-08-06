@@ -67,12 +67,6 @@ def main():
         exit(1)
 
 
-def write_file(submission_dir: str, filename: str, contents: str):
-    results_file = open(submission_dir + "/" + filename, 'w')
-    results_file.write(contents)
-    results_file.close()
-
-
 if __name__ == "__main__":
     util.funcs.assert_python_version(3, 5, 2)
     main()

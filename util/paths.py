@@ -40,17 +40,9 @@ STAGING_DIR = tournament_submissions_path + "/staged"
 TOURNEY_DIR = tournament_submissions_path + "/tourney"
 HEAD_TO_HEAD_DIR = tournament_submissions_path + "/head_to_head"
 
-# Metadata files with additional information about submissions. These are created for each submission
-METADATA_FILE = "submission_metadata.json"
-SUBMISSION_TIME = "submission_time.json"
-
 
 def get_pre_validation_dir(submitter: Submitter) -> FilePath:
     return FilePath(PRE_VALIDATION_DIR + "/" + submitter)
-
-
-def get_staging_dir(submitter: Submitter) -> FilePath:
-    return FilePath(STAGING_DIR + "/" + submitter)
 
 
 def get_tourney_dir(submitter: Submitter) -> FilePath:

@@ -82,13 +82,6 @@ def make_report_request(request_time: datetime) -> Result:
     return Result((True, trace))
 
 
-def check_submissions_open() -> Result:
-    if flags.get_flag(Flag.SUBMISSIONS_CLOSED):
-        return Result((False, "Submissions have been closed"))
-    else:
-        return Result((True, "Submissions are open"))
-
-
 def close_submissions() -> Result:
     flags.set_flag(flags.Flag.SUBMISSIONS_CLOSED, True)
     return Result((True, "Submissions closed"))

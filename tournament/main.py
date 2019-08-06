@@ -108,17 +108,6 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
     return Result((progs_valid, validation_traces))
 
 
-def get_most_recent_staged_submission(submitter) -> FilePath:
-    ls = subprocess.run("ls -t {}".format(paths.STAGING_DIR),
-                        shell=True, stdout=subprocess.PIPE, universal_newlines=True)
-    folders = [folder_name for folder_name in ls.stdout.split("\n") if submitter in folder_name]
-
-    if len(folders) == 0:
-        return paths.STAGING_DIR + "/" + submitter
-    else:
-        return paths.STAGING_DIR + "/" + folders[0]
-
-
 def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test], new_progs: [Prog]):
 
     tourney_state = TourneyState()

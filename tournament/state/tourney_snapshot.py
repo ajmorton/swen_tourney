@@ -108,9 +108,3 @@ class TourneySnapshot:
 
     def results(self) -> dict:
         return self.snapshot['results']
-
-    def best_average_bugs_detected(self) -> float:
-        return self.snapshot['best_average_bugs_detected']
-
-    def best_average_tests_evaded(self) -> float:
-        return self.snapshot['best_average_tests_evaded']
