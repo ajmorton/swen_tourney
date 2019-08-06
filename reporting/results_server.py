@@ -100,8 +100,12 @@ def table_row(*args) -> str:
     return row
 
 
-def listen_loop(httpd: http.server.HTTPServer):
-
+def server_assassin(httpd: http.server.HTTPServer):
+    """
+    Checks for the removal of the tournament alive flag. When it get removed kill the server
+    :param httpd: the HTTP server to kill
+    :return:
+    """
     while flags.get_flag(flags.Flag.ALIVE):
         time.sleep(5)
 
@@ -112,11 +116,15 @@ def main():
     server_config = ServerConfig()
     server_address = ('', server_config.port())
     httpd = http.server.HTTPServer(server_address, TourneyResultsHandler)
-    threading.Thread(target=listen_loop, args=[httpd], daemon=True).start()
+    threading.Thread(target=server_assassin, args=[httpd], daemon=True).start()
     httpd.serve_forever()
     print_tourney_trace("Shutting down the results server")
 
 
 def start_server():
-    subprocess.Popen("python3 {}".format(paths.START_RESULTS_SERVER_FILE), cwd=paths.ROOT_DIR, shell=True)
+    subprocess.Popen("python3 -m reporting.results_server", cwd=paths.ROOT_DIR, shell=True)
     return Result((True, "Results server starting. Listening on port {}".format(ServerConfig().port())))
+
+
+if __name__ == '__main__':
+    main()

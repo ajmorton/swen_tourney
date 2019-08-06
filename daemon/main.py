@@ -1,5 +1,4 @@
-from util import paths
-from util import format as fmt
+from util import paths, format as fmt
 from util.funcs import print_tourney_trace, print_tourney_error
 from util.types import FilePath, Submitter, Result
 
@@ -8,9 +7,8 @@ from tournament.state.tourney_snapshot import TourneySnapshot
 
 from config.configuration import AssignmentConfig
 
-from daemon import flags
+from daemon import flags, fs
 from daemon.flags import Flag
-from daemon import fs
 
 from time import sleep
 from datetime import datetime
@@ -97,7 +95,7 @@ def close_submissions() -> Result:
 
 
 def start():
-    subprocess.Popen("python3 {}".format(paths.START_DAEMON_FILE), cwd=paths.ROOT_DIR, shell=True)
+    subprocess.Popen("python3 -m daemon.main", cwd=paths.ROOT_DIR, shell=True)
     return Result((True, "Tournament starting.\nTraces are being written to {}".format(paths.TRACE_FILE)))
 
 
@@ -144,3 +142,6 @@ def main():
     flags.set_flag(Flag.ALIVE, False)
     flags.set_flag(Flag.SHUTTING_DOWN, False)
 
+
+if __name__ == '__main__':
+    main()
