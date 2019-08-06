@@ -71,7 +71,10 @@ def shutdown() -> Result:
         return Result((False, "Daemon is already offline"))
     else:
         flags.set_flag(Flag.SHUTTING_DOWN, True)
-        return Result((True, "Daemon is shutting down"))
+        print_tourney_trace("Shutdown event received. Finishing processing")
+        return Result((True, "Tournament is shutting down. "
+                             "This may take a while as current processing must be completed.\n"
+                             "Check the tournament traces to see when the tournament has successfully stopped."))
 
 
 def make_report_request(request_time: datetime) -> Result:
@@ -109,6 +112,10 @@ def main():
 
     try:
         while not flags.get_flag(Flag.SHUTTING_DOWN):
+
+            if not flags.get_flag(Flag.ALIVE):
+                # In the event of an uncaught crash the ALIVE flag can be manually deleted to kill the tournament
+                break
 
             next_submission_to_process = fs.get_next_request()
 

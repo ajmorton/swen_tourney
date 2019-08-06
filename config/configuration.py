@@ -7,8 +7,6 @@ from config.files.email_config import EmailConfig
 
 def configuration_valid() -> bool:
 
-    valid = True
-
     try:
         ServerConfig()
 

@@ -33,6 +33,9 @@ RESULTS_FILE = REPORT_DIR + "/tourney_results.json"
 # The python file to start up the tournament daemon
 START_DAEMON_FILE = root_dir + "/start_daemon.py"
 
+# The python file to start up the results server
+START_RESULTS_SERVER_FILE = root_dir + "/start_results_server.py"
+
 # The root of the project
 ROOT_DIR = root_dir
 

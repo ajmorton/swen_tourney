@@ -5,6 +5,12 @@ from util import format as fmt
 from tournament.state.tourney_snapshot import TourneySnapshot
 from util import paths
 from config.configuration import AssignmentConfig, ServerConfig
+from daemon import flags
+import threading
+import time
+import subprocess
+from util.funcs import print_tourney_trace
+from util.types import Result
 
 
 class TourneyResultsHandler(http.server.SimpleHTTPRequestHandler):
@@ -28,6 +34,9 @@ class TourneyResultsHandler(http.server.SimpleHTTPRequestHandler):
                '</body></html>'
 
         self.wfile.write(bytes(html, 'utf-8'))
+
+    def log_message(self, log_format, *args):
+        return
 
 
 def html_table_from_results(snapshot) -> str:
@@ -91,14 +100,23 @@ def table_row(*args) -> str:
     return row
 
 
-def start_server():
+def listen_loop(httpd: http.server.HTTPServer):
+
+    while flags.get_flag(flags.Flag.ALIVE):
+        time.sleep(5)
+
+    httpd.shutdown()
+
+
+def main():
     server_config = ServerConfig()
     server_address = ('', server_config.port())
     httpd = http.server.HTTPServer(server_address, TourneyResultsHandler)
+    threading.Thread(target=listen_loop, args=[httpd], daemon=True).start()
     httpd.serve_forever()
+    print_tourney_trace("Shutting down the results server")
 
 
-if __name__ == "__main__":
-    start_server()
-
-
+def start_server():
+    subprocess.Popen("python3 {}".format(paths.START_RESULTS_SERVER_FILE), cwd=paths.ROOT_DIR, shell=True)
+    return Result((True, "Results server starting. Listening on port {}".format(ServerConfig().port())))

@@ -7,6 +7,8 @@ import util.funcs
 from config import configuration as cfg
 
 import daemon.main as daemon
+from reporting import results_server
+from daemon import flags
 
 
 def main():
@@ -26,17 +28,27 @@ def main():
             traces = "All submissions and tournament results have been deleted"
 
     elif command.type == BackendCommands.REPORT:
-        success, traces = daemon.make_report_request(datetime.now())
+        _, traces = daemon.make_report_request(datetime.now())
 
     elif command.type == BackendCommands.SHUTDOWN:
-        success, traces = daemon.shutdown()
+        _, traces = daemon.shutdown()
 
     elif command.type == BackendCommands.START_TOURNAMENT:
-        if cfg.configuration_valid():
+
+        tourney_already_online = flags.get_flag(flags.Flag.ALIVE)
+        if tourney_already_online:
+            traces = "Tournament already online."
+
+        if not tourney_already_online and cfg.configuration_valid():
+
             success, traces = daemon.start()
 
+            if success:
+                _, results_server_traces = results_server.start_server()
+                traces += "\n" + results_server_traces
+
     elif command.type == BackendCommands.CLOSE_SUBS:
-        success, traces = daemon.close_submissions()
+        _, traces = daemon.close_submissions()
 
     else:
         traces = "Error: unrecognised command {}".format(command.type)

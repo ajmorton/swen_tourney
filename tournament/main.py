@@ -14,6 +14,9 @@ from util import format as fmt
 
 def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Result:
 
+    if not flags.get_flag(flags.Flag.ALIVE):
+        return Result((False, "Error: The tournament is not currently online."))
+
     assg = AssignmentConfig().get_assignment()
     eligible_submitters = ApprovedSubmitters().get_list()
 
@@ -189,10 +192,10 @@ def clean():
     subprocess.run("rm -f  {}".format(paths.TOURNEY_STATE_FILE), shell=True)
     subprocess.run("rm -f  {}".format(paths.TRACE_FILE), shell=True)
     subprocess.run("rm -f  {}".format(paths.RESULTS_FILE), shell=True)
-    subprocess.run("rm -f {}/snapshot*.json".format(paths.REPORT_DIR), shell=True)
-    subprocess.run("rm -f {}".format(paths.ASSIGNMENT_CONFIG), shell=True)
-    subprocess.run("rm -f {}".format(paths.APPROVED_SUBMITTERS_LIST), shell=True)
-    subprocess.run("rm -f {}".format(paths.SERVER_CONFIG), shell=True)
-    subprocess.run("rm -f {}".format(paths.EMAIL_CONFIG), shell=True)
+    subprocess.run("rm -f  {}/snapshot*.json".format(paths.REPORT_DIR), shell=True)
+    subprocess.run("rm -f  {}".format(paths.ASSIGNMENT_CONFIG), shell=True)
+    subprocess.run("rm -f  {}".format(paths.APPROVED_SUBMITTERS_LIST), shell=True)
+    subprocess.run("rm -f  {}".format(paths.SERVER_CONFIG), shell=True)
+    subprocess.run("rm -f  {}".format(paths.EMAIL_CONFIG), shell=True)
     flags.clear_all()
 

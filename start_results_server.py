@@ -6,4 +6,4 @@ import util.funcs
 # in order to have visibility on all packages. Hence, this file just calls start_server() in server.request_server
 if __name__ == "__main__":
     util.funcs.assert_python_version(3, 5, 2)
-    reporting.results_server.start_server()
+    reporting.results_server.main()

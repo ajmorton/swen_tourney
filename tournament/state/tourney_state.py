@@ -56,7 +56,7 @@ class TourneyState:
                     self.get_submitter_results(test_submitter)[prog_submitter] = self.create_default_testset()
 
     def save_to_file(self):
-        json.dump(self.state, open(paths.TOURNEY_STATE_FILE, 'w'), indent=4)
+        json.dump(self.state, open(paths.TOURNEY_STATE_FILE, 'w'), indent=4, sort_keys=True)
 
     @staticmethod
     def create_default_testset() -> TestSet:

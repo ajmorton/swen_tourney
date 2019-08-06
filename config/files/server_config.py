@@ -8,7 +8,7 @@ class ServerConfig:
 
     default_server_config = {
         'host': '127.0.0.1',
-        'port': 11013
+        'port': 8080
     }
 
     server_config = default_server_config
