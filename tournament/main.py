@@ -18,7 +18,6 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
         return Result((False, "Error: The tournament is not currently online."))
 
     assg = AssignmentConfig().get_assignment()
-    print(assg_name, " == ", assg.get_assignment_name())
     if assg_name != assg.get_assignment_name():
         return Result((False, "Error: The submitted assignment '{}' does not match the assignment "
                               "the tournament is configured for: '{}'".format(assg_name, assg.get_assignment_name())))

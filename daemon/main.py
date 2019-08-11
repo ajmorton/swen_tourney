@@ -14,13 +14,14 @@ from time import sleep
 from datetime import datetime
 import subprocess
 from reporting import emailer
+import time
 
 
 def process_report_request(file_path: FilePath):
     report_time = fs.get_report_request_time(file_path)
     print_tourney_trace("Generating report for tournament submissions as of {}".format(report_time))
     snapshot = TourneySnapshot(report_time=report_time)
-    snapshot.write_snapshot()
+    snapshot.write_snapshot(save_with_timestamp=True)
     subprocess.run("rm -f {}".format(file_path), shell=True)
 
 
@@ -37,7 +38,13 @@ def process_submission_request(file_path):
     subprocess.run("rm -rf {}".format(tourney_dest), shell=True)
     subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True)
 
+    time_start = time.time()
     tourney.run_submission(submitter, submission_time.strftime(fmt.datetime_trace_string), new_tests, new_progs)
+    time_end = time.time()
+
+    snapshot = TourneySnapshot(report_time=submission_time)
+    snapshot.set_time_to_process_last_submission(int(time_end - time_start))
+    snapshot.write_snapshot()
 
 
 def make_submission(submitter: Submitter) -> Result:
@@ -100,6 +107,9 @@ def main():
     print_tourney_trace("TourneyDaemon started...")
 
     flags.set_flag(Flag.ALIVE, True)
+
+    # Create a report file on startup
+    TourneySnapshot(report_time=datetime.now()).write_snapshot()
 
     try:
         while not flags.get_flag(Flag.SHUTTING_DOWN):

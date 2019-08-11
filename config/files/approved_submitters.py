@@ -28,7 +28,8 @@ class ApprovedSubmitters:
 
     @staticmethod
     def write_default():
-        json.dump(ApprovedSubmitters.default_approved_submitters, open(paths.APPROVED_SUBMITTERS_LIST, 'w'), indent=4)
+        json.dump(ApprovedSubmitters.default_approved_submitters, open(paths.APPROVED_SUBMITTERS_LIST, 'w'),
+                  indent=4, sort_keys=True)
 
     def check_non_default(self) -> bool:
         if self.approved_submitters != ApprovedSubmitters.default_approved_submitters:

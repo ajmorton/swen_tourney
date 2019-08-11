@@ -16,6 +16,7 @@ class TourneySnapshot:
 
     default_snapshot = {
         'snapshot_date': NO_DATE,
+        'time_to_process_last_submission': 0,
         'num_submitters': 0,
         'results': {},
         'best_average_bugs_detected': 0.0,
@@ -42,12 +43,14 @@ class TourneySnapshot:
             self.create_snapshot_from_tourney_state(report_time)
             self.compute_normalised_scores()
 
-    def write_snapshot(self):
-        report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_trace_string)
-        report_file_path = paths.get_snapshot_file_path(report_time)
-        json.dump(self.snapshot, open(report_file_path, 'w'), indent=4, sort_keys=True)
+    def write_snapshot(self, save_with_timestamp=False):
         json.dump(self.snapshot, open(paths.RESULTS_FILE, 'w'), indent=4, sort_keys=True)
-        print_tourney_trace("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
+
+        if save_with_timestamp:
+            report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_trace_string)
+            report_file_path = paths.get_snapshot_file_path(report_time)
+            json.dump(self.snapshot, open(report_file_path, 'w'), indent=4, sort_keys=True)
+            print_tourney_trace("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
 
     def create_snapshot_from_tourney_state(self, report_time: datetime):
         tourney_state = TourneyState()
@@ -99,6 +102,12 @@ class TourneySnapshot:
             results[submitter]['normalised_prog_score'] = assg.compute_normalised_prog_score(
                 submitter_tests_escaped, self.snapshot['best_average_tests_evaded']
             )
+
+    def set_time_to_process_last_submission(self, seconds: int):
+        self.snapshot['time_to_process_last_submission'] = seconds
+
+    def time_to_process_last_submission(self) -> int:
+        return self.snapshot['time_to_process_last_submission']
 
     def date(self) -> datetime:
         return datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_trace_string)

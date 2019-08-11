@@ -44,7 +44,7 @@ class EmailConfig:
 
     @staticmethod
     def write_default():
-        json.dump(EmailConfig.default_email_config, open(paths.EMAIL_CONFIG, 'w'), indent=4)
+        json.dump(EmailConfig.default_email_config, open(paths.EMAIL_CONFIG, 'w'), indent=4, sort_keys=True)
 
     def check_email_valid(self) -> bool:
         valid = self.check_email_non_default()

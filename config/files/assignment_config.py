@@ -1,7 +1,7 @@
 
 from enum import Enum
 from config.assignments.AbstractAssignment import AbstractAssignment
-from config.assignments.ant.AntAssignment import AntAssignment
+from config.assignments.AntAssignment import AntAssignment
 import json
 import os
 from util import paths
@@ -32,7 +32,8 @@ class AssignmentConfig:
 
     @staticmethod
     def write_default():
-        json.dump(AssignmentConfig.default_assignment_config, open(paths.ASSIGNMENT_CONFIG, 'w'), indent=4)
+        json.dump(AssignmentConfig.default_assignment_config, open(paths.ASSIGNMENT_CONFIG, 'w')
+                  , indent=4, sort_keys=True)
 
     def check_assignment_valid(self) -> bool:
         valid = self.check_assignment_type()

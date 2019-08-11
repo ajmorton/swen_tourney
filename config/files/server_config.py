@@ -35,4 +35,4 @@ class ServerConfig:
 
     @staticmethod
     def write_default():
-        json.dump(ServerConfig.default_server_config, open(paths.SERVER_CONFIG, 'w'), indent=4)
+        json.dump(ServerConfig.default_server_config, open(paths.SERVER_CONFIG, 'w'), indent=4, sort_keys=True)
