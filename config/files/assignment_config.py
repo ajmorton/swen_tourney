@@ -9,10 +9,15 @@ from config.exceptions import NoConfigDefined
 
 
 class AssignmentType(Enum):
-    ant_assignment = AntAssignment()
+    ant_assignment = AntAssignment
 
 
 class AssignmentConfig:
+
+    default_assignment_config = {
+        'assignment': "enter_assignment_type_here",
+        'source_assg_dir': "/absolute/path/to/assignment"
+    }
 
     def __init__(self):
         if not os.path.exists(paths.ASSIGNMENT_CONFIG):
@@ -20,14 +25,14 @@ class AssignmentConfig:
             raise NoConfigDefined("No assignment configuration file found at {}. A default one has been created"
                                   .format(paths.ASSIGNMENT_CONFIG))
         else:
-            self.assignment = json.load(open(paths.ASSIGNMENT_CONFIG, 'r'))
+            self.config = json.load(open(paths.ASSIGNMENT_CONFIG, 'r'))
 
     def get_assignment(self) -> AbstractAssignment:
-        return AssignmentType[self.assignment].value
+        return AssignmentType[self.config['assignment']].value(self.config['source_assg_dir'])
 
     @staticmethod
     def write_default():
-        json.dump("enter_assignment_type_here", open(paths.ASSIGNMENT_CONFIG, 'w'), indent=4)
+        json.dump(AssignmentConfig.default_assignment_config, open(paths.ASSIGNMENT_CONFIG, 'w'), indent=4)
 
     def check_assignment_valid(self) -> bool:
         valid = self.check_assignment_type()
@@ -41,8 +46,8 @@ class AssignmentConfig:
     def check_assignment_type(self) -> bool:
         assignment_types = [assg.name for assg in AssignmentType]
 
-        if self.assignment in assignment_types:
-            print("Tournament is configured for: {}".format(self.assignment))
+        if self.config['assignment'] in assignment_types:
+            print("Tournament is configured for: {}".format(self.config['assignment']))
             return True
         else:
             print("ERROR: Assignment configuration has not been configured properly.\n"
@@ -51,9 +56,10 @@ class AssignmentConfig:
             return False
 
     def check_source_assg_exists(self) -> bool:
-        source_assg_dir = self.get_assignment().get_source_assg_dir()
+        source_assg_dir = self.config['source_assg_dir']
         if os.path.exists(source_assg_dir):
-            print("\tSource assg dir exists")
+            print("\tSource assignment is: {}".format(AntAssignment(source_assg_dir).get_assignment_name()))
+            print("\tSource code dir: {}".format(source_assg_dir))
             return True
         else:
             print("ERROR: Source assg dir {} does not exist".format(source_assg_dir))

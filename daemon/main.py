@@ -31,8 +31,8 @@ def process_submission_request(file_path):
     tourney_dest = paths.get_tourney_dir(submitter)
 
     assg = AssignmentConfig().get_assignment()
-    new_tests = assg.detect_new_tests(staged_dir, tourney_dest)
-    new_progs = assg.detect_new_progs(staged_dir, tourney_dest)
+    new_tests = assg.detect_new_tests(staged_dir, FilePath(tourney_dest))
+    new_progs = assg.detect_new_progs(staged_dir, FilePath(tourney_dest))
 
     subprocess.run("rm -rf {}".format(tourney_dest), shell=True)
     subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True)
@@ -57,16 +57,16 @@ def make_submission(submitter: Submitter) -> Result:
 def is_alive() -> Result:
     if flags.get_flag(Flag.ALIVE):
         if flags.get_flag(Flag.SHUTTING_DOWN):
-            return Result((True, "Daemon is online, but in the process of shutting down"))
+            return Result((True, "Tournament is online, but in the process of shutting down"))
         else:
-            return Result((True, "Daemon is online"))
+            return Result((True, "Tournament is online"))
     else:
-        return Result((False, "Daemon is not online"))
+        return Result((False, "Tournament is not online"))
 
 
 def shutdown() -> Result:
     if not flags.get_flag(Flag.ALIVE):
-        return Result((False, "Daemon is already offline"))
+        return Result((False, "Tournament is already offline"))
     else:
         flags.set_flag(Flag.SHUTTING_DOWN, True)
         print_tourney_trace("Shutdown event received. Finishing processing")

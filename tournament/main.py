@@ -12,12 +12,17 @@ from datetime import datetime
 from util import format as fmt
 
 
-def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) -> Result:
+def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission_dir: FilePath) -> Result:
 
     if not flags.get_flag(flags.Flag.ALIVE):
         return Result((False, "Error: The tournament is not currently online."))
 
     assg = AssignmentConfig().get_assignment()
+    print(assg_name, " == ", assg.get_assignment_name())
+    if assg_name != assg.get_assignment_name():
+        return Result((False, "Error: The submitted assignment '{}' does not match the assignment "
+                              "the tournament is configured for: '{}'".format(assg_name, assg.get_assignment_name())))
+
     eligible_submitters = ApprovedSubmitters().get_list()
 
     submitter_eligible = submitter in eligible_submitters
@@ -41,15 +46,14 @@ def check_submitter_eligibility(submitter: Submitter, submission_dir: FilePath) 
     if os.path.isdir(submitter_pre_validation_dir):
         return Result((False, "Error: A prior submission is still being validated. "
                               "Please wait until it has finished to push a new commit."))
-    subprocess.run("mkdir {}".format(submitter_pre_validation_dir), shell=True)
 
-    # the name of the assignment repo (e.g. ant_assignment)
-    assg_name = os.path.basename(assg.get_source_assg_dir().rstrip("/"))
     subprocess.run(
-        "cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir + "/" + assg_name),
+        "cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir),
         shell=True
     )
-    assg.prep_submission(submission_dir, submitter_pre_validation_dir)
+
+    assg.prep_submission(FilePath(submission_dir),
+                         FilePath(submitter_pre_validation_dir))
 
     return Result((True, "Submitter is eligible for the tournament"))
 
@@ -61,7 +65,7 @@ def validate_tests(submitter: Submitter) -> Result:
     tests_valid = True
     validation_traces = "Validation results:"
     for test in assg.get_test_list():
-        test_result = assg.run_test(test, Prog("original"), validation_dir)
+        test_result = assg.run_test(test, Prog("original"), FilePath(validation_dir))
 
         if test_result == TestResult.TIMEOUT:
             validation_traces += "\n\t{} test FAIL - Timeout".format(test)
@@ -89,7 +93,7 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
 
     for prog in assg.get_programs_list():
         for test in assg.get_test_list():
-            test_result = assg.run_test(test, prog, validation_dir)
+            test_result = assg.run_test(test, prog, FilePath(validation_dir))
 
             if test_result == TestResult.TIMEOUT:
                 validation_traces += "\n\t{} {} test FAIL - Timeout".format(prog, test)
@@ -140,18 +144,13 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
     tourney_state.save_to_file()
 
 
-def run_tests(
-        pair: Tuple[Submitter, Submitter],
-        tourney_state: TourneyState,
-        new_tests: [Test],
-        new_progs: [Prog]
-) -> [Submitter, Submitter, TestSet]:
+def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, new_tests: [Test], new_progs: [Prog]
+              ) -> [Submitter, Submitter, TestSet]:
 
     assg = AssignmentConfig().get_assignment()
 
     test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/test_stage_" + multiprocessing.current_process().name
     if not os.path.isdir(test_stage_dir):
-        subprocess.run("mkdir {}".format(test_stage_dir), shell=True)
         subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), test_stage_dir), shell=True)
 
     (tester, testee) = pair

@@ -18,8 +18,9 @@ def main():
         print("Checking submitter eligibility  ")
         print("==================================")
         submission_dir = command.dir
-        submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
-        success, eligibility_check_traces = tourney.check_submitter_eligibility(submitter, submission_dir)
+        assg_name = os.path.basename(submission_dir.rstrip('/'))
+        submitter = Submitter(os.path.basename((os.path.dirname(submission_dir).rstrip('/'))))
+        success, eligibility_check_traces = tourney.check_submitter_eligibility(submitter, assg_name, submission_dir)
         print(eligibility_check_traces)
         print("==================================")
         print()
@@ -30,7 +31,7 @@ def main():
         print("==================================")
 
         submission_dir = command.dir
-        submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
+        submitter = Submitter(os.path.basename((os.path.dirname(submission_dir).rstrip('/'))))
         success, validation_traces = tourney.validate_tests(submitter)
         print(validation_traces)
         print("==================================")
@@ -41,7 +42,7 @@ def main():
         print("Validating submitted programs  ")
         print("==================================")
         submission_dir = command.dir
-        submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
+        submitter = Submitter(os.path.basename((os.path.dirname(submission_dir).rstrip('/'))))
         success, validation_traces = tourney.validate_programs_under_test(submitter)
         print(validation_traces)
         print("==================================")
@@ -52,7 +53,7 @@ def main():
         print("Validating submitted programs  ")
         print("==================================")
         submission_dir = command.dir
-        submitter = Submitter(os.path.basename(submission_dir.rstrip('/')))
+        submitter = Submitter(os.path.basename((os.path.dirname(submission_dir).rstrip('/'))))
         (success, submission_traces) = daemon.make_submission(submitter)
         print(submission_traces)
         print("==================================")
