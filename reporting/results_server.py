@@ -130,6 +130,10 @@ def server_assassin(httpd: http.server.HTTPServer):
 
 
 def main():
+
+    if not os.path.exists(paths.RESULTS_FILE):
+        TourneySnapshot(report_time=datetime.now()).write_snapshot()
+
     server_config = ServerConfig()
     server_address = ('', server_config.port())
     httpd = http.server.HTTPServer(server_address, TourneyResultsHandler)
