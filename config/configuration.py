@@ -21,8 +21,8 @@ def configuration_valid() -> bool:
             # print server configs
             valid = ServerConfig().check_server_config()
 
-        if valid:
-            valid = EmailConfig().check_email_valid()
+        # if valid:
+        #     valid = EmailConfig().check_email_valid()
 
     except NoConfigDefined as no_config_error:
         print(no_config_error)

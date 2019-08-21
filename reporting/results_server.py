@@ -54,8 +54,8 @@ def html_table_from_results(snapshot: TourneySnapshot) -> str:
     results = snapshot.results()
     num_submitters = snapshot.num_submitters()
     assg = AssignmentConfig().get_assignment()
-    num_tests = (num_submitters - 1) * len(assg.get_test_list())
-    num_progs = (num_submitters - 1) * len(assg.get_programs_list())
+    num_tests = 0 if num_submitters == 0 else (num_submitters - 1) * len(assg.get_test_list())
+    num_progs = 0 if num_submitters == 0 else (num_submitters - 1) * len(assg.get_programs_list())
 
     table_data = {}
     for submitter in results:

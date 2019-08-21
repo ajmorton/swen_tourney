@@ -138,7 +138,7 @@ def main():
         print_tourney_error(str(e))
         import traceback
         print_tourney_error(traceback.format_exc())
-        emailer.email_crash_report()
+        # emailer.email_crash_report()
 
     # shutdown hook
     print_tourney_trace("TourneyDaemon shutting down.")
