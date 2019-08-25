@@ -95,7 +95,8 @@ def close_submissions() -> Result:
 
 
 def start():
-    subprocess.Popen("python3 -m daemon.main", cwd=paths.ROOT_DIR, shell=True)
+    subprocess.Popen("python3 -m daemon.main", cwd=paths.ROOT_DIR, shell=True,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return Result((True, "Tournament starting.\nTraces are being written to {}".format(paths.TRACE_FILE)))
 
 
@@ -106,12 +107,12 @@ def main():
     """
     print_tourney_trace("TourneyDaemon started...")
 
-    flags.set_flag(Flag.ALIVE, True)
-
-    # Create a report file on startup
-    TourneySnapshot(report_time=datetime.now()).write_snapshot()
-
     try:
+        flags.set_flag(Flag.ALIVE, True)
+
+        # Create a report file on startup
+        TourneySnapshot(report_time=datetime.now()).write_snapshot()
+
         while not flags.get_flag(Flag.SHUTTING_DOWN):
 
             if not flags.get_flag(Flag.ALIVE):

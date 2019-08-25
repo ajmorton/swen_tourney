@@ -9,7 +9,7 @@ from daemon import flags
 import threading
 import time
 import subprocess
-from util.funcs import print_tourney_trace
+from util.funcs import print_tourney_trace, print_tourney_error
 from util.types import Result
 import os
 
@@ -131,19 +131,29 @@ def server_assassin(httpd: http.server.HTTPServer):
 
 def main():
 
-    if not os.path.exists(paths.RESULTS_FILE):
-        TourneySnapshot(report_time=datetime.now()).write_snapshot()
+    try:
+        if not os.path.exists(paths.RESULTS_FILE):
+            TourneySnapshot(report_time=datetime.now()).write_snapshot()
 
-    server_config = ServerConfig()
-    server_address = ('', server_config.port())
-    httpd = http.server.HTTPServer(server_address, TourneyResultsHandler)
-    threading.Thread(target=server_assassin, args=[httpd], daemon=True).start()
-    httpd.serve_forever()
-    print_tourney_trace("Shutting down the results server")
+        server_config = ServerConfig()
+        server_address = ('', server_config.port())
+        httpd = http.server.HTTPServer(server_address, TourneyResultsHandler)
+        threading.Thread(target=server_assassin, args=[httpd], daemon=True).start()
+        httpd.serve_forever()
+        print_tourney_trace("Shutting down the results server")
+    except Exception as e:
+        print_tourney_error("Exception caught while running Results Server")
+        print_tourney_error(str(e))
+        import traceback
+        print_tourney_error(traceback.format_exc())
+        # wait 5 minutes to ensure the port is freed
+        time.sleep(300)
+        main()
 
 
 def start_server():
-    subprocess.Popen("python3 -m reporting.results_server", cwd=paths.ROOT_DIR, shell=True)
+    subprocess.Popen("python3 -m reporting.results_server", cwd=paths.ROOT_DIR, shell=True,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return Result((True, "Results server starting. Listening on port {}".format(ServerConfig().port())))
 
 
