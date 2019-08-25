@@ -8,6 +8,7 @@ from util import format as fmt
 from util import paths
 from util.funcs import print_tourney_trace
 import copy
+import csv
 
 
 class TourneySnapshot:
@@ -52,6 +53,20 @@ class TourneySnapshot:
             report_file_path = paths.get_snapshot_file_path(report_time)
             json.dump(self.snapshot, open(report_file_path, 'w'), indent=4, sort_keys=True)
             print_tourney_trace("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
+
+    def write_csv(self):
+        with open(paths.CSV_FILE, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file)
+            assg = AssignmentConfig().get_assignment()
+            writer.writerow(["Student"] + assg.get_test_list() + assg.get_programs_list() +
+                            ["normalised_bug_scores"] + ["normalised_prog_scores"])
+
+            for (submitter, submitter_data) in sorted(self.snapshot['results'].items()):
+                writer.writerow([submitter] +
+                                [submitter_data["tests"][test] for test in sorted(submitter_data["tests"])] +
+                                [submitter_data["progs"][prog] for prog in sorted(submitter_data["progs"])] +
+                                [submitter_data["normalised_test_score"]] +
+                                [submitter_data["normalised_prog_score"]])
 
     def create_snapshot_from_tourney_state(self, report_time: datetime):
         tourney_state = TourneyState()

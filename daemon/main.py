@@ -21,7 +21,7 @@ def process_report_request(file_path: FilePath):
     report_time = fs.get_report_request_time(file_path)
     print_tourney_trace("Generating report for tournament submissions as of {}".format(report_time))
     snapshot = TourneySnapshot(report_time=report_time)
-    snapshot.write_snapshot(save_with_timestamp=True)
+    snapshot.write_csv()
     subprocess.run("rm -f {}".format(file_path), shell=True)
 
 
