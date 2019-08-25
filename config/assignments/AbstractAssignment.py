@@ -39,7 +39,7 @@ class AbstractAssignment(metaclass=ABCMeta):
         raise NotImplementedError("Error: get_programs_under_test is not implemented")
 
     @abstractmethod
-    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath) -> TestResult:
+    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath) -> (TestResult, str):
         """
         Run a test against a program under test.
         :param test: the test suite
@@ -48,6 +48,14 @@ class AbstractAssignment(metaclass=ABCMeta):
         :return: The result of the test run
         """
         raise NotImplementedError("Error: run_test is not implemented")
+
+    @abstractmethod
+    def get_num_tests(self, traces: str) -> int:
+        """
+        Determine the number of tests in a testsuite from its traces
+        :param traces: the traces from running a test suite
+        :return: the number of tests run by the test suite
+        """
 
     @abstractmethod
     def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath):
@@ -91,7 +99,7 @@ class AbstractAssignment(metaclass=ABCMeta):
         raise NotImplementedError("Error: prep_test_stage is not implemented")
 
     @abstractmethod
-    def compute_normalised_test_score(self, submitter_score: float, best_score: float) -> float:
+    def compute_normalised_test_score(self, submitter_score: float, best_score: float, num_tests: int) -> float:
         """
         Compute a submitters test score normalised against the best test score in the tournament.
         :return:

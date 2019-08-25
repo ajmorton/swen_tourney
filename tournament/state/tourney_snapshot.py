@@ -27,6 +27,7 @@ class TourneySnapshot:
         'latest_submission_date': NO_DATE,
         'tests': {},
         'progs': {},
+        'average_tests_per_suite': 1.0,
         'average_bugs_detected': 0.0,
         'average_tests_evaded': 0.0,
         'normalised_test_score': 0,
@@ -63,6 +64,9 @@ class TourneySnapshot:
 
             submitter_result = copy.deepcopy(TourneySnapshot.default_submitter_result)
             submitter_result['latest_submission_date'] = tourney_state.get_state()[submitter]['latest_submission_date']
+            num_tests = tourney_state.get_num_tests(submitter)
+            avg_num_tests = 1 if len(num_tests) == 0 else sum(num_tests.values()) / len(num_tests)
+            submitter_result['average_tests_per_suite'] = avg_num_tests
 
             total_bugs_detected = 0
             num_tests = len(assg.get_test_list())
@@ -96,7 +100,8 @@ class TourneySnapshot:
             submitter_tests_escaped = float(results[submitter]['average_tests_evaded'])
 
             results[submitter]['normalised_test_score'] = assg.compute_normalised_test_score(
-                submitter_bugs_detected, self.snapshot['best_average_bugs_detected']
+                submitter_bugs_detected, self.snapshot['best_average_bugs_detected'],
+                self.snapshot['results'][submitter]['average_tests_per_suite']
             )
 
             results[submitter]['normalised_prog_score'] = assg.compute_normalised_prog_score(

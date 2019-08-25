@@ -3,6 +3,8 @@ import os
 import subprocess
 from util import paths
 from util.types import *
+import re
+import math
 
 
 class AntAssignment(AbstractAssignment):
@@ -19,7 +21,7 @@ class AntAssignment(AbstractAssignment):
     def get_programs_list(self) -> [Prog]:
         return self.progs_list
 
-    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath) -> TestResult:
+    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath) -> (TestResult, str):
 
         result = subprocess.run(
             "ant test -Dtest=\"{}\" -Dprogram=\"{}\"".format(test, prog),
@@ -28,21 +30,20 @@ class AntAssignment(AbstractAssignment):
         )
 
         if "Parallel execution timed out" in result.stderr:
-            return TestResult.TIMEOUT
+            return TestResult.TIMEOUT, result.stdout
         elif result.returncode == 0:
-            return TestResult.NO_BUGS_DETECTED
+            return TestResult.NO_BUGS_DETECTED, result.stdout
         else:
-            return TestResult.BUG_FOUND
+            return TestResult.BUG_FOUND, result.stdout
+
+    def get_num_tests(self, traces: str) -> int:
+        return int(re.search("Tests run: ([0-9]+)", traces).group(1))
 
     def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath):
 
         # copy across the tests
         subprocess.run("rm -rf {}".format(destination_dir + "/tests"), shell=True)
-        subprocess.run(
-            "cp -rf {} {}".format(submission_dir + "/tests",
-                                  destination_dir),
-            shell=True
-        )
+        subprocess.run("cp -rf {} {}".format(submission_dir + "/tests", destination_dir), shell=True)
 
         # copy across the programs, excluding 'original'
         for program in self.get_programs_list():
@@ -125,13 +126,15 @@ class AntAssignment(AbstractAssignment):
         if best_score == 0:
             return 0
         else:
-            score = (submitter_score / best_score) * 5.0
+            score = (submitter_score / best_score)
+            score *= 2.5  # best score possible is 1. Multiple by 2.5 to scale to 2.5
         return round(score, 2)
 
-    def compute_normalised_test_score(self, submitter_score: float, best_score: float) -> float:
+    def compute_normalised_test_score(self, submitter_score: float, best_score: float, num_tests: int) -> float:
         if best_score == 0:
             return 0
         else:
-            score = (submitter_score / best_score) * 5.0
+            score = ((submitter_score / best_score) / (math.log(num_tests) + 10))
+            score *= 25  # best score possible is 0.1. Multiply by 25 to scale to 2.5
         return round(score, 2)
 

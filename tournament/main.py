@@ -10,6 +10,7 @@ from util.funcs import print_tourney_trace
 from daemon import flags
 from datetime import datetime
 from util import format as fmt
+import json
 
 
 def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission_dir: FilePath) -> Result:
@@ -61,10 +62,13 @@ def validate_tests(submitter: Submitter) -> Result:
     validation_dir = paths.get_pre_validation_dir(submitter)
     assg = AssignmentConfig().get_assignment()
 
+    num_tests = {}
+
     tests_valid = True
     validation_traces = "Validation results:"
     for test in assg.get_test_list():
-        test_result = assg.run_test(test, Prog("original"), FilePath(validation_dir))
+        test_result, test_traces = assg.run_test(test, Prog("original"), FilePath(validation_dir))
+        num_tests[test] = assg.get_num_tests(test_traces)
 
         if test_result == TestResult.TIMEOUT:
             validation_traces += "\n\t{} test FAIL - Timeout".format(test)
@@ -80,6 +84,8 @@ def validate_tests(submitter: Submitter) -> Result:
 
     if not tests_valid:
         subprocess.run("rm -rf {}".format(validation_dir), shell=True)
+    else:
+        json.dump(num_tests, open(validation_dir + "/" + paths.NUM_TESTS_FILE, 'w'))
 
     return Result((tests_valid, validation_traces))
 
@@ -92,7 +98,7 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
 
     for prog in assg.get_programs_list():
         for test in assg.get_test_list():
-            test_result = assg.run_test(test, prog, FilePath(validation_dir))
+            test_result, _ = assg.run_test(test, prog, FilePath(validation_dir))
 
             if test_result == TestResult.TIMEOUT:
                 validation_traces += "\n\t{} {} test FAIL - Timeout".format(prog, test)
@@ -121,6 +127,8 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
     print_tourney_trace("\tNew progs: {}".format(new_progs))
 
     tourney_state.set_time_of_submission(submitter, submission_time)
+    num_tests = json.load(open(paths.get_tourney_dir(submitter) + "/" + paths.NUM_TESTS_FILE, 'r'))
+    tourney_state.set_number_of_tests(submitter, num_tests)
 
     # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
     # run_tests into functions with just one argument
@@ -160,7 +168,7 @@ def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, ne
         test_set[test] = {}
         for prog in assg.get_programs_list():
             if test in new_tests or prog in new_progs:
-                test_set[test][prog] = assg.run_test(test, prog, test_stage_dir)
+                test_set[test][prog], _ = assg.run_test(test, prog, test_stage_dir)
             else:
                 # no need to rerun this test, keep the results from the current tournament state
                 test_set[test][prog] = tourney_state.get(tester, testee, test, prog)

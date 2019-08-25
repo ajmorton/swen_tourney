@@ -30,6 +30,9 @@ TRACE_FILE = REPORT_DIR + "/tournament_log.txt"
 # Snapshot used by the results server
 RESULTS_FILE = REPORT_DIR + "/tourney_results.json"
 
+# Track how many tests a submission has used per test suite
+NUM_TESTS_FILE = "num_tests.json"
+
 # The root of the project
 ROOT_DIR = root_dir
 

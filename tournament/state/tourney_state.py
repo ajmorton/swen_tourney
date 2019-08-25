@@ -27,6 +27,7 @@ class TourneyState:
         for test_submitter in approved_submitters:
             self.state[test_submitter] = {
                 'latest_submission_date': None,
+                'num_tests': {},
                 'test_results': {}
             }
 
@@ -41,17 +42,20 @@ class TourneyState:
         # previous result may be able to be copied into new state
         for test_submitter in approved_submitters:
             self.state[test_submitter] = {'latest_submission_date': None,
+                                          'num_tests': {},
                                           'test_results': {}}
 
             for prog_submitter in approved_submitters:
                 if test_submitter == prog_submitter:
                     continue
-                if test_submitter in state_from_file.keys() and \
+                elif test_submitter in state_from_file.keys() and \
                         prog_submitter in state_from_file[test_submitter]['test_results'].keys():
                     self.get_submitter_results(test_submitter)[prog_submitter] = \
                         state_from_file[test_submitter]['test_results'][prog_submitter]
                     self.state[test_submitter]['latest_submission_date'] = \
                         state_from_file[test_submitter]['latest_submission_date']
+                    self.state[test_submitter]['num_tests'] = \
+                        state_from_file[test_submitter]['num_tests']
                 else:
                     self.get_submitter_results(test_submitter)[prog_submitter] = self.create_default_testset()
 
@@ -102,6 +106,9 @@ class TourneyState:
     def set_time_of_submission(self, submitter: Submitter, time_of_submission: str):
         self.state[submitter]['latest_submission_date'] = time_of_submission
 
+    def set_number_of_tests(self, submitter: Submitter, num_tests: dict):
+        self.state[submitter]['num_tests'] = num_tests
+
     def set(self, tester: Submitter, testee: Submitter, testset: TestSet):
         self.get_submitter_results(tester)[testee] = testset
 
@@ -113,6 +120,9 @@ class TourneyState:
 
     def get_submitter_results(self, submitter: Submitter):
         return self.state[submitter]['test_results']
+
+    def get_num_tests(self, submitter: Submitter):
+        return self.state[submitter]['num_tests']
 
     def get_state(self):
         return self.state
