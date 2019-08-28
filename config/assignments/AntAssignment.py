@@ -5,6 +5,7 @@ from util import paths
 from util.types import *
 import re
 import math
+from util.funcs import print_tourney_error
 
 
 class AntAssignment(AbstractAssignment):
@@ -37,7 +38,13 @@ class AntAssignment(AbstractAssignment):
             return TestResult.BUG_FOUND, result.stdout
 
     def get_num_tests(self, traces: str) -> int:
-        return int(re.search("Tests run: ([0-9]+)", traces).group(1))
+        num_tests_regex = re.search("Tests run: ([0-9]+)", traces)
+        if num_tests_regex is not None:
+            return int(num_tests_regex.group(1))
+        else:
+            # Assumed default test count of 20
+            print_tourney_error("Cannot find regex 'Tests run: ([0-9]+)' in traces:\n" + traces)
+            return 20
 
     def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath):
 

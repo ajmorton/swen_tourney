@@ -68,19 +68,20 @@ def validate_tests(submitter: Submitter) -> Result:
     validation_traces = "Validation results:"
     for test in assg.get_test_list():
         test_result, test_traces = assg.run_test(test, Prog("original"), FilePath(validation_dir))
-        num_tests[test] = assg.get_num_tests(test_traces)
 
         if test_result == TestResult.TIMEOUT:
             validation_traces += "\n\t{} test FAIL - Timeout".format(test)
         elif test_result == TestResult.NO_BUGS_DETECTED:
             validation_traces += "\n\t{} test SUCCESS - No bugs detected in original program".format(test)
         elif test_result == TestResult.BUG_FOUND:
-            validation_traces += \
-                "\n{} test FAIL - Test falsely reports an error in original code".format(test)
+            validation_traces += "\n{} test FAIL - Test falsely reports an error in original code".format(test)
+            validation_traces += "\n" + test_traces
         else:
             validation_traces += "\n\t{} ERROR - unexpected test result: {}".format(test, test_result)
 
         tests_valid = tests_valid and test_result == TestResult.NO_BUGS_DETECTED
+        if tests_valid:
+            num_tests[test] = assg.get_num_tests(test_traces)
 
     if not tests_valid:
         subprocess.run("rm -rf {}".format(validation_dir), shell=True)
