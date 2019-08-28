@@ -2,7 +2,11 @@
 __pycache__/
 *.py[cod]
 
-# directories containing test submissions
+# Tournament results
+student_results.csv
+tournament_traces.log
+
+# Directories containing test submissions
 subs
 
 # C extensions

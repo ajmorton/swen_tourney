@@ -132,6 +132,7 @@ def server_assassin(httpd: http.server.HTTPServer):
 def main():
 
     try:
+        print_tourney_trace("Starting the results server")
         if not os.path.exists(paths.RESULTS_FILE):
             TourneySnapshot(report_time=datetime.now()).write_snapshot()
 

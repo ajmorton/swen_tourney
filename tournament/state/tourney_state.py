@@ -15,7 +15,7 @@ class TourneyState:
     def __init__(self):
         self.state = {}
 
-        approved_submitters = ApprovedSubmitters().get_list()
+        approved_submitters = ApprovedSubmitters().get_list().keys()
 
         if os.path.isfile(paths.TOURNEY_STATE_FILE):
             state_from_file = json.load(open(paths.TOURNEY_STATE_FILE, 'r'))

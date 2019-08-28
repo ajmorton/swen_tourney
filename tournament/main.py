@@ -23,26 +23,21 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
         return Result((False, "Error: The submitted assignment '{}' does not match the assignment "
                               "the tournament is configured for: '{}'".format(assg_name, assg.get_assignment_name())))
 
-    eligible_submitters = ApprovedSubmitters().get_list()
-
-    submitter_eligible = submitter in eligible_submitters
+    submitter_eligible, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     if not submitter_eligible:
-        return Result(
-            (False,
-             "Submitter '{}' is not on the approved submitters list.\n"
-             "If this is a group assignment please check that you are committing to "
-             "the repo of your designated team representative.\n"
-             "If this is an individual assignment please check with your tutors that"
-             " you are added to the approved_submitters list".format(submitter))
-        )
+        return Result((False, "Submitter '{}' is not on the approved submitters list.\n"
+                              "If this is a group assignment please check that you are committing to "
+                              "the repo of your designated team representative.\n"
+                              "If this is an individual assignment please check with your tutors that"
+                              " you are added to the approved_submitters list".format(submitter)))
 
     submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
     if submissions_closed:
         return Result((False, "Cannot make a new submission at {}. Submissions have been closed"
-                       .format(datetime.now().strftime(fmt.datetime_trace_string))))
+                              .format(datetime.now().strftime(fmt.datetime_trace_string))))
 
     # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
-    submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter)
+    submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
     if os.path.isdir(submitter_pre_validation_dir):
         return Result((False, "Error: A prior submission is still being validated. "
                               "Please wait until it has finished to push a new commit."))
@@ -52,18 +47,17 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
         shell=True
     )
 
-    assg.prep_submission(FilePath(submission_dir),
-                         FilePath(submitter_pre_validation_dir))
+    assg.prep_submission(FilePath(submission_dir), FilePath(submitter_pre_validation_dir))
 
     return Result((True, "Submitter is eligible for the tournament"))
 
 
 def validate_tests(submitter: Submitter) -> Result:
-    validation_dir = paths.get_pre_validation_dir(submitter)
+    _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
+    validation_dir = paths.get_pre_validation_dir(submitter_username)
     assg = AssignmentConfig().get_assignment()
 
     num_tests = {}
-
     tests_valid = True
     validation_traces = "Validation results:"
     for test in assg.get_test_list():
@@ -92,7 +86,8 @@ def validate_tests(submitter: Submitter) -> Result:
 
 
 def validate_programs_under_test(submitter: Submitter) -> Result:
-    validation_dir = paths.get_pre_validation_dir(submitter)
+    _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
+    validation_dir = paths.get_pre_validation_dir(submitter_username)
     assg = AssignmentConfig().get_assignment()
     progs_valid = True
     validation_traces = "Validation results:"

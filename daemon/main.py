@@ -5,7 +5,7 @@ from util.types import FilePath, Submitter, Result
 import tournament.main as tourney
 from tournament.state.tourney_snapshot import TourneySnapshot
 
-from config.configuration import AssignmentConfig
+from config.configuration import AssignmentConfig, ApprovedSubmitters
 
 from daemon import flags, fs
 from daemon.flags import Flag
@@ -48,14 +48,15 @@ def process_submission_request(file_path):
 
 
 def make_submission(submitter: Submitter) -> Result:
+    _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     submission_time = datetime.now()
-    pre_val_dir = paths.get_pre_validation_dir(submitter)
-    staged_dir = paths.STAGING_DIR + "/" + fs.create_submission_request_name(submitter, submission_time)
-    fs.remove_previous_occurrences(submitter)
+    pre_val_dir = paths.get_pre_validation_dir(submitter_username)
+    staged_dir = paths.STAGING_DIR + "/" + fs.create_submission_request_name(submitter_username, submission_time)
+    fs.remove_previous_occurrences(submitter_username)
     subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True)
     flags.set_submission_ready(staged_dir)
 
-    trace = "Submission successfully made by {} at {}".format(submitter,
+    trace = "Submission successfully made by {} at {}".format(submitter_username,
                                                               submission_time.strftime(fmt.datetime_trace_string))
     print_tourney_trace(trace)
     return Result((True, trace))

@@ -3,15 +3,16 @@ import os
 import json
 from util import paths
 from util.types import Submitter
+from typing import Dict
 
 
 class ApprovedSubmitters:
 
-    default_approved_submitters = [
-        "student_a",
-        "student_b",
-        "student_c",
-    ]
+    default_approved_submitters = {
+        "student_a": {'student_id': "123456"},
+        "student_b": {'student_id': "234567"},
+        "student_c": {'student_id': "345678"}
+    }
 
     approved_submitters = {}
 
@@ -23,8 +24,22 @@ class ApprovedSubmitters:
         else:
             self.approved_submitters = json.load(open(paths.APPROVED_SUBMITTERS_LIST, 'r'))
 
-    def get_list(self) -> [Submitter]:
+    def get_list(self) -> Dict[Submitter, dict]:
         return self.approved_submitters
+
+    def get_submitter_username(self, submitter: str) -> (bool, Submitter):
+        """
+        Submitters can be identified either by their username or by their student id.
+        Map these to their username
+        :param submitter: The username or student id of the submitter
+        :return: Whether a valid username was found, and the username if found
+        """
+        for elig_submitter in self.approved_submitters:
+            if submitter == elig_submitter or submitter == self.approved_submitters[elig_submitter]['student_id']:
+                return True, elig_submitter
+
+        # else elig_submitter not found
+        return False, ""
 
     @staticmethod
     def write_default():

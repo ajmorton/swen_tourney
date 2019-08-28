@@ -29,9 +29,7 @@ def main():
         print()
         print("Validating submitted tests    ")
         print("==================================")
-
-        submission_dir = command.dir
-        submitter = Submitter(os.path.basename((os.path.dirname(submission_dir).rstrip('/'))))
+        submitter = Submitter(os.path.basename((os.path.dirname(command.dir).rstrip('/'))))
         success, validation_traces = tourney.validate_tests(submitter)
         print(validation_traces)
         print("==================================")
@@ -41,8 +39,7 @@ def main():
         print()
         print("Validating submitted programs  ")
         print("==================================")
-        submission_dir = command.dir
-        submitter = Submitter(os.path.basename((os.path.dirname(submission_dir).rstrip('/'))))
+        submitter = Submitter(os.path.basename((os.path.dirname(command.dir).rstrip('/'))))
         success, validation_traces = tourney.validate_programs_under_test(submitter)
         print(validation_traces)
         print("==================================")
@@ -52,8 +49,7 @@ def main():
         print()
         print("Validating submitted programs  ")
         print("==================================")
-        submission_dir = command.dir
-        submitter = Submitter(os.path.basename((os.path.dirname(submission_dir).rstrip('/'))))
+        submitter = Submitter(os.path.basename((os.path.dirname(command.dir).rstrip('/'))))
         (success, submission_traces) = daemon.make_submission(submitter)
         print(submission_traces)
         print("==================================")
