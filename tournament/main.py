@@ -55,6 +55,14 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
 def validate_tests(submitter: Submitter) -> Result:
     _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     validation_dir = paths.get_pre_validation_dir(submitter_username)
+    if not os.path.exists(validation_dir):
+        return Result((False, "Student submission not found in the `pre_validation` folder.\n"
+                              "This can be caused by manually retrying a failed test stage via the gitlab web "
+                              "interface. In order to do so you will need to manually re-run all stages in order "
+                              "(including stages that have previously passed).\n"
+                              "However, the recommended approach is to push a new commit which will run the entire "
+                              "test pipeline"))
+
     assg = AssignmentConfig().get_assignment()
 
     num_tests = {}
@@ -88,10 +96,18 @@ def validate_tests(submitter: Submitter) -> Result:
 def validate_programs_under_test(submitter: Submitter) -> Result:
     _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     validation_dir = paths.get_pre_validation_dir(submitter_username)
+    if not os.path.exists(validation_dir):
+        return Result((False, "Student submission not found in the `pre_validation` folder.\n"
+                              "This can be caused by manually retrying a failed test stage via the gitlab web "
+                              "interface. In order to do so you will need to manually re-run all stages in order "
+                              "(including stages that have previously passed).\n"
+                              "However, the recommended approach is to push a new commit which will run the entire "
+                              "test pipeline"))
+
     assg = AssignmentConfig().get_assignment()
+
     progs_valid = True
     validation_traces = "Validation results:"
-
     for prog in assg.get_programs_list():
         for test in assg.get_test_list():
             test_result, _ = assg.run_test(test, prog, FilePath(validation_dir))
