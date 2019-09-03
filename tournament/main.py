@@ -126,12 +126,18 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
     num_tests = json.load(open(paths.get_tourney_dir(submitter) + "/" + paths.NUM_TESTS_FILE, 'r'))
     tourney_state.set_number_of_tests(submitter, num_tests)
 
+    # run_tests will create staging directories for testing based on the thread id.
+    # As multiprocessing.pool allocates incrementing thread ids this leads to an increasing number of staging dirs,
+    # and in turn a memory leak of sorts.
+    # Instead, make sure that the head_to_head dir is empty before running to prevent this.
+    subprocess.run("rm -rf {}".format(paths.HEAD_TO_HEAD_DIR + "/*"), shell=True)
+
     # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
     # run_tests into functions with just one argument
     rt_new_tests = partial(run_tests, tourney_state=tourney_state, new_tests=new_tests, new_progs=[])
     rt_new_progs = partial(run_tests, tourney_state=tourney_state, new_tests=[], new_progs=new_progs)
 
-    with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
+    with multiprocessing.Pool() as p:
         # run submitter tests against others progs
         tester_pairs = [(submitter, other) for other in other_submitters]
         tester_results = p.map(rt_new_tests, tester_pairs)
