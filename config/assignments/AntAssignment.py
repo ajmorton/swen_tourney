@@ -54,12 +54,9 @@ class AntAssignment(AbstractAssignment):
 
         # copy across the programs, excluding 'original'
         for program in self.get_programs_list():
-            subprocess.run("rm -rf {}".format(destination_dir + "/programs/" + program),
-                           shell=True)
+            subprocess.run("rm -rf {}".format(destination_dir + "/programs/" + program), shell=True)
             subprocess.run(
-                "cp -rf {} {}".format(
-                    submission_dir + "/programs/" + program,
-                    destination_dir + "/programs"),
+                "cp -rf {} {}".format(submission_dir + "/programs/" + program, destination_dir + "/programs"),
                 shell=True
             )
 

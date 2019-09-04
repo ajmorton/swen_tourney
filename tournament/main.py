@@ -36,12 +36,15 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
         return Result((False, "Cannot make a new submission at {}. Submissions have been closed"
                               .format(datetime.now().strftime(fmt.datetime_trace_string))))
 
-    # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
     submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
     if os.path.isdir(submitter_pre_validation_dir):
-        return Result((False, "Error: A prior submission is still being validated. "
-                              "Please wait until it has finished to push a new commit."))
+        prior_submission_age = datetime.now().timestamp() - os.stat(submitter_pre_validation_dir).st_mtime
+        stale_submission_age = 60 * 15  # 15 minutes, a prior submission older than this can be discarded
+        if prior_submission_age < stale_submission_age:
+            return Result((False, "Error: A prior submission is still being validated. "
+                                  "Please wait until it has finished to push a new commit."))
 
+    # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
     subprocess.run(
         "cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir),
         shell=True
@@ -55,6 +58,7 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
 def validate_tests(submitter: Submitter) -> Result:
     _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     validation_dir = paths.get_pre_validation_dir(submitter_username)
+
     if not os.path.exists(validation_dir):
         return Result((False, "Student submission not found in the `pre_validation` folder.\n"
                               "This can be caused by manually retrying a failed test stage via the gitlab web "
