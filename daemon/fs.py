@@ -1,11 +1,11 @@
+import os
+import subprocess
+from datetime import datetime
+
+from daemon import flags
+from util import format as fmt
 from util import paths
 from util.types import FilePath, Submitter
-from daemon import flags
-import os
-from datetime import datetime
-import subprocess
-from util import format as fmt
-
 
 REPORT_REQUEST_PREFIX = "report_request."
 SUBMISSION_REQUEST_PREFIX = "submission."

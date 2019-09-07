@@ -1,7 +1,8 @@
 import sys
 from datetime import datetime
-from util import paths
+
 from util import format as fmt
+from util import paths
 
 
 def assert_python_version(major: int, minor: int, micro: int):

@@ -1,8 +1,9 @@
+import os
+import subprocess
+from enum import Enum
+
 from util import paths
 from util.types import FilePath
-import os
-from enum import Enum
-import subprocess
 
 
 class Flag(Enum):

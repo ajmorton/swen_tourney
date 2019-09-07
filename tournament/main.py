@@ -1,18 +1,19 @@
-import subprocess
-import os
-import multiprocessing
-from functools import partial
-from tournament.state.tourney_state import TourneyState
-from tournament.state.tourney_snapshot import TourneySnapshot
-from util import paths
-from config.configuration import ApprovedSubmitters, AssignmentConfig
-from util.types import *
-from util.funcs import print_tourney_trace
-from daemon import flags
-from datetime import datetime
-from util import format as fmt
-import json
 import csv
+import json
+import multiprocessing
+import os
+import subprocess
+from datetime import datetime
+from functools import partial
+
+from config.configuration import ApprovedSubmitters, AssignmentConfig
+from daemon import flags
+from tournament.state.tourney_snapshot import TourneySnapshot
+from tournament.state.tourney_state import TourneyState
+from util import format as fmt
+from util import paths
+from util.funcs import print_tourney_trace
+from util.types import *
 
 
 def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission_dir: FilePath) -> Result:

@@ -1,20 +1,15 @@
+import subprocess
+from datetime import datetime
+from time import sleep, time
+
+from config.configuration import AssignmentConfig, ApprovedSubmitters
+from daemon import flags, fs
+from daemon.flags import Flag
+from tournament import main as tourney
+from tournament.state.tourney_snapshot import TourneySnapshot
 from util import paths, format as fmt
 from util.funcs import print_tourney_trace, print_tourney_error
 from util.types import FilePath, Submitter, Result
-
-import tournament.main as tourney
-from tournament.state.tourney_snapshot import TourneySnapshot
-
-from config.configuration import AssignmentConfig, ApprovedSubmitters
-
-from daemon import flags, fs
-from daemon.flags import Flag
-
-from time import sleep
-from datetime import datetime
-import subprocess
-from reporting import emailer
-import time
 
 
 def process_report_request(file_path: FilePath):
@@ -38,9 +33,9 @@ def process_submission_request(file_path):
     subprocess.run("rm -rf {}".format(tourney_dest), shell=True)
     subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True)
 
-    time_start = time.time()
+    time_start = time()
     tourney.run_submission(submitter, submission_time.strftime(fmt.datetime_trace_string), new_tests, new_progs)
-    time_end = time.time()
+    time_end = time()
 
     snapshot = TourneySnapshot(report_time=submission_time)
     snapshot.set_time_to_process_last_submission(int(time_end - time_start))

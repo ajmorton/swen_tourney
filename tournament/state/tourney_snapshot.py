@@ -1,14 +1,15 @@
 
-from util.types import FilePath
-from tournament.state.tourney_state import TourneyState
-from datetime import datetime
+import copy
+import csv
 import json
+from datetime import datetime
+
 from config.configuration import AssignmentConfig
+from tournament.state.tourney_state import TourneyState
 from util import format as fmt
 from util import paths
 from util.funcs import print_tourney_trace
-import copy
-import csv
+from util.types import FilePath
 
 
 class TourneySnapshot:

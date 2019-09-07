@@ -1,11 +1,12 @@
-from config.assignments.AbstractAssignment import AbstractAssignment
-import os
-import subprocess
-from util import paths
-from util.types import *
-import re
 import math
+import os
+import re
+import subprocess
+
+from config.assignments.AbstractAssignment import AbstractAssignment
+from util import paths
 from util.funcs import print_tourney_error
+from util.types import *
 
 
 class AntAssignment(AbstractAssignment):

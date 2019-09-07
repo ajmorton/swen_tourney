@@ -1,8 +1,8 @@
 from config.exceptions import NoConfigDefined
-from config.files.server_config import ServerConfig
 from config.files.approved_submitters import ApprovedSubmitters
 from config.files.assignment_config import AssignmentConfig
 from config.files.email_config import EmailConfig
+from config.files.server_config import ServerConfig
 
 
 def configuration_valid() -> bool:

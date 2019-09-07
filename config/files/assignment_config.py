@@ -1,11 +1,12 @@
 
-from enum import Enum
-from config.assignments.AbstractAssignment import AbstractAssignment
-from config.assignments.AntAssignment import AntAssignment
 import json
 import os
-from util import paths
+from enum import Enum
+
+from config.assignments.AbstractAssignment import AbstractAssignment
+from config.assignments.AntAssignment import AntAssignment
 from config.exceptions import NoConfigDefined
+from util import paths
 
 
 class AssignmentType(Enum):

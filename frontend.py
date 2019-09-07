@@ -1,10 +1,11 @@
 import os
-import util.funcs
-import util.cli_arg_parser as parser
+
+import daemon.main as daemon
 import tournament.main as tourney
+import util.cli_arg_parser as parser
+import util.funcs
 from util.cli_arg_parser import FrontEndCommand
 from util.types import Submitter
-import daemon.main as daemon
 
 
 def main():

@@ -1,18 +1,16 @@
 from datetime import datetime
 
-import util.cli_arg_parser as parser
-from util.cli_arg_parser import BackendCommands
-import tournament.main as tourney
-import util.funcs
 from config import configuration as cfg
-
-import daemon.main as daemon
-from reporting import results_server
 from daemon import flags
+from daemon import main as daemon
+from reporting import results_server
+from tournament import main as tourney
+from util import funcs
+from util.cli_arg_parser import BackendCommands, parse_backend_args
 
 
 def main():
-    command = parser.parse_backend_args()
+    command = parse_backend_args()
     traces = ""
 
     if command.type == BackendCommands.CHECK_CONFIG:
@@ -63,5 +61,5 @@ def main():
 
 
 if __name__ == "__main__":
-    util.funcs.assert_python_version(3, 5, 2)
+    funcs.assert_python_version(3, 5, 2)
     main()

@@ -1,10 +1,10 @@
-from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError, SMTPConnectError
+import socket
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError, SMTPConnectError
 
-import socket
-from util import paths
 from config.configuration import EmailConfig
+from util import paths
 from util.funcs import print_tourney_trace, print_tourney_error
 
 

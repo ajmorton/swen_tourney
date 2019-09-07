@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 from config.configuration import ApprovedSubmitters, AssignmentConfig
 from util import paths

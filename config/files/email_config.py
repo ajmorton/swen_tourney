@@ -1,10 +1,10 @@
-from config.exceptions import NoConfigDefined
-import os
 import json
-from util import paths
-
-from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError, SMTPConnectError
+import os
 import socket
+from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError, SMTPConnectError
+
+from config.exceptions import NoConfigDefined
+from util import paths
 
 
 class EmailConfig:

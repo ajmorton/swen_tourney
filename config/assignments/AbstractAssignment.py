@@ -1,6 +1,7 @@
-from abc import ABCMeta, abstractmethod
-from util.types import *
 import os
+from abc import ABCMeta, abstractmethod
+
+from util.types import *
 
 
 class AbstractAssignment(metaclass=ABCMeta):

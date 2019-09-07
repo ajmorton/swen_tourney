@@ -1,20 +1,20 @@
-import http.server
-from http import HTTPStatus
-from datetime import datetime
-from util import format as fmt
-from tournament.state.tourney_snapshot import TourneySnapshot
-from util import paths
-from config.configuration import AssignmentConfig, ServerConfig
-from daemon import flags
+import os
+import subprocess
 import threading
 import time
-import subprocess
+from datetime import datetime
+from http import HTTPStatus, server
+
+from config.configuration import AssignmentConfig, ServerConfig
+from daemon import flags
+from tournament.state.tourney_snapshot import TourneySnapshot
+from util import format as fmt
+from util import paths
 from util.funcs import print_tourney_trace, print_tourney_error
 from util.types import Result
-import os
 
 
-class TourneyResultsHandler(http.server.SimpleHTTPRequestHandler):
+class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         """
@@ -117,7 +117,7 @@ def table_row(*args) -> str:
     return row
 
 
-def server_assassin(httpd: http.server.HTTPServer):
+def server_assassin(httpd: server.HTTPServer):
     """
     Checks for the removal of the tournament alive flag. When it get removed kill the server
     :param httpd: the HTTP server to kill
@@ -138,7 +138,7 @@ def main():
 
         server_config = ServerConfig()
         server_address = ('', server_config.port())
-        httpd = http.server.HTTPServer(server_address, TourneyResultsHandler)
+        httpd = server.HTTPServer(server_address, TourneyResultsHandler)
         threading.Thread(target=server_assassin, args=[httpd], daemon=True).start()
         httpd.serve_forever()
         print_tourney_trace("Shutting down the results server")

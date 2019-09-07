@@ -1,6 +1,7 @@
-from util import paths
-import os
 import json
+import os
+
+from util import paths
 from util.funcs import print_tourney_trace
 
 

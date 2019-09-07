@@ -1,9 +1,10 @@
-from config.exceptions import NoConfigDefined
-import os
 import json
+import os
+from typing import Dict
+
+from config.exceptions import NoConfigDefined
 from util import paths
 from util.types import Submitter
-from typing import Dict
 
 
 class ApprovedSubmitters:
