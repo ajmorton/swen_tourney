@@ -19,6 +19,8 @@ class BackendCommands(str, Enum):
     CLEAN = 'clean'
     CHECK_CONFIG = 'check_config'
     CLOSE_SUBS = 'close_submissions'
+    GET_DIFFS = 'get_diffs'
+    RESCORE_INVALID = 'rescore_invalid_progs'
 
 
 def create_backend_parser(parser_list):
@@ -72,6 +74,23 @@ def create_backend_parser(parser_list):
     )
     close_subs_parser.set_defaults(type=command_name)
     parser_list[command_name] = close_subs_parser
+
+    # add the parser for the get_diffs command
+    command_name = BackendCommands.GET_DIFFS.value
+    get_diffs_parser = subparsers.add_parser(
+        command_name, help='Generate diffs between submitters mutants and the original '
+                           'program to verify mutants are valid.'
+    )
+    get_diffs_parser.set_defaults(type=command_name)
+    parser_list[command_name] = get_diffs_parser
+
+    # add the parser for the rescore_invalid_diffs command
+    command_name = BackendCommands.RESCORE_INVALID.value
+    rescore_invalid_diffs_parser = subparsers.add_parser(
+        command_name, help='Read the diffs file and update (zero out) the score of any progs found to be invalid.'
+    )
+    rescore_invalid_diffs_parser.set_defaults(type=command_name)
+    parser_list[command_name] = rescore_invalid_diffs_parser
 
     return parser
 

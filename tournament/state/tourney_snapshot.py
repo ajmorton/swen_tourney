@@ -59,7 +59,7 @@ class TourneySnapshot:
             writer = csv.writer(csv_file)
             assg = AssignmentConfig().get_assignment()
             writer.writerow(["Student"] + assg.get_test_list() + assg.get_programs_list() +
-                            ["normalised_bug_scores"] + ["normalised_prog_scores"])
+                            ["normalised_test_score"] + ["normalised_prog_score"])
 
             for (submitter, submitter_data) in sorted(self.snapshot['results'].items()):
                 writer.writerow([submitter] +

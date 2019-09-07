@@ -103,6 +103,17 @@ class TourneyState:
                         tests_evaded += 1
         return tests_evaded
 
+    def invalidate_prog(self, submitter: Submitter, prog: Prog):
+        """
+        If a program is found to be invalid, zero its score by marking it as detected by all tests
+        :param submitter: the submitter whose program is invalid
+        :param prog: the program that is invalid
+        """
+        for tester in self.get_submitters():
+            if submitter != tester:
+                for test in AssignmentConfig().get_assignment().get_test_list():
+                    self.get_submitter_results(tester)[submitter][test][prog] = TestResult.BUG_FOUND
+
     def set_time_of_submission(self, submitter: Submitter, time_of_submission: str):
         self.state[submitter]['latest_submission_date'] = time_of_submission
 

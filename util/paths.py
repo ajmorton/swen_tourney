@@ -34,6 +34,9 @@ TRACE_FILE = ROOT_DIR + "/tournament_traces.log"
 # CSV file for exporting tournament results
 CSV_FILE = ROOT_DIR + "/student_results.csv"
 
+# CSV file containing the diffs between the original source code and submitter progs
+DIFF_FILE = ROOT_DIR + "/submitter_prog_diffs.csv"
+
 # Track how many tests a submission has used per test suite
 NUM_TESTS_FILE = "num_tests.json"
 

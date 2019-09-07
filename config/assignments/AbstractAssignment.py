@@ -102,7 +102,7 @@ class AbstractAssignment(metaclass=ABCMeta):
     def compute_normalised_test_score(self, submitter_score: float, best_score: float, num_tests: int) -> float:
         """
         Compute a submitters test score normalised against the best test score in the tournament.
-        :return:
+        :return: the submitters normalised test score
         """
         raise NotImplementedError("Error: compute_normalised_test_score is not implemented")
 
@@ -110,6 +110,14 @@ class AbstractAssignment(metaclass=ABCMeta):
     def compute_normalised_prog_score(self, submitter_score: float, best_score: float) -> float:
         """
         Compute a submitters prog score normalised against the best prog score in the tournament.
-        :return:
+        :return: the submitters normalised prog score
         """
         raise NotImplementedError("Error: compute_normalised_test_score is not implemented")
+
+    @abstractmethod
+    def get_diffs(self, submission_dir: FilePath) -> Dict:
+        """
+        Return the diffs between the original source code and a submitters provided programs
+        :param submission_dir: the submission to fetch the diffs for
+        :return: the diffs between the original source code and a submitters provided programs
+        """

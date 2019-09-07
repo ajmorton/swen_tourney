@@ -50,6 +50,12 @@ def main():
     elif command.type == BackendCommands.CLOSE_SUBS:
         _, traces = daemon.close_submissions()
 
+    elif command.type == BackendCommands.GET_DIFFS:
+        _, traces = tourney.get_diffs()
+
+    elif command.type == BackendCommands.RESCORE_INVALID:
+        _, traces = tourney.rescore_invalid_progs()
+
     else:
         traces = "Error: unrecognised command {}".format(command.type)
 

@@ -131,7 +131,7 @@ class AntAssignment(AbstractAssignment):
             return 0
         else:
             score = (submitter_score / best_score)
-            score *= 2.5  # best score possible is 1. Multiple by 2.5 to scale to 2.5
+            score *= 2.5  # best score possible is 1. Multiply by 2.5 to scale to 2.5
         return round(score, 2)
 
     def compute_normalised_test_score(self, submitter_score: float, best_score: float, num_tests: int) -> float:
@@ -142,3 +142,12 @@ class AntAssignment(AbstractAssignment):
             score *= 25  # best score possible is 0.1. Multiply by 25 to scale to 2.5
         return round(score, 2)
 
+    def get_diffs(self, submission_dir: FilePath) -> Dict:
+
+        diffs = {}
+        for prog in self.get_programs_list():
+            prog_diff = subprocess.run("diff -r {} {}".format("original", prog), cwd=submission_dir + "/programs/",
+                                       shell=True, stdout=subprocess.PIPE, universal_newlines=True)
+            diffs[prog] = prog_diff.stdout.strip()
+
+        return diffs

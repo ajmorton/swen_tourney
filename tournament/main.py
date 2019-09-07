@@ -3,6 +3,7 @@ import os
 import multiprocessing
 from functools import partial
 from tournament.state.tourney_state import TourneyState
+from tournament.state.tourney_snapshot import TourneySnapshot
 from util import paths
 from config.configuration import ApprovedSubmitters, AssignmentConfig
 from util.types import *
@@ -11,6 +12,7 @@ from daemon import flags
 from datetime import datetime
 from util import format as fmt
 import json
+import csv
 
 
 def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission_dir: FilePath) -> Result:
@@ -198,6 +200,92 @@ def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, ne
     return tester, testee, test_set
 
 
+def get_diffs() -> Result:
+    """
+    Print to file the changes each submitter made in their progs compared to the original program.
+    """
+
+    if not flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED):
+        return Result((False, "Submissions are not currently closed.\n "
+                              "get_diffs should only be called once submissions are closed"))
+
+    assg = AssignmentConfig().get_assignment()
+    tourney_results = json.load(open(paths.RESULTS_FILE, 'r'))
+
+    csv_columns = ["submitter", "mutant", "num_tests_evaded", "diff", "invalid?"]
+    diff_csv = csv.DictWriter(open(paths.DIFF_FILE, 'w'), fieldnames=csv_columns)
+    diff_csv.writeheader()
+
+    diffs = []
+    for submitter in os.listdir(paths.TOURNEY_DIR):
+        print("diffing {}".format(submitter))
+        submitter_diffs = assg.get_diffs(paths.get_tourney_dir(Submitter(submitter)))
+        for prog in sorted(submitter_diffs.keys()):
+            num_tests_evaded = tourney_results['results'][submitter]['progs'][prog]
+            diffs.append({'submitter': submitter, 'mutant': prog, 'num_tests_evaded': num_tests_evaded,
+                          'diff': submitter_diffs[prog], 'invalid?': ""})
+
+    # sort by num_tests_evaded, the most successful programs will be at the top of the csv file and
+    # are prioritised for inspection
+    for entry in sorted(diffs, key=lambda e: e['num_tests_evaded'], reverse=True):
+        diff_csv.writerow(entry)
+
+    invalid = ["Y", "y", "True", "true", "X", "x"]
+    valid = ["N", "n", ""]
+
+    return Result((True, "\nDiff file has been created at: {}.\n"
+                         "Invalid entries should be marked with one of {} in the 'invalid?' column, "
+                         "valid entries can be marked with one of {}."
+                   .format(paths.DIFF_FILE, invalid, valid)))
+
+
+def rescore_invalid_progs() -> Result:
+    """
+    Read from the diff file which submitted progs are invalid, and give them a score of zero
+    """
+
+    if not flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED):
+        return Result((False, "Submissions are not currently closed.\n "
+                              "Rescoring invalid programs should only be performed once submissions are closed"))
+
+    if not os.path.exists(paths.DIFF_FILE):
+        return Result((False, "Error the diff file '{}' does not exist.\n"
+                              "Make sure to run 'get_diffs' and update the resulting file before running "
+                              "this command.".format(paths.DIFF_FILE)))
+
+    diff_csv = csv.DictReader(open(paths.DIFF_FILE, 'r'))
+    tourney_state = TourneyState()
+
+    invalid = ["Y", "y", "True", "true", "X", "x"]
+    valid = ["N", "n", ""]
+
+    num_invalid_progs = 0
+    unrecognised_value = False
+    for row in diff_csv:
+        is_invalid, sub, mut = row['invalid?'], row['submitter'], row['mutant']
+        if is_invalid in invalid:
+            tourney_state.invalidate_prog(sub, mut)
+            num_invalid_progs += 1
+        elif is_invalid in valid:
+            continue
+        else:
+            unrecognised_value = True
+            print("Error: unrecognised value '{}' in the 'invalid?' column for {} {}."
+                  .format(is_invalid, sub, mut))
+
+    if unrecognised_value:
+        print("\nUnrecognised values in the 'invalid?' column of {} have been detected. "
+              "Please use one of {} for valid entries, or one of {} for invalid entries"
+              .format(paths.DIFF_FILE, valid, invalid))
+
+    # update tourney state and results
+    print("\nResults updated. Recalculating submitter scores.")
+    tourney_state.save_to_file()
+    TourneySnapshot(report_time=datetime.now()).write_snapshot()
+
+    return Result((True, "{} invalid programs have had their score set to zero".format(num_invalid_progs)))
+
+
 def clean():
     """
     Remove all submissions and reset the tourney state
@@ -214,5 +302,6 @@ def clean():
     subprocess.run("rm -f  {}".format(paths.APPROVED_SUBMITTERS_LIST), shell=True)
     subprocess.run("rm -f  {}".format(paths.SERVER_CONFIG), shell=True)
     subprocess.run("rm -f  {}".format(paths.EMAIL_CONFIG), shell=True)
+    subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True)
     flags.clear_all()
 

@@ -4,6 +4,7 @@ __pycache__/
 
 # Tournament results
 student_results.csv
+submitter_prog_diffs.csv
 tournament_traces.log
 
 # Directories containing test submissions
