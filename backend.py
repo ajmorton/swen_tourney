@@ -13,7 +13,7 @@ from util import funcs
 from util.cli_arg_parser import BackendCommands, parse_backend_args
 
 
-def main():
+def main():  # pylint: disable=too-many-branches
     """ Parse and process backend commands """
     command = parse_backend_args()
     traces = ""

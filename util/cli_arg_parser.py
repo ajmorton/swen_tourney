@@ -11,7 +11,7 @@ from enum import Enum
 class SubcommandHelpFormatter(argparse.RawDescriptionHelpFormatter):
     """ Format help text for the command line interface """
     def _format_action(self, action):
-        parts = super(argparse.RawDescriptionHelpFormatter, self)._format_action(action)
+        parts = super()._format_action(action)
         if action.nargs == argparse.PARSER:
             parts = "\n".join(parts.split("\n")[1:])
         return parts

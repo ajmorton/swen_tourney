@@ -146,7 +146,7 @@ def main():
             else:
                 print_tourney_trace("Nothing to process")
                 sleep(60)
-    except Exception as exception:
+    except Exception as exception:  # pylint: disable=broad-except
         print_tourney_error("Exception caught while running tournament")
         print_tourney_error(str(exception))
         import traceback

@@ -93,9 +93,10 @@ class TourneyState:
         assg = AssignmentConfig().get_assignment()
         testset = TestSet({})
         for test in assg.get_test_list():
-            testset[test] = {}
+            # pylint suppressed -> pylint not recognising typing.Dict as dict
+            testset[test] = {}  # pylint: disable=unsupported-assignment-operation
             for prog in assg.get_programs_list():
-                testset[test][prog] = TestResult.NOT_TESTED
+                testset[test][prog] = TestResult.NOT_TESTED  # pylint: disable=unsubscriptable-object
         return testset
 
     def get_valid_submitters(self):

@@ -33,7 +33,7 @@ def configuration_valid() -> bool:
         #     valid = EmailConfig().check_email_valid()
 
     except NoConfigDefined as no_config_error:
-        print(no_config_error)
+        print(no_config_error.message)
         valid = False
 
     print("=================================")

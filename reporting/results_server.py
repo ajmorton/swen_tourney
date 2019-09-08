@@ -40,7 +40,7 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
 
         self.wfile.write(bytes(html, 'utf-8'))
 
-    def log_message(self, log_format, *args):
+    def log_message(self, log_format, *args):  # pylint: disable=arguments-differ,unused-argument
         """
         The results server runs on a VPS, and when the session is closed but the server continues to run
         printed messages are sent to the no-longer-existing stdout. This causes the server to crash so instead
@@ -48,7 +48,7 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
         """
         return
 
-    def log_error(self, log_format, *args):
+    def log_error(self, log_format, *args):  # pylint: disable=arguments-differ,unused-argument
         """
         The results server runs on a VPS, and when the session is closed but the server continues to run
         printed messages are sent to the no-longer-existing stderr. This causes the server to crash so instead
@@ -176,7 +176,7 @@ def main():
         threading.Thread(target=server_assassin, args=[httpd], daemon=True).start()
         httpd.serve_forever()
         print_tourney_trace("Shutting down the results server")
-    except Exception as exception:
+    except Exception as exception:  # pylint: disable=broad-except
         print_tourney_error("Exception caught while running Results Server")
         print_tourney_error(str(exception))
         import traceback
