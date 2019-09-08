@@ -1,3 +1,7 @@
+"""
+Submissions and report requests are made to the tournament asynchronously by placing them in the paths.STAGED_DIR
+folder. These are then popped by the tournament daemon, oldest timestamp first, and processed in the tournament.
+"""
 import subprocess
 from datetime import datetime
 from time import sleep, time
@@ -13,6 +17,11 @@ from util.types import FilePath, Submitter, Result
 
 
 def process_report_request(file_path: FilePath):
+    """
+    Provided a report request from paths.STAGED_DIR, create a snapshot of the current tournament state and write a
+    .csv report with submitter scores
+    :param file_path: the file path of the report request in paths.STAGED_DIR
+    """
     report_time = fs.get_report_request_time(file_path)
     print_tourney_trace("Generating report for tournament submissions as of {}".format(report_time))
     snapshot = TourneySnapshot(report_time=report_time)
@@ -21,6 +30,7 @@ def process_report_request(file_path: FilePath):
 
 
 def process_submission_request(file_path):
+    """ Provided a submission from paths.STAGED_DIR, process the submission in the tournament """
     (submitter, submission_time) = fs.get_submission_request_details(file_path)
 
     staged_dir = file_path
@@ -43,6 +53,7 @@ def process_submission_request(file_path):
 
 
 def make_submission(submitter: Submitter) -> Result:
+    """ Create a submission for a submitter in the paths.STAGED_DIR """
     _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     submission_time = datetime.now()
     pre_val_dir = paths.get_pre_validation_dir(submitter_username)
@@ -58,6 +69,7 @@ def make_submission(submitter: Submitter) -> Result:
 
 
 def is_alive() -> Result:
+    """ Check if the TourneyDaemon is online via the alive flag """
     if flags.get_flag(Flag.ALIVE):
         if flags.get_flag(Flag.SHUTTING_DOWN):
             return Result((True, "Tournament is online, but in the process of shutting down"))
@@ -68,6 +80,7 @@ def is_alive() -> Result:
 
 
 def shutdown() -> Result:
+    """ Set the shutdown flag for TourneyDaemon """
     if not flags.get_flag(Flag.ALIVE):
         return Result((False, "Tournament is already offline"))
     else:
@@ -79,6 +92,7 @@ def shutdown() -> Result:
 
 
 def make_report_request(request_time: datetime) -> Result:
+    """ Create a report request file in paths.STAGED_DIR """
     fs.create_report_request(request_time)
     trace = "Report request made at {}".format(request_time.strftime(fmt.datetime_trace_string))
     print_tourney_trace(trace)
@@ -86,11 +100,13 @@ def make_report_request(request_time: datetime) -> Result:
 
 
 def close_submissions() -> Result:
+    """ Set the SUBMISSIONS_CLOSED flag to prevent any further submissions """
     flags.set_flag(flags.Flag.SUBMISSIONS_CLOSED, True)
     return Result((True, "Submissions closed"))
 
 
 def start():
+    """ Start a new thread and run the TourneyDaemon in it """
     subprocess.Popen("python3 -m daemon.main", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return Result((True, "Tournament starting.\nTraces are being written to {}".format(paths.TRACE_FILE)))

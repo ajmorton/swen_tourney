@@ -1,3 +1,9 @@
+"""
+The list of approved submitters for the tournament.
+Students are identified by their student username, but Gitlab accounts may also be created based on other details such
+as student id so additional information is provided to help map between a students Gitlab username and their student
+username
+"""
 import json
 import os
 from typing import Dict
@@ -8,6 +14,7 @@ from util.types import Submitter
 
 
 class ApprovedSubmitters:
+    """ The list of approved submitters in the tournament """
 
     default_approved_submitters = {
         "student_a": {'student_id': "123456"},
@@ -26,6 +33,7 @@ class ApprovedSubmitters:
             self.approved_submitters = json.load(open(paths.APPROVED_SUBMITTERS_LIST, 'r'))
 
     def get_list(self) -> Dict[Submitter, dict]:
+        """ Get the list of approved submitters """
         return self.approved_submitters
 
     def get_submitter_username(self, submitter: str) -> (bool, Submitter):
@@ -45,10 +53,12 @@ class ApprovedSubmitters:
 
     @staticmethod
     def write_default():
+        """ Create a default ApprovedSubmitters file """
         json.dump(ApprovedSubmitters.default_approved_submitters, open(paths.APPROVED_SUBMITTERS_LIST, 'w'),
                   indent=4, sort_keys=True)
 
     def check_non_default(self) -> bool:
+        """ Check the list of approved submitters has been filled with non-default values """
         if self.approved_submitters != ApprovedSubmitters.default_approved_submitters:
             print("Approved submitters file format has been written:")
             return True
@@ -58,6 +68,7 @@ class ApprovedSubmitters:
                   .format(paths.APPROVED_SUBMITTERS_LIST))
 
     def check_num_submitters(self) -> bool:
+        """ Check that more than one submitter has been added to the approved submitters list """
         num_submitters = len(self.approved_submitters)
         if num_submitters < 2:
             print("\tERROR: There are less than 2 submitters in the approved submitters list")
@@ -67,6 +78,7 @@ class ApprovedSubmitters:
             return True
 
     def check_valid(self) -> bool:
+        """ Check the approved submitters list is valid """
 
         valid = self.check_non_default()
 

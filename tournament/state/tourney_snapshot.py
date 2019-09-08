@@ -1,3 +1,7 @@
+"""
+TourneySnapshot takes the state of the tournament at a point in time and processes the data to provide a summary.
+This data can then be published.
+"""
 
 import copy
 import csv
@@ -13,6 +17,9 @@ from util.types import FilePath
 
 
 class TourneySnapshot:
+    """
+    The TourneySnapshot class. Takes the state of the tournament and provides a processed summary of the data.
+    """
 
     NO_DATE = datetime.strftime(datetime.min, fmt.datetime_trace_string)
 
@@ -37,6 +44,13 @@ class TourneySnapshot:
     }
 
     def __init__(self, snapshot_file: FilePath = None, report_time: datetime = datetime.min):
+        """
+        __init__ takes one of snapshot_file or report_time as an argument.
+        If snapshot_file is provided the snapshot is read from file.
+        If report_time is provided then a new snapshot is created by processing the current tournament state.
+        :param snapshot_file: the path of the offline file (if any) to read the snapshot from
+        :param report_time: the time of the new snapshot to create
+        """
 
         self.snapshot = TourneySnapshot.default_snapshot
 
@@ -45,8 +59,16 @@ class TourneySnapshot:
         elif report_time != datetime.min:
             self.create_snapshot_from_tourney_state(report_time)
             self.compute_normalised_scores()
+        else:
+            raise NotImplementedError("Error: TourneySnapshot constructor must take one of {snapshot_file, datetime} "
+                                      "as an argument")
 
     def write_snapshot(self, save_with_timestamp=False):
+        """
+        Write the snapshot to a json file
+        :param save_with_timestamp: If true then the snapshot file will be appended with the time of the snapshot
+                                    e.g. snapshot.json.2019.09.08.12.00
+        """
         json.dump(self.snapshot, open(paths.RESULTS_FILE, 'w'), indent=4, sort_keys=True)
 
         if save_with_timestamp:
@@ -56,6 +78,9 @@ class TourneySnapshot:
             print_tourney_trace("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
 
     def write_csv(self):
+        """
+        Write the snapshot details in a Blackboard friendly format. Only scoring details are provided in this file
+        """
         with open(paths.CSV_FILE, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file)
             assg = AssignmentConfig().get_assignment()
@@ -70,6 +95,10 @@ class TourneySnapshot:
                                 [submitter_data["normalised_prog_score"]])
 
     def create_snapshot_from_tourney_state(self, report_time: datetime):
+        """
+        Fetch the tournament state and process it to fill the TourneySnapshot object with useful metadata
+        :param report_time: the time of the snapshot
+        """
         tourney_state = TourneyState()
         assg = AssignmentConfig().get_assignment()
 
@@ -101,6 +130,10 @@ class TourneySnapshot:
             self.snapshot['results'][submitter] = submitter_result
 
     def compute_normalised_scores(self):
+        """
+        Determine the best prog and test scores of any submitter in the tournament, and normalise
+        the scores of all other submitters against these best scores. Update submitters scores
+        """
 
         results = self.snapshot['results']
         assg = AssignmentConfig().get_assignment()
@@ -125,16 +158,24 @@ class TourneySnapshot:
             )
 
     def set_time_to_process_last_submission(self, seconds: int):
+        """ Set the time to process the last submission """
         self.snapshot['time_to_process_last_submission'] = seconds
 
     def time_to_process_last_submission(self) -> int:
+        """ Get the time to process the last submission """
         return self.snapshot['time_to_process_last_submission']
 
     def date(self) -> datetime:
+        """ The datetime of the snapshot """
         return datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_trace_string)
 
     def num_submitters(self) -> int:
+        """
+        The number of submitters who have made a valid submission in the tournament
+        :return: The number of submitters who have made a valid submission in the tournament
+        """
         return self.snapshot['num_submitters']
 
     def results(self) -> dict:
+        """ The submitter results """
         return self.snapshot['results']

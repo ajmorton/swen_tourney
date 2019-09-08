@@ -1,3 +1,6 @@
+"""
+Which assignment the tournament is configured for and validation of these details
+"""
 
 import json
 import os
@@ -10,10 +13,12 @@ from util import paths
 
 
 class AssignmentType(Enum):
+    """ The available assignment types to choose from """
     ant_assignment = AntAssignment
 
 
 class AssignmentConfig:
+    """ Contains configuration details for which tournament the assignment is set up for. """
 
     default_assignment_config = {
         'assignment': "enter_assignment_type_here",
@@ -29,14 +34,17 @@ class AssignmentConfig:
             self.config = json.load(open(paths.ASSIGNMENT_CONFIG, 'r'))
 
     def get_assignment(self) -> AbstractAssignment:
+        """ Get which assignment the tournament has been configured for """
         return AssignmentType[self.config['assignment']].value(self.config['source_assg_dir'])
 
     @staticmethod
     def write_default():
+        """ Create a default AssignmentConfig file """
         json.dump(AssignmentConfig.default_assignment_config, open(paths.ASSIGNMENT_CONFIG, 'w')
                   , indent=4, sort_keys=True)
 
     def check_assignment_valid(self) -> bool:
+        """ Check the configuration is valid """
         valid = self.check_assignment_type()
 
         if valid:
@@ -46,6 +54,7 @@ class AssignmentConfig:
         return valid
 
     def check_assignment_type(self) -> bool:
+        """ Check that the assignment type listed has an existing implementation """
         assignment_types = [assg.name for assg in AssignmentType]
 
         if self.config['assignment'] in assignment_types:
@@ -58,6 +67,7 @@ class AssignmentConfig:
             return False
 
     def check_source_assg_exists(self) -> bool:
+        """ Check that the path to the original source code is valid """
         source_assg_dir = self.config['source_assg_dir']
         if os.path.exists(source_assg_dir):
             print("\tSource assignment is: {}".format(AntAssignment(source_assg_dir).get_assignment_name()))

@@ -1,3 +1,8 @@
+"""
+Results of the tournament are written to an HTTP server.
+The server delivers a static page with a ranked table of submitters
+"""
+
 import os
 import subprocess
 import threading
@@ -15,12 +20,10 @@ from util.types import Result
 
 
 class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
+    """ HTTP request handler that returns a ranked table of submitter results """
 
     def do_GET(self):
-        """
-        Handle GET requests to the server by
-        :return:
-        """
+        """ Handle GET requests to the server """
 
         self.send_response(HTTPStatus.OK)
         self.send_header('Content-type', 'text/html')
@@ -38,10 +41,16 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
         self.wfile.write(bytes(html, 'utf-8'))
 
     def log_message(self, log_format, *args):
+        """
+        The results server runs on a VPS, and when the session is closed but the server continues to run
+        printed messages are sent to the no-longer-existing stdout. This causes the server to crash so instead
+        suppress logging
+        """
         return
 
 
 def tournament_processing_details(snapshot: TourneySnapshot) -> str:
+    """ Return a string with submissions still to process and the current submission processing duration """
     queued_submissions = len(os.listdir(paths.STAGING_DIR))
     time_to_process_last_submission = snapshot.time_to_process_last_submission()
 
@@ -50,6 +59,11 @@ def tournament_processing_details(snapshot: TourneySnapshot) -> str:
 
 
 def html_table_from_results(snapshot: TourneySnapshot) -> str:
+    """
+    Convert the tournament snapshot to a ranked table of submitter results
+    :param snapshot: the tournament snapshot data
+    :return: a string of an HTML table with submitter results
+    """
 
     results = snapshot.results()
     num_submitters = snapshot.num_submitters()
@@ -102,6 +116,7 @@ def html_table_from_results(snapshot: TourneySnapshot) -> str:
 
 
 def table_header(*args) -> str:
+    """ Return an HTML table header string. The size of the row depends on the number of values in *args """
     row = '<tr>'
     for col in args:
         row += '<th align="center">' + str(col) + '</th>'
@@ -110,6 +125,7 @@ def table_header(*args) -> str:
 
 
 def table_row(*args) -> str:
+    """ Return an HTML table row string. The size of the row depends on the number of values in *args """
     row = '<tr>'
     for col in args:
         row += '<td align="center">' + str(col) + '</td>'
@@ -119,9 +135,9 @@ def table_row(*args) -> str:
 
 def server_assassin(httpd: server.HTTPServer):
     """
-    Checks for the removal of the tournament alive flag. When it get removed kill the server
+    An assassin thread that checks for the removal of the tournament alive flag.
+    When it get removed kill the server thread
     :param httpd: the HTTP server to kill
-    :return:
     """
     while flags.get_flag(flags.Flag.ALIVE):
         time.sleep(5)
@@ -130,6 +146,7 @@ def server_assassin(httpd: server.HTTPServer):
 
 
 def main():
+    """ Run the results server thread """
 
     try:
         print_tourney_trace("Starting the results server")
@@ -153,6 +170,7 @@ def main():
 
 
 def start_server():
+    """ Start the results server in its own thread """
     subprocess.Popen("python3 -m reporting.results_server", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return Result((True, "Results server starting. Listening on port {}".format(ServerConfig().port())))

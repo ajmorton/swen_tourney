@@ -1,3 +1,6 @@
+"""
+Configuration for emailing tournament maintainers details of the tournament. Namely crash reports.
+"""
 import json
 import os
 import socket
@@ -8,6 +11,10 @@ from util import paths
 
 
 class EmailConfig:
+    """
+    Contains configuration details needed for sending emails to tournament maintainers and validation of the
+    configuration.
+    """
 
     default_email_config = {
         'sender': "swen-tourney-noreply@unimelb.edu.au",  # the email to send tournament results from
@@ -28,25 +35,32 @@ class EmailConfig:
             self.email_config = json.load(open(paths.EMAIL_CONFIG, 'r'))
 
     def sender(self) -> str:
+        """ The sender of the email """
         return self.email_config['sender']
 
     def password(self) -> str:
+        """ The password to login to the SMTP server """
         return self.email_config['password']
 
     def smtp_server(self) -> str:
+        """ The SMTP server to connect to in order to send emails """
         return self.email_config['smtp_server']
 
     def port(self) -> str:
+        """ The port to connect to on the SMTP server """
         return self.email_config['port']
 
     def crash_report_recipients(self) -> str:
+        """ The emails addressed of tournament maintainers to notify of a crash """
         return ", ".join(self.email_config['crash_report_recipients'])
 
     @staticmethod
     def write_default():
+        """ Create a default EmailConfig file """
         json.dump(EmailConfig.default_email_config, open(paths.EMAIL_CONFIG, 'w'), indent=4, sort_keys=True)
 
     def check_email_valid(self) -> bool:
+        """ Check the email config file is valid for usage """
         valid = self.check_email_non_default()
 
         if valid:
@@ -56,6 +70,7 @@ class EmailConfig:
         return valid
 
     def check_email_non_default(self) -> bool:
+        """ Check the email config has been updated with non-default values """
         if self.email_config != EmailConfig.default_email_config:
             print("Emails will be sent from: {}".format(self.sender()))
             return True
@@ -65,6 +80,7 @@ class EmailConfig:
             return False
 
     def check_connection(self) -> bool:
+        """ Check that using the details in the email config and email can be sent via the SMTP server """
         smtp_server = self.smtp_server()
         port = self.port()
         email = self.sender()

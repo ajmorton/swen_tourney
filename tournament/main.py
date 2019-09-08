@@ -1,3 +1,6 @@
+"""
+The core functions used for running the tournament
+"""
 import csv
 import json
 import multiprocessing
@@ -17,6 +20,13 @@ from util.types import *
 
 
 def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission_dir: FilePath) -> Result:
+    """
+    Check that the submitter has made a submission that is eligible for the tournament.
+    :param submitter: The name of the submitter
+    :param assg_name: The name of the assignment submitted
+    :param submission_dir: the directory of the submission
+    :return: Whether the submitter is eligible, with traces
+    """
 
     if not flags.get_flag(flags.Flag.ALIVE):
         return Result((False, "Error: The tournament is not currently online."))
@@ -59,6 +69,12 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
 
 
 def validate_tests(submitter: Submitter) -> Result:
+    """
+    Validate that all tests provided by a submitter correctly detect no errors in the original assignment code.
+    :param submitter: the submitter whose tests are to be validated
+    :return: Whether the tests are valid, with traces
+    """
+    # The submission has been placed in the prevalidation dir as a result of running check_submitter_eligibility first
     _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     validation_dir = paths.get_pre_validation_dir(submitter_username)
 
@@ -101,6 +117,12 @@ def validate_tests(submitter: Submitter) -> Result:
 
 
 def validate_programs_under_test(submitter: Submitter) -> Result:
+    """
+    Validate that all programs provided by a submitter have bugs detected by the submitters own test suites.
+    :param submitter: the submitter whose programs are to be validated
+    :return: Whether the programs are valid, with traces
+    """
+    # The submission has been placed in the prevalidation dir as a result of running check_submitter_eligibility first
     _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     validation_dir = paths.get_pre_validation_dir(submitter_username)
     if not os.path.exists(validation_dir):
@@ -137,6 +159,15 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
 
 
 def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test], new_progs: [Prog]):
+    """
+    Run a submission against all other previously made submissions in the tournament.
+    The submission has been compared against the submitters prior submission (if any). Only new tests and progs require
+    retesting
+    :param submitter: the submitter
+    :param submission_time: the time of the new submission
+    :param new_tests: the list of new tests that need to be run/rerun
+    :param new_progs: the list of new programs that need to be run/rerun
+    """
 
     tourney_state = TourneyState()
     other_submitters = [sub for sub in tourney_state.get_valid_submitters() if sub != submitter]
@@ -178,6 +209,16 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
 
 def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, new_tests: [Test], new_progs: [Prog]
               ) -> [Submitter, Submitter, TestSet]:
+    """
+    Provided a tester/testee pair, run the testers tests against the testees programs.
+    If a test or a program is marked as new then run the test against the program, otherwise the values can be taken
+    from the existing tournament state
+    :param pair: the tester/testee pair
+    :param tourney_state: the existing tournament state
+    :param new_tests: the list of new tests that need to be run
+    :param new_progs: the list of new programs that need to be tested
+    :return: (tester, testee, results of running all tests against all programs)
+    """
 
     assg = AssignmentConfig().get_assignment()
 
@@ -203,7 +244,7 @@ def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, ne
 
 def get_diffs() -> Result:
     """
-    Print to file the changes each submitter made in their progs compared to the original program.
+    Print to paths.DIFF_FILE the changes each submitter made in their programs compared to the original program.
     """
 
     if not flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED):
@@ -242,7 +283,8 @@ def get_diffs() -> Result:
 
 def rescore_invalid_progs() -> Result:
     """
-    Read from the diff file which submitted progs are invalid, and give them a score of zero
+    Read from the diff file which submitted progs are invalid, and give those programs a score of zero in
+    the tournament state
     """
 
     if not flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED):

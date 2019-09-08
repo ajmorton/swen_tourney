@@ -1,3 +1,7 @@
+"""
+Provides a command line interface for the backend and frontend commands for the tournament.
+"""
+
 import argparse
 import sys
 from enum import Enum
@@ -5,6 +9,7 @@ from enum import Enum
 
 # Formats the help message, removes some annoying text
 class SubcommandHelpFormatter(argparse.RawDescriptionHelpFormatter):
+    """ Format help text for the command line interface """
     def _format_action(self, action):
         parts = super(argparse.RawDescriptionHelpFormatter, self)._format_action(action)
         if action.nargs == argparse.PARSER:
@@ -13,6 +18,7 @@ class SubcommandHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
 
 class BackendCommands(str, Enum):
+    """ List of commands available for the tournament backend """
     START_TOURNAMENT = 'start_tournament'
     SHUTDOWN = 'shutdown'
     REPORT = 'report'
@@ -24,6 +30,7 @@ class BackendCommands(str, Enum):
 
 
 def create_backend_parser(parser_list):
+    """ Create a command parser for the backend commands """
     parser = argparse.ArgumentParser(formatter_class=SubcommandHelpFormatter)
     subparsers = parser.add_subparsers(title='commands')
 
@@ -96,6 +103,7 @@ def create_backend_parser(parser_list):
 
 
 class FrontEndCommand(str, Enum):
+    """ List of command available for the tournament frontend """
     CHECK_ELIGIBILITY = 'check_eligibility'
     VALIDATE_TESTS = 'validate_tests'
     VALIDATE_PROGS = 'validate_progs'
@@ -103,6 +111,7 @@ class FrontEndCommand(str, Enum):
 
 
 def create_frontend_parser(parser_list):
+    """ Create a command parser for the frontend commands """
     parser = argparse.ArgumentParser(formatter_class=SubcommandHelpFormatter)
     subparsers = parser.add_subparsers(title='commands')
 
@@ -146,6 +155,7 @@ def create_frontend_parser(parser_list):
 
 
 def print_help_text(parser_list, root_parser):
+    """ When an invalid command is received print out help text for proper usage """
     print()
 
     # When argparse fails it throws only a SystemExit. To figure out which command failed look at sys.argv[1]
@@ -158,6 +168,7 @@ def print_help_text(parser_list, root_parser):
 
 
 def parse_frontend_args():
+    """ Parse a command sent to the tournament frontend """
     sub_parser_list = dict()
     parser = create_frontend_parser(sub_parser_list)
 
@@ -169,6 +180,7 @@ def parse_frontend_args():
 
 
 def parse_backend_args():
+    """ Parse a command sent to the tournament backend """
     sub_parser_list = dict()
     parser = create_backend_parser(sub_parser_list)
 

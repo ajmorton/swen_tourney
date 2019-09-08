@@ -1,3 +1,7 @@
+"""
+Configuration file validation performed on tournament startup
+"""
+
 from config.exceptions import NoConfigDefined
 from config.files.approved_submitters import ApprovedSubmitters
 from config.files.assignment_config import AssignmentConfig
@@ -6,6 +10,10 @@ from config.files.server_config import ServerConfig
 
 
 def configuration_valid() -> bool:
+    """
+    Check all configuration files on tournament startup. If any configuration file validation file fails return false.
+    :return: Whether all configuration files are valid
+    """
 
     try:
         ServerConfig()

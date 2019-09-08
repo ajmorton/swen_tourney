@@ -1,3 +1,7 @@
+"""
+When the tournament hits a critical error that requires a shutdown tournament maintainers should be notified.
+This code handles the notification of maintainers via email.
+"""
 import socket
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -9,7 +13,7 @@ from util.funcs import print_tourney_trace, print_tourney_error
 
 
 def send_email(smtp: SMTP, sender_email: str, receiver_emails: [str], subject: str, message: str):
-
+    """ Send an email to recipients """
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = receiver_emails
@@ -19,6 +23,7 @@ def send_email(smtp: SMTP, sender_email: str, receiver_emails: [str], subject: s
 
 
 def email_crash_report():
+    """ Construct an email with the details of a tournament crash and send to the designated recipients """
 
     try:
         cfg = EmailConfig()

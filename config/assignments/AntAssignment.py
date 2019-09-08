@@ -1,3 +1,22 @@
+"""
+Configuration for assignments using ant and JUnit for testing.
+
+Expects the core file structure:
+assignment_name/
+├── build.xml
+├── programs
+│   ├── mutant-1
+│   ├── mutant-2
+│   ├── ...
+│   └── original
+└── tests
+    ├── Partitioning
+    ├── Boundary
+    └── ...
+
+An example can be found at 'ant_assignment' in the same repo as this code
+
+"""
 import math
 import os
 import re
@@ -10,6 +29,7 @@ from util.types import *
 
 
 class AntAssignment(AbstractAssignment):
+    """ Implementation for assignment using ant and Junit """
 
     def __init__(self, source_assg_dir: FilePath):
         super().__init__(source_assg_dir)

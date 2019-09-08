@@ -1,3 +1,7 @@
+"""
+File paths used by the tournament
+"""
+
 import os
 from datetime import datetime
 
@@ -49,12 +53,15 @@ HEAD_TO_HEAD_DIR = tournament_submissions_path + "/head_to_head"
 
 
 def get_pre_validation_dir(submitter: Submitter) -> FilePath:
+    """ Given a submitter, return the file path of their submission in the prevalidation directory """
     return FilePath(PRE_VALIDATION_DIR + "/" + submitter)
 
 
 def get_tourney_dir(submitter: Submitter) -> FilePath:
+    """ Given a submitter, return the file path of their submission in the tournament directory """
     return FilePath(TOURNEY_DIR + "/" + submitter)
 
 
 def get_snapshot_file_path(report_time: datetime):
+    """ Given a datetime, return a file path for a snapshot file with the datetime appended """
     return REPORT_DIR + "/snapshot_" + report_time.strftime(fmt.datetime_file_string) + ".json"

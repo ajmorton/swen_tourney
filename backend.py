@@ -1,3 +1,7 @@
+"""
+Backend interface for the tournament. This is used for starting, stopping, and managing the tournament,
+"""
+
 from datetime import datetime
 
 from config import configuration as cfg
@@ -10,6 +14,7 @@ from util.cli_arg_parser import BackendCommands, parse_backend_args
 
 
 def main():
+    """ Parse and process backend commands """
     command = parse_backend_args()
     traces = ""
 

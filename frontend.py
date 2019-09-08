@@ -1,3 +1,6 @@
+"""
+Frontend interface for the tournament. This is used to make submissions to the tournament.
+"""
 import os
 
 import daemon.main as daemon

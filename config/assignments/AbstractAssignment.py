@@ -1,3 +1,8 @@
+"""
+The tournament can be configured for multiple different assignment types.
+AbstractAssignment provides an interface that new assignment configurations must implement in order to be
+used in the tournament. New assignment configurations should inherit from this class
+"""
 import os
 from abc import ABCMeta, abstractmethod
 
@@ -5,6 +10,7 @@ from util.types import *
 
 
 class AbstractAssignment(metaclass=ABCMeta):
+    """ Interface for new assignment configurations """
 
     def __init__(self, source_assg_dir: FilePath):
         self.source_assg = source_assg_dir
