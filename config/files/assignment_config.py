@@ -76,6 +76,3 @@ class AssignmentConfig:
         else:
             print("ERROR: Source assg dir {} does not exist".format(source_assg_dir))
             return False
-
-
-

@@ -194,12 +194,10 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
 
     with multiprocessing.Pool() as pool:
         # run submitter tests against others progs
-        tester_pairs = [(submitter, other) for other in other_submitters]
-        tester_results = pool.map(rt_new_tests, tester_pairs)
+        tester_results = pool.map(rt_new_tests, [(submitter, other) for other in other_submitters])
 
         # run others tests against submitters progs
-        testee_pairs = [(other, submitter) for other in other_submitters]
-        testee_results = pool.map(rt_new_progs, testee_pairs)
+        testee_results = pool.map(rt_new_progs, [(other, submitter) for other in other_submitters])
 
     for (tester, testee, test_set) in tester_results + testee_results:
         tourney_state.set(tester, testee, test_set)
@@ -348,4 +346,3 @@ def clean():
     subprocess.run("rm -f  {}".format(paths.EMAIL_CONFIG), shell=True)
     subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True)
     flags.clear_all()
-

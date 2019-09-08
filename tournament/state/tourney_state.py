@@ -5,11 +5,11 @@ This is saved and loaded from a json file to mitigate crashes
 """
 import json
 import os
+from typing import Dict
 
 from config.configuration import ApprovedSubmitters, AssignmentConfig
 from util import paths
 from util.types import Prog, Submitter, Test, TestResult, TestSet
-from typing import Dict
 
 
 class TourneyState:
@@ -100,7 +100,7 @@ class TourneyState:
 
     def get_valid_submitters(self):
         """ Provide the list of submitters who have successfully made a valid submission """
-        return [submitter for submitter in self.state.keys() if os.path.isdir(paths.get_tourney_dir(submitter))]
+        return [submitter for submitter in self.state if os.path.isdir(paths.get_tourney_dir(submitter))]
 
     def get_bugs_detected(self, tester: Submitter, test: Test) -> int:
         """

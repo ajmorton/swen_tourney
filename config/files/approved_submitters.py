@@ -66,6 +66,7 @@ class ApprovedSubmitters:
             print("ERROR: Approved submitters list has not been changed from the default provided.\n"
                   "       Please update {} with the correct details"
                   .format(paths.APPROVED_SUBMITTERS_LIST))
+            return False
 
     def check_num_submitters(self) -> bool:
         """ Check that more than one submitter has been added to the approved submitters list """

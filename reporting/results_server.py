@@ -65,11 +65,28 @@ def html_table_from_results(snapshot: TourneySnapshot) -> str:
     :return: a string of an HTML table with submitter results
     """
 
-    results = snapshot.results()
     num_submitters = snapshot.num_submitters()
     assg = AssignmentConfig().get_assignment()
     num_tests = 0 if num_submitters == 0 else (num_submitters - 1) * len(assg.get_test_list())
     num_progs = 0 if num_submitters == 0 else (num_submitters - 1) * len(assg.get_programs_list())
+
+    tests_header = "<table><tr><th>Bugs detected (out of {})</th></tr>".format(num_progs) + \
+                   "<tr><td>" + str(sorted(assg.get_test_list())) + "</tr></td></table>"
+    progs_header = "<table><tr><th>Tests evaded (out of {})</th></tr>".format(num_tests) + \
+                   "<tr><td>" + str(sorted(assg.get_programs_list())) + "</tr></td></table>"
+
+    table = '<table style="width:100%" align="center">' + \
+        table_header("Rank", "Name", "Date of submission", tests_header, progs_header)
+
+    table += table_body_from_results(snapshot)
+
+    return table
+
+
+def table_body_from_results(snapshot: TourneySnapshot) -> str:
+    """ Generate the body of the results table from the tournament results """
+    table = ''
+    results = snapshot.results()
 
     table_data = {}
     for submitter in results:
@@ -80,14 +97,6 @@ def html_table_from_results(snapshot: TourneySnapshot) -> str:
                                  'progs': results[submitter]['progs'],
                                  'tests': results[submitter]['tests'],
                                  }
-
-    tests_header = "<table><tr><th>Bugs detected (out of {})</th></tr>".format(num_progs) + \
-                   "<tr><td>" + str(sorted(assg.get_test_list())) + "</tr></td></table>"
-    progs_header = "<table><tr><th>Tests evaded (out of {})</th></tr>".format(num_tests) + \
-                   "<tr><td>" + str(sorted(assg.get_programs_list())) + "</tr></td></table>"
-
-    table = '<table style="width:100%" align="center">' + \
-        table_header("Rank", "Name", "Date of submission", tests_header, progs_header)
 
     rank = 0
     prev_score = -1

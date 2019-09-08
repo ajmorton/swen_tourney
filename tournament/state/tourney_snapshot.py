@@ -110,7 +110,7 @@ class TourneySnapshot:
             submitter_result = copy.deepcopy(TourneySnapshot.default_submitter_result)
             submitter_result['latest_submission_date'] = tourney_state.get_state()[submitter]['latest_submission_date']
             num_tests = tourney_state.get_num_tests(submitter)
-            avg_num_tests = 1 if len(num_tests) == 0 else sum(num_tests.values()) / len(num_tests)
+            avg_num_tests = 1 if not num_tests else sum(num_tests.values()) / len(num_tests)
             submitter_result['average_tests_per_suite'] = avg_num_tests
 
             total_bugs_detected = 0

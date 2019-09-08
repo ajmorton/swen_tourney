@@ -44,10 +44,10 @@ def email_crash_report():
 
     except socket.timeout:
         print_tourney_error("Timeout while trying to connect to SMTP server")
-    except OSError as os_error:
-        print_tourney_error("Error raised while sending emails: {}".format(os_error))
-        print_tourney_error("Email sending has been aborted.")
     except (SMTPHeloError, SMTPConnectError):
         print_tourney_error("Cannot connect to SMTP server")
     except SMTPAuthenticationError:
         print_tourney_error("Login attempt failed")
+    except OSError as os_error:
+        print_tourney_error("Error raised while sending emails: {}".format(os_error))
+        print_tourney_error("Email sending has been aborted.")

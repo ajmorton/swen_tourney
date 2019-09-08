@@ -25,7 +25,7 @@ def get_next_request() -> FilePath:
     # get files ordered by creation date
     submissions = sorted(os.scandir(paths.STAGING_DIR), key=lambda folder: folder.stat().st_mtime)
 
-    if len(submissions) > 0:
+    if submissions:
         return submissions[0].name
     else:
         return FilePath("")
