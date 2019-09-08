@@ -45,11 +45,11 @@ DIFF_FILE = ROOT_DIR + "/submitter_prog_diffs.csv"
 NUM_TESTS_FILE = "num_tests.json"
 
 # Directories that store student submissions for validation, submission, and testing
-tournament_submissions_path = ROOT_DIR + "/tournament/submissions"
-PRE_VALIDATION_DIR = tournament_submissions_path + "/pre_validation"
-STAGING_DIR = tournament_submissions_path + "/staged"
-TOURNEY_DIR = tournament_submissions_path + "/tourney"
-HEAD_TO_HEAD_DIR = tournament_submissions_path + "/head_to_head"
+SUBMISSIONS_PATH = ROOT_DIR + "/tournament/submissions"
+PRE_VALIDATION_DIR = SUBMISSIONS_PATH + "/pre_validation"
+STAGING_DIR = SUBMISSIONS_PATH + "/staged"
+TOURNEY_DIR = SUBMISSIONS_PATH + "/tourney"
+HEAD_TO_HEAD_DIR = SUBMISSIONS_PATH + "/head_to_head"
 
 
 def get_pre_validation_dir(submitter: Submitter) -> FilePath:
@@ -64,4 +64,4 @@ def get_tourney_dir(submitter: Submitter) -> FilePath:
 
 def get_snapshot_file_path(report_time: datetime):
     """ Given a datetime, return a file path for a snapshot file with the datetime appended """
-    return REPORT_DIR + "/snapshot_" + report_time.strftime(fmt.datetime_file_string) + ".json"
+    return REPORT_DIR + "/snapshot_" + report_time.strftime(fmt.DATETIME_FILE_STRING) + ".json"

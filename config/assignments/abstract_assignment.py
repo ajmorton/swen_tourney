@@ -5,8 +5,9 @@ used in the tournament. New assignment configurations should inherit from this c
 """
 import os
 from abc import ABCMeta, abstractmethod
+from typing import Dict
 
-from util.types import *
+from util.types import FilePath, Prog, Submitter, Test, TestResult
 
 
 class AbstractAssignment(metaclass=ABCMeta):

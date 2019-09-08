@@ -8,7 +8,8 @@ import os
 
 from config.configuration import ApprovedSubmitters, AssignmentConfig
 from util import paths
-from util.types import *
+from util.types import Prog, Submitter, Test, TestResult, TestSet
+from typing import Dict
 
 
 class TourneyState:

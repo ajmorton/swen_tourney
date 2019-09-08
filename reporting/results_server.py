@@ -33,7 +33,7 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
         report_date = snapshot.date()
 
         html = '<!DOCTYPE html><html><body>' \
-               '<h1>Results as of ' + report_date.strftime(fmt.datetime_trace_string) + '</h1>' + \
+               '<h1>Results as of ' + report_date.strftime(fmt.DATETIME_TRACE_STRING) + '</h1>' + \
                tournament_processing_details(snapshot) + \
                html_table_from_results(snapshot) + \
                '</body></html>'
@@ -98,12 +98,12 @@ def html_table_from_results(snapshot: TourneySnapshot) -> str:
             table += table_row("-", submitter, "No submission", "N/A", "N/A")
         else:
             latest_submission_date = datetime.strptime(sub_data['latest_processed_submission'],
-                                                       fmt.datetime_trace_string)
+                                                       fmt.DATETIME_TRACE_STRING)
 
             prog_scores = [sub_data['progs'][prog] for prog in sorted(sub_data['progs'])]
             test_scores = [sub_data['tests'][test] for test in sorted(sub_data['tests'])]
 
-            latest_submission_date = latest_submission_date.strftime(fmt.datetime_trace_string)
+            latest_submission_date = latest_submission_date.strftime(fmt.DATETIME_TRACE_STRING)
 
             if prev_score != sub_data['score']:
                 rank += 1
@@ -159,9 +159,9 @@ def main():
         threading.Thread(target=server_assassin, args=[httpd], daemon=True).start()
         httpd.serve_forever()
         print_tourney_trace("Shutting down the results server")
-    except Exception as e:
+    except Exception as exception:
         print_tourney_error("Exception caught while running Results Server")
-        print_tourney_error(str(e))
+        print_tourney_error(str(exception))
         import traceback
         print_tourney_error(traceback.format_exc())
         # wait 5 minutes to ensure the port is freed
@@ -169,7 +169,7 @@ def main():
         main()
 
 
-def start_server():
+def start_server() -> Result:
     """ Start the results server in its own thread """
     subprocess.Popen("python3 -m reporting.results_server", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

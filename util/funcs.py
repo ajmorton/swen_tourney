@@ -22,12 +22,12 @@ def assert_python_version(major: int, minor: int, micro: int):
 
 def timestamp() -> str:
     """ Return a timestamp prefix for tournament traces """
-    return datetime.now().strftime(fmt.datetime_trace_string) + " | "
+    return datetime.now().strftime(fmt.DATETIME_TRACE_STRING) + " | "
 
 
 def error() -> str:
     """ Return a timestamp prefix for tournament error traces """
-    return datetime.now().strftime(fmt.datetime_trace_string) + " | ERROR: "
+    return datetime.now().strftime(fmt.DATETIME_TRACE_STRING) + " | ERROR: "
 
 
 def print_tourney_trace(trace: str):

@@ -44,7 +44,7 @@ def process_submission_request(file_path):
     subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True)
 
     time_start = time()
-    tourney.run_submission(submitter, submission_time.strftime(fmt.datetime_trace_string), new_tests, new_progs)
+    tourney.run_submission(submitter, submission_time.strftime(fmt.DATETIME_TRACE_STRING), new_tests, new_progs)
     time_end = time()
 
     snapshot = TourneySnapshot(report_time=submission_time)
@@ -63,7 +63,7 @@ def make_submission(submitter: Submitter) -> Result:
     flags.set_submission_ready(staged_dir)
 
     trace = "Submission successfully made by {} at {}".format(submitter_username,
-                                                              submission_time.strftime(fmt.datetime_trace_string))
+                                                              submission_time.strftime(fmt.DATETIME_TRACE_STRING))
     print_tourney_trace(trace)
     return Result((True, trace))
 
@@ -94,7 +94,7 @@ def shutdown() -> Result:
 def make_report_request(request_time: datetime) -> Result:
     """ Create a report request file in paths.STAGED_DIR """
     fs.create_report_request(request_time)
-    trace = "Report request made at {}".format(request_time.strftime(fmt.datetime_trace_string))
+    trace = "Report request made at {}".format(request_time.strftime(fmt.DATETIME_TRACE_STRING))
     print_tourney_trace(trace)
     return Result((True, trace))
 
@@ -146,9 +146,9 @@ def main():
             else:
                 print_tourney_trace("Nothing to process")
                 sleep(60)
-    except Exception as e:
+    except Exception as exception:
         print_tourney_error("Exception caught while running tournament")
-        print_tourney_error(str(e))
+        print_tourney_error(str(exception))
         import traceback
         print_tourney_error(traceback.format_exc())
         # emailer.email_crash_report()

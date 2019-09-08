@@ -8,6 +8,7 @@ import os
 import subprocess
 from datetime import datetime
 from functools import partial
+from typing import Tuple
 
 from config.configuration import ApprovedSubmitters, AssignmentConfig
 from daemon import flags
@@ -16,7 +17,7 @@ from tournament.state.tourney_state import TourneyState
 from util import format as fmt
 from util import paths
 from util.funcs import print_tourney_trace
-from util.types import *
+from util.types import FilePath, Prog, Result, Submitter, Test, TestResult, TestSet
 
 
 def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission_dir: FilePath) -> Result:
@@ -47,7 +48,7 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
     submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
     if submissions_closed:
         return Result((False, "Cannot make a new submission at {}. Submissions have been closed"
-                              .format(datetime.now().strftime(fmt.datetime_trace_string))))
+                       .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING))))
 
     submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
     if os.path.isdir(submitter_pre_validation_dir):
@@ -191,14 +192,14 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
     rt_new_tests = partial(run_tests, tourney_state=tourney_state, new_tests=new_tests, new_progs=[])
     rt_new_progs = partial(run_tests, tourney_state=tourney_state, new_tests=[], new_progs=new_progs)
 
-    with multiprocessing.Pool() as p:
+    with multiprocessing.Pool() as pool:
         # run submitter tests against others progs
         tester_pairs = [(submitter, other) for other in other_submitters]
-        tester_results = p.map(rt_new_tests, tester_pairs)
+        tester_results = pool.map(rt_new_tests, tester_pairs)
 
         # run others tests against submitters progs
         testee_pairs = [(other, submitter) for other in other_submitters]
-        testee_results = p.map(rt_new_progs, testee_pairs)
+        testee_results = pool.map(rt_new_progs, testee_pairs)
 
     for (tester, testee, test_set) in tester_results + testee_results:
         tourney_state.set(tester, testee, test_set)

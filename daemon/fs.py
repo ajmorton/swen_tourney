@@ -60,7 +60,7 @@ def remove_previous_occurrences(submitter: Submitter):
 
 def create_report_request(request_time: datetime):
     """ Create a report request """
-    file_name = paths.STAGING_DIR + "/" + REPORT_REQUEST_PREFIX + request_time.strftime(fmt.datetime_file_string)
+    file_name = paths.STAGING_DIR + "/" + REPORT_REQUEST_PREFIX + request_time.strftime(fmt.DATETIME_FILE_STRING)
     subprocess.run("touch {}".format(file_name), shell=True)
 
 
@@ -68,7 +68,7 @@ def get_report_request_time(file_path: FilePath) -> datetime:
     """ Fetch the time of a queued report request by decoding it from the file name """
     file_name = os.path.basename(file_path)
     [_, request_time] = file_name.split(".")
-    return datetime.strptime(request_time, fmt.datetime_file_string)
+    return datetime.strptime(request_time, fmt.DATETIME_FILE_STRING)
 
 
 def is_report(file_path: FilePath) -> bool:
@@ -91,7 +91,7 @@ def create_submission_request_name(submitter: Submitter, submission_time: dateti
     :param submission_time: the time of the submission
     :return: the folder name for the new submission
     """
-    return FilePath(SUBMISSION_REQUEST_PREFIX + submitter + "." + submission_time.strftime(fmt.datetime_file_string))
+    return FilePath(SUBMISSION_REQUEST_PREFIX + submitter + "." + submission_time.strftime(fmt.DATETIME_FILE_STRING))
 
 
 def get_submission_request_details(file_path: FilePath) -> (Submitter, datetime):
@@ -102,4 +102,4 @@ def get_submission_request_details(file_path: FilePath) -> (Submitter, datetime)
     """
     folder_name = os.path.basename(file_path)
     [_, submitter, submission_time] = folder_name.split(".")
-    return submitter, datetime.strptime(submission_time, fmt.datetime_file_string)
+    return submitter, datetime.strptime(submission_time, fmt.DATETIME_FILE_STRING)

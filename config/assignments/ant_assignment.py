@@ -21,11 +21,12 @@ import math
 import os
 import re
 import subprocess
+from typing import Dict
 
-from config.assignments.AbstractAssignment import AbstractAssignment
+from config.assignments.abstract_assignment import AbstractAssignment
 from util import paths
 from util.funcs import print_tourney_error
-from util.types import *
+from util.types import FilePath, Prog, Submitter, Test, TestResult
 
 
 class AntAssignment(AbstractAssignment):

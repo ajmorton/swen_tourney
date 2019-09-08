@@ -21,7 +21,7 @@ class TourneySnapshot:
     The TourneySnapshot class. Takes the state of the tournament and provides a processed summary of the data.
     """
 
-    NO_DATE = datetime.strftime(datetime.min, fmt.datetime_trace_string)
+    NO_DATE = datetime.strftime(datetime.min, fmt.DATETIME_TRACE_STRING)
 
     default_snapshot = {
         'snapshot_date': NO_DATE,
@@ -72,7 +72,7 @@ class TourneySnapshot:
         json.dump(self.snapshot, open(paths.RESULTS_FILE, 'w'), indent=4, sort_keys=True)
 
         if save_with_timestamp:
-            report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_trace_string)
+            report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.DATETIME_TRACE_STRING)
             report_file_path = paths.get_snapshot_file_path(report_time)
             json.dump(self.snapshot, open(report_file_path, 'w'), indent=4, sort_keys=True)
             print_tourney_trace("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
@@ -103,7 +103,7 @@ class TourneySnapshot:
         assg = AssignmentConfig().get_assignment()
 
         self.snapshot['num_submitters'] = len(tourney_state.get_valid_submitters())
-        self.snapshot['snapshot_date'] = report_time.strftime(fmt.datetime_trace_string)
+        self.snapshot['snapshot_date'] = report_time.strftime(fmt.DATETIME_TRACE_STRING)
 
         for submitter in tourney_state.get_submitters():
 
@@ -167,7 +167,7 @@ class TourneySnapshot:
 
     def date(self) -> datetime:
         """ The datetime of the snapshot """
-        return datetime.strptime(self.snapshot['snapshot_date'], fmt.datetime_trace_string)
+        return datetime.strptime(self.snapshot['snapshot_date'], fmt.DATETIME_TRACE_STRING)
 
     def num_submitters(self) -> int:
         """

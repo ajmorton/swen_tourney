@@ -6,8 +6,8 @@ import json
 import os
 from enum import Enum
 
-from config.assignments.AbstractAssignment import AbstractAssignment
-from config.assignments.AntAssignment import AntAssignment
+from config.assignments.abstract_assignment import AbstractAssignment
+from config.assignments.ant_assignment import AntAssignment
 from config.exceptions import NoConfigDefined
 from util import paths
 
