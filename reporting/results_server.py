@@ -48,6 +48,14 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
         """
         return
 
+    def log_error(self, log_format, *args):
+        """
+        The results server runs on a VPS, and when the session is closed but the server continues to run
+        printed messages are sent to the no-longer-existing stderr. This causes the server to crash so instead
+        suppress error logging
+        """
+        return
+
 
 def tournament_processing_details(snapshot: TourneySnapshot) -> str:
     """ Return a string with submissions still to process and the current submission processing duration """
