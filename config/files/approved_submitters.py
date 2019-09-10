@@ -60,7 +60,7 @@ class ApprovedSubmitters:
     def check_non_default(self) -> bool:
         """ Check the list of approved submitters has been filled with non-default values """
         if self.approved_submitters != ApprovedSubmitters.default_approved_submitters:
-            print("Approved submitters file format has been written:")
+            print("Non-default approved submitters file is present:")
             return True
         else:
             print("ERROR: Approved submitters list has not been changed from the default provided.\n"

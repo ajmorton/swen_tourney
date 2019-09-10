@@ -14,6 +14,9 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # The list of submitters who are eligible to participate in the tournament
 APPROVED_SUBMITTERS_LIST = ROOT_DIR + "/config/data/approved_submitters.json"
 
+# The list if submitters who have received and extension.
+SUBMITTER_EXTENSIONS_LIST = ROOT_DIR + "/config/data/submitter_extensions.json"
+
 # Which assignment type the tournament is configured for
 ASSIGNMENT_CONFIG = ROOT_DIR + "/config/data/assignment_config.json"
 

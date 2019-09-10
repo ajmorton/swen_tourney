@@ -7,6 +7,7 @@ from config.files.approved_submitters import ApprovedSubmitters
 from config.files.assignment_config import AssignmentConfig
 from config.files.email_config import EmailConfig
 from config.files.server_config import ServerConfig
+from config.files.submitter_extensions import SubmitterExtensions
 
 
 def configuration_valid() -> bool:
@@ -31,6 +32,10 @@ def configuration_valid() -> bool:
 
         # if valid:
         #     valid = EmailConfig().check_email_valid()
+
+        if valid:
+            # check submitter extensions list
+            valid = SubmitterExtensions().check_valid()
 
     except NoConfigDefined as no_config_error:
         print(no_config_error.message)

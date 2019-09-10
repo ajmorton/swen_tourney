@@ -10,7 +10,7 @@ from datetime import datetime
 from functools import partial
 from typing import Tuple
 
-from config.configuration import ApprovedSubmitters, AssignmentConfig
+from config.configuration import ApprovedSubmitters, AssignmentConfig, SubmitterExtensions
 from daemon import flags
 from tournament.state.tourney_snapshot import TourneySnapshot
 from tournament.state.tourney_state import TourneyState
@@ -46,8 +46,8 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
                               " you are added to the approved_submitters list".format(submitter)))
 
     submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
-    if submissions_closed:
-        return Result((False, "Cannot make a new submission at {}. Submissions have been closed"
+    if submissions_closed and submitter_username not in SubmitterExtensions().get_list():
+        return Result((False, "New submission cannot be made at {}. Submissions have been closed"
                        .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING))))
 
     submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
@@ -344,5 +344,6 @@ def clean():
     subprocess.run("rm -f  {}".format(paths.APPROVED_SUBMITTERS_LIST), shell=True)
     subprocess.run("rm -f  {}".format(paths.SERVER_CONFIG), shell=True)
     subprocess.run("rm -f  {}".format(paths.EMAIL_CONFIG), shell=True)
+    subprocess.run("rm -f  {}".format(paths.SUBMITTER_EXTENSIONS_LIST), shell=True)
     subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True)
     flags.clear_all()
