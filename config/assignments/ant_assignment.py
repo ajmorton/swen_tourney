@@ -44,7 +44,7 @@ class AntAssignment(AbstractAssignment):
     def get_programs_list(self) -> [Prog]:
         return self.progs_list
 
-    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath) -> (TestResult, str):
+    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, val_progs: bool = False) -> (TestResult, str):
 
         result = subprocess.run(
             "ant test -Dtest=\"{}\" -Dprogram=\"{}\"".format(test, prog),

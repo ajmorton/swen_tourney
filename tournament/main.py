@@ -102,6 +102,9 @@ def validate_tests(submitter: Submitter) -> Result:
         elif test_result == TestResult.BUG_FOUND:
             validation_traces += "\n{} test FAIL - Test falsely reports an error in original code".format(test)
             validation_traces += "\n" + test_traces
+        elif test_result == TestResult.COMPILATION_FAILED:
+            validation_traces += "\n{} test FAIL - Compilation of original code failed".format(test)
+            validation_traces += "\n" + test_traces
         else:
             validation_traces += "\n\t{} ERROR - unexpected test result: {}".format(test, test_result)
 
@@ -140,7 +143,7 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
     validation_traces = "Validation results:"
     for prog in assg.get_programs_list():
         for test in assg.get_test_list():
-            test_result, _ = assg.run_test(test, prog, FilePath(validation_dir))
+            test_result, test_traces = assg.run_test(test, prog, FilePath(validation_dir), val_progs=True)
 
             if test_result == TestResult.TIMEOUT:
                 validation_traces += "\n\t{} {} test FAIL - Timeout".format(prog, test)
@@ -148,6 +151,10 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
                 validation_traces += "\n\t{} {} test FAIL - Test suite does not detect error".format(prog, test)
             elif test_result == TestResult.BUG_FOUND:
                 validation_traces += "\n\t{} {} test SUCCESS - Test suite detects error".format(prog, test)
+            elif test_result == TestResult.COMPILATION_FAILED:
+                validation_traces += "\n\t{} {} test FAIL - Compilation of {} failed".format(prog, test, prog)
+                validation_traces += "\n" + test_traces
+
             else:
                 validation_traces += "\n\t{} {} ERROR - unexpected test result: {}".format(prog, test, test_result)
 

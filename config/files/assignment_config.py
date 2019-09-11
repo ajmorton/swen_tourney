@@ -8,6 +8,7 @@ from enum import Enum
 
 from config.assignments.abstract_assignment import AbstractAssignment
 from config.assignments.ant_assignment import AntAssignment
+from config.assignments.fuzz_assignment import FuzzAssignment
 from config.exceptions import NoConfigDefined
 from util import paths
 
@@ -15,6 +16,7 @@ from util import paths
 class AssignmentType(Enum):
     """ The available assignment types to choose from """
     ant_assignment = AntAssignment
+    fuzz_assignment = FuzzAssignment
 
 
 class AssignmentConfig:
@@ -70,7 +72,7 @@ class AssignmentConfig:
         """ Check that the path to the original source code is valid """
         source_assg_dir = self.config['source_assg_dir']
         if os.path.exists(source_assg_dir):
-            print("\tSource assignment is: {}".format(AntAssignment(source_assg_dir).get_assignment_name()))
+            print("\tSource assignment is: {}".format(self.get_assignment().get_assignment_name()))
             print("\tSource code dir: {}".format(source_assg_dir))
             return True
         else:

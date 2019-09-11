@@ -17,7 +17,8 @@ class TestResult(str, Enum):
     NO_BUGS_DETECTED = "NO_BUGS_DETECTED"
     BUG_FOUND = "BUG_FOUND"
     TIMEOUT = "TIMEOUT"
-    NOT_TESTED = "NOT TESTED"
+    NOT_TESTED = "NOT_TESTED"
+    COMPILATION_FAILED = "COMPILATION_FAILED"
 
 
 TestSet = NewType("TestSet", Dict[Submitter, Dict[Submitter, TestResult]])
