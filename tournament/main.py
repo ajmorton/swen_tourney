@@ -45,11 +45,6 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
                               "If this is an individual assignment please check with your tutors that"
                               " you are added to the approved_submitters list".format(submitter)))
 
-    submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
-    if submissions_closed and submitter_username not in SubmitterExtensions().get_list():
-        return Result((False, "New submission cannot be made at {}. Submissions have been closed"
-                       .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING))))
-
     submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
     if os.path.isdir(submitter_pre_validation_dir):
         prior_submission_age = datetime.now().timestamp() - os.stat(submitter_pre_validation_dir).st_mtime
@@ -59,10 +54,7 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
                                   "Please wait until it has finished to push a new commit."))
 
     # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
-    subprocess.run(
-        "cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir),
-        shell=True
-    )
+    subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir), shell=True)
 
     assg.prep_submission(FilePath(submission_dir), FilePath(submitter_pre_validation_dir))
 
