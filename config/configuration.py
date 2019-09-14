@@ -20,22 +20,11 @@ def configuration_valid() -> bool:
         ServerConfig()
 
         # check assignment config is valid
-        valid = AssignmentConfig().check_assignment_valid()
-
-        if valid:
-            # check approved submitters list is valid
-            valid = ApprovedSubmitters().check_valid()
-
-        if valid:
-            # print server configs
-            valid = ServerConfig().check_server_config()
-
-        # if valid:
-        #     valid = EmailConfig().check_email_valid()
-
-        if valid:
-            # check submitter extensions list
-            valid = SubmitterExtensions().check_valid()
+        valid = AssignmentConfig().check_assignment_valid() \
+            and ApprovedSubmitters().check_valid() \
+            and ServerConfig().check_server_config() \
+            and SubmitterExtensions().check_valid()
+        # and EmailConfig().check_email_valid()
 
     except NoConfigDefined as no_config_error:
         print(no_config_error.message)

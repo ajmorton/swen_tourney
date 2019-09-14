@@ -47,11 +47,7 @@ class AssignmentConfig:
 
     def check_assignment_valid(self) -> bool:
         """ Check the configuration is valid """
-        valid = self.check_assignment_type()
-
-        if valid:
-            valid = self.check_source_assg_exists()
-
+        valid = self.check_assignment_type() and self.check_source_assg_exists() and self.check_for_ci_file()
         print()
         return valid
 
@@ -77,4 +73,17 @@ class AssignmentConfig:
             return True
         else:
             print("ERROR: Source assg dir {} does not exist".format(source_assg_dir))
+            return False
+
+    def check_for_ci_file(self) -> bool:
+        """
+        Assignments require a .gitlab-ci.yml file in order for a gitlab runner to validate and make submissions.
+        Ensure it is present
+        """
+        gitlab_ci_file_path = self.config['source_assg_dir'] + "/.gitlab-ci.yml"
+        if os.path.exists(gitlab_ci_file_path):
+            return True
+        else:
+            print("ERROR: Expected gitlab_ci file not found at {}".format(gitlab_ci_file_path))
+            print("       Check docs/example_gitlab-ci.yml for an example of what this file should look like.")
             return False
