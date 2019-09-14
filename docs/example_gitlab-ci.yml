@@ -1,0 +1,45 @@
+stages:
+    - check_elig
+    - validate_tests
+    - validate_progs
+    - submit
+
+check_submitter_eligibility:
+    stage: check_elig
+    only:
+        - master # only run the CI pipeline when a commit is made on the master branch
+    tags:
+        - "swen90006-tourney" # if this tag matches the gitlab runner's tag it will execute the task
+    script:
+        - python3 ~/swen-tourney/frontend.py check_eligibility $(realpath $(pwd)) # command sent to the tournament
+    allow_failure: false # if this stage fails then the pipeline fails
+
+validate_tests:
+    stage: validate_tests
+    only:
+        - master
+    tags:
+        - "swen90006-tourney"
+    script:
+        - python3 ~/swen-tourney/frontend.py validate_tests $(realpath $(pwd))
+    allow_failure: false
+
+validate_progs:
+    stage: validate_progs
+    only:
+        - master
+    tags:
+        - "swen90006-tourney"
+    script:
+        - python3 ~/swen-tourney/frontend.py validate_progs $(realpath $(pwd))
+    allow_failure: false
+
+submit:
+    stage: submit
+    only:
+        - master
+    tags:
+        - "swen90006-tourney"
+    script:
+        - python3 ~/swen-tourney/frontend.py submit $(realpath $(pwd))
+    allow_failure: false
