@@ -3,7 +3,9 @@
 Configuration for the tournament is found here.
 
 ## Config files
-Contains the configuration data needed for the tournament to run properly. These files are also validated when the backend commands `check_config` and `start_tournament` are run to ensure proper tournament behaviour. If any of the validation checks fail then the tournament cannot start.
+Contains the configuration data needed for the tournament to run properly. 
+These files are also validated when the backend commands `check_config` and `start_tournament` are run to 
+ensure proper tournament behaviour. If any of the validation checks fail then the tournament cannot start.
 
 
 ### assignment_config 
@@ -11,15 +13,17 @@ Provides the details of which assignment is to be used in the tournament.
 
 **Fields:**
 
-- `assignment` the type of assignment the tournament is testing (ant_assignemnt, fuzz_assignment, etc). This assignment type is associated with an assignment configuration in the `assignment/` folder.  
-- `source_assg_dir` a path to an original copy of the assignment to be used in the tournament. It is assumed that students will fork this code and add their test suites and PUTs to their own copies.
+- `assignment` the type of assignment the tournament is testing (ant_assignment, fuzz_assignment, etc). 
+This assignment type is associated with an assignment configuration in the `assignment/` folder.  
+- `source_assg_dir` a path to an original copy of the assignment to be used in the tournament. 
+It is assumed that students will fork this code and add their test suites and PUTs to their own copies.
 
 **Example file**
 
 ```json
 {
     "assignment": "ant_assignment",
-    "source_assg_dir": "/home/gitlab-ruuner/swen90006-a1-2019"
+    "source_assg_dir": "/home/gitlab-runner/swen90006-a1-2019"
 }
 ```
 
@@ -32,7 +36,9 @@ Checks:
 
 
 ### approved_submitters
-Provides a list of submitters, identified by their gitlab usernames, that are allowed to make submissions to the tournament. Both the submitters unimelb usernames and student ids are provided as gitlab accounts can be named based on either of these values.
+Provides a list of submitters, identified by their gitlab usernames, that are allowed to make submissions to 
+the tournament. Both the submitters unimelb usernames and student ids are provided as gitlab accounts can be named 
+based on either of these values.
 
 **Fields**  
 A dict of approved student usernames mapped to a `student_id`
@@ -48,7 +54,8 @@ A dict of approved student usernames mapped to a `student_id`
 ```
 
 **Validation**  
-Checks that `approved_submitters.json` has been updated with non-default values, and that more than one submitter is present in the file.
+Checks that `approved_submitters.json` has been updated with non-default values, and that more than one 
+submitter is present in the file.
 
 
 ### server_config
@@ -73,7 +80,8 @@ None
 
 
 ### submitter_extensions
-When submissions to the tournament are closed some submitters may be eligible for an extension. Submitters in this list can continue to make submissions to the tournament.
+When submissions to the tournament are closed some submitters may be eligible for an extension. 
+Submitters in this list can continue to make submissions to the tournament.
 
 **Fields**  
 A list of submitter usernames. These names should map to the usernames used in `approved_submitters`
@@ -88,11 +96,14 @@ A list of submitter usernames. These names should map to the usernames used in `
 ]
 ```
 **Validation**  
-Checks that `submitter_extensions` has been updated from its default values, and that all names provided in in the list are matched by a username in `approved_submitters`
+Checks that `submitter_extensions` has been updated from its default values, and that all names provided in 
+the list are matched by a username in `approved_submitters`
 
 
 ### email_config
-If the tournament raises an unexpected exception it will shutdown. When crash  report emailing is enabled then this configuration is used for the tournament to send an email via SMTP to provided recipients.
+If the tournament raises an unexpected exception it will shutdown. 
+When crash  report emailing is enabled then this configuration is used for the tournament to send an email 
+via SMTP to provided recipients.
 
 **Fields**  
 

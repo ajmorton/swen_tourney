@@ -47,7 +47,7 @@ See [common errors](docs/common_errors.md)
 See [config/assignments](config/assignments/README.md)
 
 ## TODO
-- [ ] Organise tourney code and assignmented into a single repo
+- [ ] Organise tourney code and assignments into a single repo
 	- [ ] add comment to assignments on how to adapt for a new assignment
 	- [ ] Add comments on private repos and adding @admin to them with an expiry date
 - [ ] Refactor

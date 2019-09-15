@@ -10,11 +10,10 @@ from datetime import datetime
 from functools import partial
 from typing import Tuple
 
-from config.configuration import ApprovedSubmitters, AssignmentConfig, SubmitterExtensions
+from config.configuration import ApprovedSubmitters, AssignmentConfig
 from daemon import flags
 from tournament.state.tourney_snapshot import TourneySnapshot
 from tournament.state.tourney_state import TourneyState
-from util import format as fmt
 from util import paths
 from util.funcs import print_tourney_trace
 from util.types import FilePath, Prog, Result, Submitter, Test, TestResult, TestSet

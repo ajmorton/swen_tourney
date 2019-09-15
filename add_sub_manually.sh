@@ -40,7 +40,7 @@ fi
 echo "validating progs"
 python3 frontend.py validate_progs ${SUBMISSION}
 if [[ $? -ne 0 ]]; then
-    echo "progss_not_val"
+    echo "progs_not_val"
     exit 1
 fi
 
