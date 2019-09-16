@@ -19,6 +19,7 @@ class TestResult(str, Enum):
     TIMEOUT = "TIMEOUT"
     NOT_TESTED = "NOT_TESTED"
     COMPILATION_FAILED = "COMPILATION_FAILED"
+    UNEXPECTED_RETURN_CODE = "UNEXPECTED_RETURN_CODE"
 
 
 TestSet = NewType("TestSet", Dict[Submitter, Dict[Submitter, TestResult]])

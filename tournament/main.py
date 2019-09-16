@@ -84,7 +84,7 @@ def validate_tests(submitter: Submitter) -> Result:
     tests_valid = True
     validation_traces = "Validation results:"
     for test in assg.get_test_list():
-        test_result, test_traces = assg.run_test(test, Prog("original"), FilePath(validation_dir))
+        test_result, test_traces = assg.run_test(test, Prog("original"), FilePath(validation_dir), compile_prog=True)
 
         if test_result == TestResult.TIMEOUT:
             validation_traces += "\n\t{} test FAIL - Timeout".format(test)
@@ -95,6 +95,9 @@ def validate_tests(submitter: Submitter) -> Result:
             validation_traces += "\n" + test_traces
         elif test_result == TestResult.COMPILATION_FAILED:
             validation_traces += "\n{} test FAIL - Compilation of original code failed".format(test)
+            validation_traces += "\n" + test_traces
+        elif test_result == TestResult.UNEXPECTED_RETURN_CODE:
+            validation_traces += "\n\t{} test FAIL - Unrecognised return code found".format(test)
             validation_traces += "\n" + test_traces
         else:
             validation_traces += "\n\t{} ERROR - unexpected test result: {}".format(test, test_result)
@@ -134,7 +137,8 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
     validation_traces = "Validation results:"
     for prog in assg.get_programs_list():
         for test in assg.get_test_list():
-            test_result, test_traces = assg.run_test(test, prog, FilePath(validation_dir), val_progs=True)
+            test_result, test_traces = assg.run_test(test, prog, FilePath(validation_dir),
+                                                     use_poc=True, compile_prog=True)
 
             if test_result == TestResult.TIMEOUT:
                 validation_traces += "\n\t{} {} test FAIL - Timeout".format(prog, test)
@@ -145,7 +149,9 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
             elif test_result == TestResult.COMPILATION_FAILED:
                 validation_traces += "\n\t{} {} test FAIL - Compilation of {} failed".format(prog, test, prog)
                 validation_traces += "\n" + test_traces
-
+            elif test_result == TestResult.UNEXPECTED_RETURN_CODE:
+                validation_traces += "\n\t{} {} test FAIL - Unrecognised return code found".format(prog, test)
+                validation_traces += "\n" + test_traces
             else:
                 validation_traces += "\n\t{} {} ERROR - unexpected test result: {}".format(prog, test, test_result)
 

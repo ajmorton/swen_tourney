@@ -47,15 +47,16 @@ class AbstractAssignment(metaclass=ABCMeta):
         raise NotImplementedError("Error: get_programs_under_test is not implemented")
 
     @abstractmethod
-    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, val_progs: bool = False) -> (TestResult, str):
+    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False,
+                 compile_prog: bool = False) -> (TestResult, str):
         """
         Run a test against a program under test.
         :param test: the test suite
         :param prog: the program under test
         :param submission_dir: the directory of the submission
-        :param val_progs: some assignments will use a different process to validate programs rather than simply
-        running against the submitters test suite. e.g. fuzz_assignment cannot guarantee a fuzzer will generate
-        the right input to catch the bug. Instead it will use manually written tests to verify the bug can be caught
+        :param use_poc: some assignments will use tests with an element of randomness to them - e.g. fuzzers -
+        when validating that a program has a valid bug a proof of concept (poc) may be used instead
+        :param compile_prog: whether the program requires compilation before running the test
         :return: The result of the test run
         """
         raise NotImplementedError("Error: run_test is not implemented")

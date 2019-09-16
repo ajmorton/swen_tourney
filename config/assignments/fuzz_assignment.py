@@ -21,16 +21,16 @@ class FuzzAssignment(AbstractAssignment):
     def get_programs_list(self) -> [Prog]:
         return self.progs_list
 
-    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, val_progs: bool = False) -> (TestResult, str):
+    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False,
+                 compile_prog: bool = False) -> (TestResult, str):
 
-        # check that the prog under test has been compiled
-        if not os.path.exists(submission_dir + "/bin/" + prog):
-            compil = subprocess.run('make VERSIONS={}'.format(prog), shell=True, cwd=submission_dir,
+        if compile_prog:
+            compil = subprocess.run("make VERSIONS={}".format(prog), shell=True, cwd=submission_dir,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
             if compil.returncode != 0:
                 return TestResult.COMPILATION_FAILED, compil.stdout
 
-        if val_progs:
+        if use_poc:
             test_command = "./run_tests.sh {} --use-poc".format(prog)
         else:
             test_command = "./run_tests.sh {}".format(prog)
@@ -40,8 +40,12 @@ class FuzzAssignment(AbstractAssignment):
 
         if result.returncode == 0:
             return TestResult.NO_BUGS_DETECTED, result.stdout
-        else:
+        elif result.returncode in [134]:
+            # The exact error codes that AddressSanitizer returns are to be determined.
+            # This will be updated as more codes are discovered
             return TestResult.BUG_FOUND, result.stdout
+        else:
+            return TestResult.UNEXPECTED_RETURN_CODE, "Exit code: {}\n".format(result.returncode) + result.stdout
 
     def get_num_tests(self, traces: str) -> int:
         return 0  # num tests is not needed for fuzz_assignment, as it does not impact the scoring functions
@@ -58,6 +62,10 @@ class FuzzAssignment(AbstractAssignment):
             subprocess.run("rm -rf {}".format(destination_dir + "/src/" + program), shell=True)
             subprocess.run("cp -rf {} {}".format(submission_dir + "/src/" + program, destination_dir + "/src"),
                            shell=True)
+
+        # ensure the bin/ folder is empty, submitters haven't pushed binaries
+        subprocess.run("make clean", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, universal_newlines=True)
 
         # run the fuzzer to generate a list of tests in tests/
         subprocess.run("./run_fuzzer.sh", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,
@@ -117,7 +125,7 @@ class FuzzAssignment(AbstractAssignment):
 
         diffs = {}
         for prog in self.get_programs_list():
-            prog_diff = subprocess.run("diff -r {} {}".format("original", prog), cwd=submission_dir + "/src/",
+            prog_diff = subprocess.run("diff -rw {} {}".format("original", prog), cwd=submission_dir + "/src/",
                                        shell=True, stdout=subprocess.PIPE, universal_newlines=True)
             diffs[prog] = prog_diff.stdout.strip()
 

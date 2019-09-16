@@ -44,7 +44,8 @@ class AntAssignment(AbstractAssignment):
     def get_programs_list(self) -> [Prog]:
         return self.progs_list
 
-    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, val_progs: bool = False) -> (TestResult, str):
+    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False,
+                 compile_prog: bool = False) -> (TestResult, str):
 
         result = subprocess.run(
             "ant test -Dtest=\"{}\" -Dprogram=\"{}\"".format(test, prog),
@@ -168,7 +169,7 @@ class AntAssignment(AbstractAssignment):
 
         diffs = {}
         for prog in self.get_programs_list():
-            prog_diff = subprocess.run("diff -r {} {}".format("original", prog), cwd=submission_dir + "/programs/",
+            prog_diff = subprocess.run("diff -rw {} {}".format("original", prog), cwd=submission_dir + "/programs/",
                                        shell=True, stdout=subprocess.PIPE, universal_newlines=True)
             diffs[prog] = prog_diff.stdout.strip()
 
