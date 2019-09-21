@@ -4,7 +4,7 @@ from typing import Dict
 
 from config.assignments.abstract_assignment import AbstractAssignment
 from util import paths
-from util.types import FilePath, Prog, Submitter, Test, TestResult
+from util.types import FilePath, Prog, Result, Submitter, Test, TestResult
 
 
 class FuzzAssignment(AbstractAssignment):
@@ -35,8 +35,11 @@ class FuzzAssignment(AbstractAssignment):
         else:
             test_command = "./run_tests.sh {}".format(prog)
 
-        result = subprocess.run(test_command, shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT, universal_newlines=True)
+        try:
+            result = subprocess.run(test_command, shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT, universal_newlines=True, timeout=600)
+        except subprocess.TimeoutExpired:
+            return TestResult.TIMEOUT, ""
 
         if result.returncode == 0:
             return TestResult.NO_BUGS_DETECTED, result.stdout
@@ -50,7 +53,7 @@ class FuzzAssignment(AbstractAssignment):
     def get_num_tests(self, traces: str) -> int:
         return 0  # num tests is not needed for fuzz_assignment, as it does not impact the scoring functions
 
-    def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath):
+    def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath) -> Result:
 
         # copy across the fuzzer and PoCs
         for folder in ['/fuzzer', '/poc']:
@@ -67,9 +70,14 @@ class FuzzAssignment(AbstractAssignment):
         subprocess.run("make clean", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, universal_newlines=True)
 
-        # run the fuzzer to generate a list of tests in tests/
-        subprocess.run("./run_fuzzer.sh", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,
-                       stderr=subprocess.STDOUT, universal_newlines=True)
+        try:
+            # run the fuzzer to generate a list of tests in tests/
+            subprocess.run("./run_fuzzer.sh", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT, universal_newlines=True, timeout=600)
+        except subprocess.TimeoutExpired:
+            return Result((False, "Generating tests with ./run_fuzzer.sh timed out after 10 minutes"))
+
+        return Result((True, "Preparation successful"))
 
     def detect_new_tests(self, new_submission: FilePath, old_submission: FilePath) -> [Test]:
         # Fuzzers generate random tests, and so will need to be rerun every submission regardless of whether

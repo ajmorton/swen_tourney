@@ -7,7 +7,7 @@ import os
 from abc import ABCMeta, abstractmethod
 from typing import Dict
 
-from util.types import FilePath, Prog, Submitter, Test, TestResult
+from util.types import FilePath, Prog, Result, Submitter, Test, TestResult
 
 
 class AbstractAssignment(metaclass=ABCMeta):
@@ -70,13 +70,14 @@ class AbstractAssignment(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath):
+    def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath) -> Result:
         """
         Copy the relevant files from the submitters submission into a destination folder. The destination_dir is
         assumed to be a copy of the original source code for the submission.
         :param submission_dir: The directory of the submission
         :param destination_dir: Where to copy the relevant files to.
                                 Assumed to be a copy of the original source assignment.
+        :return: whether the submission was prepared successfully
         """
         raise NotImplementedError("Error: prep_submission is not implemented")
 

@@ -55,9 +55,12 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission
     # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
     subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_validation_dir), shell=True)
 
-    assg.prep_submission(FilePath(submission_dir), FilePath(submitter_pre_validation_dir))
+    success = assg.prep_submission(FilePath(submission_dir), FilePath(submitter_pre_validation_dir))
 
-    return Result((True, "Submitter is eligible for the tournament"))
+    if success:
+        return Result((True, "Submitter is eligible for the tournament"))
+    else:
+        return Result((False, "An error occurred while preparing the submission:"))
 
 
 def validate_tests(submitter: Submitter) -> Result:

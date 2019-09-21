@@ -26,7 +26,7 @@ from typing import Dict
 from config.assignments.abstract_assignment import AbstractAssignment
 from util import paths
 from util.funcs import print_tourney_error
-from util.types import FilePath, Prog, Submitter, Test, TestResult
+from util.types import FilePath, Prog, Result, Submitter, Test, TestResult
 
 
 class AntAssignment(AbstractAssignment):
@@ -82,6 +82,8 @@ class AntAssignment(AbstractAssignment):
                 "cp -rf {} {}".format(submission_dir + "/programs/" + program, destination_dir + "/programs"),
                 shell=True
             )
+
+        return Result((True, "Preparation successful"))
 
     def detect_new_tests(self, new_submission: FilePath, old_submission: FilePath) -> [Test]:
 
