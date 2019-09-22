@@ -43,7 +43,7 @@ class FuzzAssignment(AbstractAssignment):
 
         if result.returncode == 0:
             return TestResult.NO_BUGS_DETECTED, result.stdout
-        elif result.returncode in [134]:
+        elif result.returncode in [1, 134]:
             # The exact error codes that AddressSanitizer returns are to be determined.
             # This will be updated as more codes are discovered
             return TestResult.BUG_FOUND, result.stdout
