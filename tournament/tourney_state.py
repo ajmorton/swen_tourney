@@ -7,9 +7,9 @@ import json
 import os
 from typing import Dict
 
-from config.configuration import ApprovedSubmitters, AssignmentConfig
-from util import paths
-from util.types import Prog, Submitter, Test, TestResult, TestSet
+from tournament.config import ApprovedSubmitters, AssignmentConfig
+from tournament.util import Prog, Submitter, Test, TestResult, TestSet
+from tournament.util import paths
 
 
 class TourneyState:

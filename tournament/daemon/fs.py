@@ -8,10 +8,9 @@ import os
 import subprocess
 from datetime import datetime
 
-from daemon import flags
-from util import format as fmt
-from util import paths
-from util.types import FilePath, Submitter
+from tournament.daemon import flags
+from tournament.util import FilePath, Submitter
+from tournament.util import format as fmt, paths
 
 REPORT_REQUEST_PREFIX = "report_request."
 SUBMISSION_REQUEST_PREFIX = "submission."

@@ -8,12 +8,12 @@ import csv
 import json
 from datetime import datetime
 
-from config.configuration import AssignmentConfig
-from tournament.state.tourney_state import TourneyState
-from util import format as fmt
-from util import paths
-from util.funcs import print_tourney_trace
-from util.types import FilePath
+from tournament.config import AssignmentConfig
+from tournament.tourney_state import TourneyState
+from tournament.util import FilePath
+from tournament.util import format as fmt
+from tournament.util import paths
+from tournament.util.funcs import print_tourney_trace
 
 
 class TourneySnapshot:

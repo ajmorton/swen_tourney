@@ -5,13 +5,12 @@ Backend interface for the tournament. This is used for starting, stopping, and m
 from datetime import datetime
 import time
 
-from config import configuration as cfg
-from daemon import flags
-from daemon import main as daemon
-from reporting import results_server
 from tournament import main as tourney
-from util import funcs
-from util.cli_arg_parser import BackendCommands, parse_backend_args
+from tournament.config import configuration as cfg
+from tournament.daemon import flags, main as daemon
+from tournament.reporting import results_server
+from tournament.util import BackendCommands, parse_backend_args
+from tournament.util import funcs
 
 
 def main():  # pylint: disable=too-many-branches

@@ -4,8 +4,7 @@ Configuration for the hosting of the results server
 import json
 import os
 
-from util import paths
-from util.funcs import print_tourney_trace
+from tournament.util import paths, print_tourney_trace
 
 
 class ServerConfig:

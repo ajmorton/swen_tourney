@@ -11,13 +11,13 @@ from datetime import datetime
 from http import HTTPStatus, server
 from socketserver import ThreadingMixIn
 
-from config.configuration import AssignmentConfig, ServerConfig
-from daemon import flags
-from tournament.state.tourney_snapshot import TourneySnapshot
-from util import format as fmt
-from util import paths
-from util.funcs import print_tourney_trace, print_tourney_error
-from util.types import Result
+from tournament.config import AssignmentConfig, ServerConfig
+from tournament.daemon import flags
+from tournament.tourney_snapshot import TourneySnapshot
+from tournament.util import Result
+from tournament.util import format as fmt
+from tournament.util import paths
+from tournament.util import print_tourney_trace, print_tourney_error
 
 
 # Add ThreadingMixIn so that server can handle multiple requests in parallel
@@ -204,7 +204,7 @@ def main():
 
 def start_server() -> Result:
     """ Start the results server in its own thread """
-    subprocess.Popen("python3 -m reporting.results_server", cwd=paths.ROOT_DIR, shell=True,
+    subprocess.Popen("python3 -m tournament.reporting.results_server", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return Result((True, "Results server starting. Listening on port {}".format(ServerConfig().port())))
 

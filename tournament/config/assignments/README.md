@@ -19,4 +19,4 @@ code can then `ls` the folders to determine the number and name of the PUTs and 
 
 All assignments need to have a `.gitlab-ci.yml` file at the root level so that the Gitlab Runner knows to run a 
 CI pipeline on the repos. This CI pipeline is how the code is validated and then submitted to the tournament. 
-An example file can be [found here](../../docs/example_gitlab-ci.yml) 
+An example file can be [found here](../../../docs/example_gitlab-ci.yml) 

@@ -46,7 +46,7 @@ python3 backend.py clean                 # delete all submissions, config and tr
 See [common errors](docs/common_errors.md)
 
 ## Extending the tournament to handle new assignments
-See [config/assignments](config/assignments/README.md)
+See [config/assignments](tournament/config/assignments/README.md)
 
 ## TODO
 - [ ] Updates to documentation
@@ -57,8 +57,6 @@ See [config/assignments](config/assignments/README.md)
 	- [ ] Add comments on private repos and adding @admin to them with an expiry date
 - [ ] Add "passed stage X" flags so that modification of .gitlab-ci.yml file doesn't allow invalid submissions to slip in
 - [ ] Refactor
-	- [ ] General directory restructure
-	- [ ] Move all state into one folder for easy updates
 	- [ ] Replace dicts with typing.NamedTuples (python 3.6.2 required)
 	- [ ] Keep removal of prior staged submissions?
 - [ ] Add deadlines to approved_submitters, submitter_extensions

@@ -7,9 +7,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError, SMTPConnectError
 
-from config.configuration import EmailConfig
-from util import paths
-from util.funcs import print_tourney_trace, print_tourney_error
+from tournament.config import EmailConfig
+from tournament.util import paths
+from tournament.util import print_tourney_trace, print_tourney_error
 
 
 def send_email(smtp: SMTP, sender_email: str, receiver_emails: [str], subject: str, message: str):

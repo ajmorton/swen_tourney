@@ -7,7 +7,7 @@ import os
 from abc import ABCMeta, abstractmethod
 from typing import Dict
 
-from util.types import FilePath, Prog, Result, Submitter, Test, TestResult
+from tournament.util import FilePath, Prog, Result, Submitter, Test, TestResult
 
 
 class AbstractAssignment(metaclass=ABCMeta):

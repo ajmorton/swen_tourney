@@ -3,12 +3,11 @@ Frontend interface for the tournament. This is used to make submissions to the t
 """
 import os
 
-import daemon.main as daemon
 import tournament.main as tourney
-import util.cli_arg_parser as parser
-import util.funcs
-from util.cli_arg_parser import FrontEndCommand
-from util.types import Submitter
+import tournament.util.funcs
+from tournament import util as parser, daemon as daemon
+from tournament.util import FrontEndCommand
+from tournament.util import Submitter
 
 
 def main():
@@ -71,5 +70,5 @@ def main():
 
 
 if __name__ == "__main__":
-    util.funcs.assert_python_version(3, 5, 2)
+    tournament.util.funcs.assert_python_version(3, 5, 2)
     main()

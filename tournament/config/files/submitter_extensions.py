@@ -4,10 +4,9 @@ The list of submitters who have received an extension beyond the submission clos
 import json
 import os
 
-from config.exceptions import NoConfigDefined
-from config.files.approved_submitters import ApprovedSubmitters
-from util import paths
-from util.types import Submitter
+from tournament.config.files import ApprovedSubmitters
+from tournament.config.exceptions import NoConfigDefined
+from tournament.util import paths, Submitter
 
 
 class SubmitterExtensions:

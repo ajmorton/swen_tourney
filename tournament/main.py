@@ -6,17 +6,16 @@ import json
 import os
 import subprocess
 from datetime import datetime
-from multiprocessing import current_process, Pool
 from functools import partial
+from multiprocessing import current_process, Pool
 from typing import Tuple
 
-from config.configuration import ApprovedSubmitters, AssignmentConfig
-from daemon import flags
-from tournament.state.tourney_snapshot import TourneySnapshot
-from tournament.state.tourney_state import TourneyState
-from util import paths
-from util.funcs import print_tourney_trace
-from util.types import FilePath, Prog, Result, Submitter, Test, TestResult, TestSet
+from tournament.config import ApprovedSubmitters, AssignmentConfig
+from tournament.daemon import flags
+from tournament.tourney_snapshot import TourneySnapshot
+from tournament.tourney_state import TourneyState
+from tournament.util import FilePath, Prog, Result, Submitter, Test, TestResult, TestSet
+from tournament.util import paths, print_tourney_trace
 
 
 def check_submitter_eligibility(submitter: Submitter, assg_name: str, submission_dir: FilePath) -> Result:

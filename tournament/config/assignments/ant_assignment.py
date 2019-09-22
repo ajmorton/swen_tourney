@@ -23,10 +23,9 @@ import re
 import subprocess
 from typing import Dict
 
-from config.assignments.abstract_assignment import AbstractAssignment
-from util import paths
-from util.funcs import print_tourney_error
-from util.types import FilePath, Prog, Result, Submitter, Test, TestResult
+from tournament.config.assignments import AbstractAssignment
+from tournament.util import FilePath, Prog, Result, Submitter, Test, TestResult
+from tournament.util import paths, print_tourney_error
 
 
 class AntAssignment(AbstractAssignment):

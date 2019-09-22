@@ -2,9 +2,9 @@ import os
 import subprocess
 from typing import Dict
 
-from config.assignments.abstract_assignment import AbstractAssignment
-from util import paths
-from util.types import FilePath, Prog, Result, Submitter, Test, TestResult
+from tournament.config.assignments import AbstractAssignment
+from tournament.util import FilePath, Prog, Result, Submitter, Test, TestResult
+from tournament.util import paths
 
 
 class FuzzAssignment(AbstractAssignment):

@@ -5,8 +5,8 @@ import os
 import subprocess
 from enum import Enum
 
-from util import paths
-from util.types import FilePath
+from tournament.util import FilePath
+from tournament.util import paths
 
 
 class Flag(Enum):

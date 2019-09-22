@@ -8,14 +8,13 @@ from time import sleep, time
 import re
 from multiprocessing import Pool
 
-from config.configuration import AssignmentConfig, ApprovedSubmitters, SubmitterExtensions
-from daemon import flags, fs
-from daemon.flags import Flag
 from tournament import main as tourney
-from tournament.state.tourney_snapshot import TourneySnapshot
-from util import paths, format as fmt
-from util.funcs import print_tourney_trace, print_tourney_error
-from util.types import FilePath, Submitter, Result
+from tournament.config import AssignmentConfig, ApprovedSubmitters, SubmitterExtensions
+from tournament.daemon import flags, fs
+from tournament.daemon.flags import Flag
+from tournament.tourney_snapshot import TourneySnapshot
+from tournament.util import FilePath, Submitter, Result
+from tournament.util import paths, format as fmt, print_tourney_trace, print_tourney_error
 
 
 # When processing submissions testing can be parallelised. Instantiate thread pool here.
@@ -146,7 +145,7 @@ def close_submissions() -> Result:
 
 def start():
     """ Start a new thread and run the TourneyDaemon in it """
-    subprocess.Popen("python3 -m daemon.main", cwd=paths.ROOT_DIR, shell=True,
+    subprocess.Popen("python3 -m tournament.daemon.main", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return Result((True, "Tournament starting.\nTraces are being written to {}".format(paths.TRACE_FILE)))
 

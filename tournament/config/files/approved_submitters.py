@@ -8,9 +8,8 @@ import json
 import os
 from typing import Dict
 
-from config.exceptions import NoConfigDefined
-from util import paths
-from util.types import Submitter
+from tournament.config.exceptions import NoConfigDefined
+from tournament.util import paths, Submitter
 
 
 class ApprovedSubmitters:

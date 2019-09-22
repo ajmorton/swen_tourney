@@ -6,11 +6,9 @@ import json
 import os
 from enum import Enum
 
-from config.assignments.abstract_assignment import AbstractAssignment
-from config.assignments.ant_assignment import AntAssignment
-from config.assignments.fuzz_assignment import FuzzAssignment
-from config.exceptions import NoConfigDefined
-from util import paths
+from tournament.config.assignments import AbstractAssignment, AntAssignment, FuzzAssignment
+from tournament.config.exceptions import NoConfigDefined
+from tournament.util import paths
 
 
 class AssignmentType(Enum):

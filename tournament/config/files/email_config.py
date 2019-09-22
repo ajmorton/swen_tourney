@@ -6,8 +6,8 @@ import os
 import socket
 from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError, SMTPConnectError
 
-from config.exceptions import NoConfigDefined
-from util import paths
+from tournament.config.exceptions import NoConfigDefined
+from tournament.util import paths
 
 
 class EmailConfig:
