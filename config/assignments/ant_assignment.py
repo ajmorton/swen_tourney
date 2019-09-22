@@ -59,10 +59,10 @@ class AntAssignment(AbstractAssignment):
         result = subprocess.run(
             "ant test -Dtest=\"{}\" -Dprogram=\"{}\"".format(test, prog),
             shell=True, cwd=submission_dir,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True
         )
 
-        if "Parallel execution timed out" in result.stderr:
+        if "Parallel execution timed out" in result.stdout:
             return TestResult.TIMEOUT, result.stdout
         elif result.returncode == 0:
             return TestResult.NO_BUGS_DETECTED, result.stdout
