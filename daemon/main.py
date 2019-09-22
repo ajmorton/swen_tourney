@@ -96,10 +96,9 @@ def check_submission_file_size(pre_val_dir: FilePath) -> Result:
         size_in_bytes = float(submission_size_regex.group(1)) * \
                         {"B": 1, "K": 1000, "M": 1000000, "G": 1000000000}.get(submission_size_regex.group(2))
         if size_in_bytes > 150 * 1000 * 1000:  # 150 MB
-            error_string = "Error: After compilation and test generatio the submission file size ({}) is larger than " \
+            error_string = "Error: After compilation and test generation the submission file size ({}) is larger than "\
                            "150 megabytes.\nServer space is limited so please keep your submissions to a " \
-                           "reasonable size".format(
-                "".join(submission_size_regex.groups()))
+                           "reasonable size".format("".join(submission_size_regex.groups()))
             error_string += "Further details:\n{}".format(
                 subprocess.run("du -d 2 -h .", cwd=pre_val_dir, shell=True, universal_newlines=True,
                                stdout=subprocess.PIPE).stdout)

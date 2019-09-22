@@ -3,10 +3,10 @@ The core functions used for running the tournament
 """
 import csv
 import json
-from multiprocessing import Pool, current_process
 import os
 import subprocess
 from datetime import datetime
+from multiprocessing import current_process, Pool
 from functools import partial
 from typing import Tuple
 
@@ -183,6 +183,7 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
     :param submission_time: the time of the new submission
     :param new_tests: the list of new tests that need to be run/rerun
     :param new_progs: the list of new programs that need to be run/rerun
+    :param pool: the thread pool to use for testing in parallel
     """
 
     tourney_state = TourneyState()
@@ -195,12 +196,6 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
     tourney_state.set_time_of_submission(submitter, submission_time)
     num_tests = json.load(open(paths.get_tourney_dir(submitter) + "/" + paths.NUM_TESTS_FILE, 'r'))
     tourney_state.set_number_of_tests(submitter, num_tests)
-
-    # run_tests will create staging directories for testing based on the thread id.
-    # As multiprocessing.pool allocates incrementing thread ids this leads to an increasing number of staging dirs,
-    # and in turn a memory leak of sorts.
-    # Instead, make sure that the head_to_head dir is empty before running to prevent this.
-    subprocess.run("rm -rf {}".format(paths.HEAD_TO_HEAD_DIR + "/*"), shell=True)
 
     # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
     # run_tests into functions with just one argument
