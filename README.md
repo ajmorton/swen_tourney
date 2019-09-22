@@ -6,6 +6,8 @@ Takes student submitted test suite(s) and program(s) under test (PUTs). All test
 
 The tournament is designed to be integrated with a [Gitlab Shared Runner](https://docs.gitlab.com/ee/ci/runners/) so that students can make submissions and receive immediate feedback in an interactive manner.
 
+### Contact
+Andrew Morton ajmorton2@gmail.com
 
 ## How it works
 The tournament is comprised of three 'threads'; A 'frontend' thread that validates submissions, a 'backend' thread that runs the submissions against each other, and a results thread that publishes results to a simple HTTP server.
@@ -47,14 +49,20 @@ See [common errors](docs/common_errors.md)
 See [config/assignments](config/assignments/README.md)
 
 ## TODO
+- [ ] Updates to documentation
+    - [ ] Use cases - "I want to X"
+    - [ ] Document how to see what expected output looks like in Gitlab
 - [ ] Organise tourney code and assignments into a single repo
 	- [ ] add comment to assignments on how to adapt for a new assignment
 	- [ ] Add comments on private repos and adding @admin to them with an expiry date
+- [ ] Add "passed stage X" flags so that modification of .gitlab-ci.yml file doesn't allow invalid submissions to slip in
 - [ ] Refactor
 	- [ ] General directory restructure
 	- [ ] Move all state into one folder for easy updates
 	- [ ] Replace dicts with typing.NamedTuples (python 3.6.2 required)
 	- [ ] Keep removal of prior staged submissions?
+- [ ] Add deadlines to approved_submitters, submitter_extensions
+- [ ] Add a compile stage, break compilation logic out of verify_tests/verify_progs
 - [ ] Add shutdown message to shutdown command e.g. "Restarting tournament. Back in 5"
 - [ ] Update to traces?
 - [ ] Readme per module
@@ -68,5 +76,7 @@ See [config/assignments](config/assignments/README.md)
 	- `shell` executor to `docker` executor?
 	- Shared runner to Group runner?
 - [ ] Simplify implementation (1400+ lines of code atm)
+- [ ] Fix handling of server when port is already in use
+    - [ ] Sometimes the results server thread is not being stopped and needs to be killed manually
 - [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
-- [ ] Add checks to enforce each stage beign run in order - students can't rerun submit without first running validate_progs etc
+- [ ] Add checks to enforce each stage being run in order - students can't rerun submit without first running validate_progs etc
