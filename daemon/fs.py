@@ -25,6 +25,10 @@ def get_next_request() -> FilePath:
     # get files ordered by creation date
     submissions = sorted(os.scandir(paths.STAGING_DIR), key=lambda folder: folder.stat().st_mtime)
 
+    # ignore the .gitignore file present in STAGING_DIR. It is only needed as git can't handle empty folders
+    if submissions[0].name == ".gitignore":
+        submissions = submissions[1:]
+
     if submissions:
         return submissions[0].name
     else:
@@ -47,7 +51,7 @@ def remove_previous_occurrences(submitter: Submitter):
     submissions = sorted(os.scandir(paths.STAGING_DIR), key=lambda folder: folder.stat().st_mtime, reverse=True)
     pre_request_submissions = []
     for request in submissions:
-        if is_report(request.name):
+        if is_report(request.name) or request.name == ".gitignore":
             break
         else:
             pre_request_submissions.append(request.name)

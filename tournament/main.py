@@ -348,7 +348,7 @@ def clean():
     subprocess.run("rm -f  {}".format(paths.TOURNEY_STATE_FILE), shell=True)
     subprocess.run("rm -f  {}".format(paths.TRACE_FILE), shell=True)
     subprocess.run("rm -f  {}".format(paths.RESULTS_FILE), shell=True)
-    subprocess.run("rm -f  {}/snapshot*.json".format(paths.REPORT_DIR), shell=True)
+    subprocess.run("rm -f  {}/snapshot*.json".format(paths.STATE_DIR), shell=True)
     subprocess.run("rm -f  {}".format(paths.ASSIGNMENT_CONFIG), shell=True)
     subprocess.run("rm -f  {}".format(paths.APPROVED_SUBMITTERS_LIST), shell=True)
     subprocess.run("rm -f  {}".format(paths.SERVER_CONFIG), shell=True)

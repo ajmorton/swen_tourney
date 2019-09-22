@@ -21,7 +21,7 @@ command are provided below.
     
 
 #### check\_config  
-Validates the configuration of the tournament, checking all of the config files in [config/data](../config/data). 
+Validates the configuration of the tournament, checking all of the config files in [files/configs](../state/config). 
 Details on the configuration files checked can be [found here](../config/README.md)
 
 #### start\_tournament  

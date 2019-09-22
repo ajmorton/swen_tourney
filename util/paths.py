@@ -11,29 +11,22 @@ from util.types import Submitter, FilePath
 # The root of the project
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# The list of submitters who are eligible to participate in the tournament
-APPROVED_SUBMITTERS_LIST = ROOT_DIR + "/config/data/approved_submitters.json"
+# The directory that contains all files that determine tournament state and configuration
+STATE_DIR = ROOT_DIR + "/state"
 
-# The list if submitters who have received and extension.
-SUBMITTER_EXTENSIONS_LIST = ROOT_DIR + "/config/data/submitter_extensions.json"
+# The directory that stores all config files
+CONFIGS_DIR = STATE_DIR + "/config"
 
-# Which assignment type the tournament is configured for
-ASSIGNMENT_CONFIG = ROOT_DIR + "/config/data/assignment_config.json"
+# Configuration files for the tournament
+APPROVED_SUBMITTERS_LIST = CONFIGS_DIR + "/approved_submitters.json"
+SUBMITTER_EXTENSIONS_LIST = CONFIGS_DIR + "/submitter_extensions.json"
+ASSIGNMENT_CONFIG = CONFIGS_DIR + "/assignment_config.json"
+SERVER_CONFIG = CONFIGS_DIR + "/server_config.json"
+EMAIL_CONFIG = CONFIGS_DIR + "/email_config.json"
 
-# the host and port of the request server
-SERVER_CONFIG = ROOT_DIR + "/config/data/server_config.json"
-
-# the config for sending emails
-EMAIL_CONFIG = ROOT_DIR + "/config/data/email_config.json"
-
-# The file that stores the current state of the tournament
-TOURNEY_STATE_FILE = ROOT_DIR + "/tournament/state/tourney_state.json"
-
-# The directory to write tournament snapshots to
-REPORT_DIR = ROOT_DIR + "/tournament/state"
-
-# Snapshot used by the results server
-RESULTS_FILE = REPORT_DIR + "/tourney_results.json"
+# Tournament state and snapshot used by the results server
+TOURNEY_STATE_FILE = STATE_DIR + "/tourney_state.json"
+RESULTS_FILE = STATE_DIR + "/tourney_results.json"
 
 # Trace file for tournament logs
 TRACE_FILE = ROOT_DIR + "/tournament_traces.log"
@@ -48,11 +41,11 @@ DIFF_FILE = ROOT_DIR + "/submitter_prog_diffs.csv"
 NUM_TESTS_FILE = "num_tests.json"
 
 # Directories that store student submissions for validation, submission, and testing
-SUBMISSIONS_PATH = ROOT_DIR + "/tournament/submissions"
-PRE_VALIDATION_DIR = SUBMISSIONS_PATH + "/pre_validation"
-STAGING_DIR = SUBMISSIONS_PATH + "/staged"
-TOURNEY_DIR = SUBMISSIONS_PATH + "/tourney"
-HEAD_TO_HEAD_DIR = SUBMISSIONS_PATH + "/head_to_head"
+SUBMISSIONS_DIR = STATE_DIR + "/submissions"
+PRE_VALIDATION_DIR = SUBMISSIONS_DIR + "/pre_validation"
+STAGING_DIR = SUBMISSIONS_DIR + "/staged"
+TOURNEY_DIR = SUBMISSIONS_DIR + "/tourney"
+HEAD_TO_HEAD_DIR = SUBMISSIONS_DIR + "/head_to_head"
 
 
 def get_pre_validation_dir(submitter: Submitter) -> FilePath:
@@ -67,4 +60,4 @@ def get_tourney_dir(submitter: Submitter) -> FilePath:
 
 def get_snapshot_file_path(report_time: datetime):
     """ Given a datetime, return a file path for a snapshot file with the datetime appended """
-    return REPORT_DIR + "/snapshot_" + report_time.strftime(fmt.DATETIME_FILE_STRING) + ".json"
+    return STATE_DIR + "/snapshot_" + report_time.strftime(fmt.DATETIME_FILE_STRING) + ".json"

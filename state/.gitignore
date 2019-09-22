@@ -1,0 +1,9 @@
+# Tournament state flags
+.alive
+.shutdown
+.subs_closed
+
+# Tournament results and state files
+tourney_state.json
+snapshot_*.json
+tourney_results.json

@@ -16,9 +16,9 @@ class Flag(Enum):
         .shutdown: the TourneyDaemon should shutdown on the next poll cycle
         .subs_closed: the tournament will no longer accept submissions
     """
-    ALIVE = paths.REPORT_DIR + "/.alive"
-    SHUTTING_DOWN = paths.REPORT_DIR + "/.shutdown"
-    SUBMISSIONS_CLOSED = paths.REPORT_DIR + "/.subs_closed"
+    ALIVE = paths.STATE_DIR + "/.alive"
+    SHUTTING_DOWN = paths.STATE_DIR + "/.shutdown"
+    SUBMISSIONS_CLOSED = paths.STATE_DIR + "/.subs_closed"
 
 
 def set_flag(flag: Flag, true: bool):
