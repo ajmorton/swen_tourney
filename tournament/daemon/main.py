@@ -8,12 +8,12 @@ from time import sleep, time
 import re
 from multiprocessing import Pool
 
-from tournament import main as tourney
-from tournament.config import AssignmentConfig, ApprovedSubmitters, SubmitterExtensions
+from tournament.main import main as tourney
+from tournament.config import AssignmentConfig
 from tournament.daemon import flags, fs
 from tournament.daemon.flags import Flag
-from tournament.tourney_snapshot import TourneySnapshot
-from tournament.util import FilePath, Submitter, Result
+from tournament.main.tourney_snapshot import TourneySnapshot
+from tournament.util import FilePath, Result
 from tournament.util import paths, format as fmt, print_tourney_trace, print_tourney_error
 
 
@@ -55,33 +55,6 @@ def process_submission_request(file_path):
     snapshot = TourneySnapshot(report_time=submission_time)
     snapshot.set_time_to_process_last_submission(int(time_end - time_start))
     snapshot.write_snapshot()
-
-
-def make_submission(submitter: Submitter) -> Result:
-    """ Create a submission for a submitter in the paths.STAGED_DIR """
-
-    _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
-    submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
-    if submissions_closed and submitter_username not in SubmitterExtensions().get_list():
-        return Result((False, "A new submission cannot be made at {}. Submissions have been closed"
-                       .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING))))
-
-    submission_time = datetime.now()
-    pre_val_dir = paths.get_pre_validation_dir(submitter_username)
-    size_check_valid, size_check_trace = check_submission_file_size(pre_val_dir)
-    if not size_check_valid:
-        subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
-        return Result((size_check_valid, size_check_trace))
-
-    staged_dir = paths.STAGING_DIR + "/" + fs.create_submission_request_name(submitter_username, submission_time)
-    fs.remove_previous_occurrences(submitter_username)
-    subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True)
-    flags.set_submission_ready(staged_dir)
-
-    trace = "Submission successfully made by {} at {}".format(submitter_username,
-                                                              submission_time.strftime(fmt.DATETIME_TRACE_STRING))
-    print_tourney_trace(trace)
-    return Result((True, trace))
 
 
 def check_submission_file_size(pre_val_dir: FilePath) -> Result:

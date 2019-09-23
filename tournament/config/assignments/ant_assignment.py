@@ -52,8 +52,7 @@ class AntAssignment(AbstractAssignment):
                 return Result((False, "Duplicate of {}".format(other_prog)))
         return Result((True, "No duplicates found"))
 
-    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False,
-                 compile_prog: bool = False) -> (TestResult, str):
+    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False) -> (TestResult, str):
 
         result = subprocess.run(
             "ant test -Dtest=\"{}\" -Dprogram=\"{}\"".format(test, prog),
@@ -92,6 +91,14 @@ class AntAssignment(AbstractAssignment):
             )
 
         return Result((True, "Preparation successful"))
+
+    def compile_prog(self, submission_dir: FilePath, prog: Prog) -> Result:
+        # program compilation is handled by the ant build script
+        return Result((True, ""))
+
+    def compile_test(self, submission_dir: FilePath, test: Test) -> Result:
+        # program compilation is handled by the ant build script
+        return Result((True, ""))
 
     def detect_new_tests(self, new_submission: FilePath, old_submission: FilePath) -> [Test]:
 

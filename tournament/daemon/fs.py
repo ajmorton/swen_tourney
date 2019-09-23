@@ -28,10 +28,7 @@ def get_next_request() -> FilePath:
     if submissions[0].name == ".gitignore":
         submissions = submissions[1:]
 
-    if submissions:
-        return submissions[0].name
-    else:
-        return FilePath("")
+    return submissions[0].name if submissions else FilePath("")
 
 
 def remove_previous_occurrences(submitter: Submitter):

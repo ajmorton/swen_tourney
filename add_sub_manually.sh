@@ -23,28 +23,36 @@ SUBMISSION=$1
 SUBMITTER=$(basename $(dirname ${SUBMISSION}))
 
 echo "Adding $SUBMITTER"
-echo "checking elig"
+
+# checking elig
 python3 frontend.py check_eligibility ${SUBMISSION}
 if [[ $? -ne 0 ]]; then
     echo "student not elig"
     exit 1
 fi
 
-echo "validating tests"
+# compiling
+python3 frontend.py compile ${SUBMISSION}
+if [[ $? -ne 0 ]]; then
+    echo "compilation failed"
+    exit 1
+fi
+
+# validating tests
 python3 frontend.py validate_tests ${SUBMISSION}
 if [[ $? -ne 0 ]]; then
     echo "tests_not_val"
     exit 1
 fi
 
-echo "validating progs"
+# validating progs
 python3 frontend.py validate_progs ${SUBMISSION}
 if [[ $? -ne 0 ]]; then
     echo "progs_not_val"
     exit 1
 fi
 
-echo "submitting"
+# submitting
 python3 frontend.py submit ${SUBMISSION}
 if [[ $? -ne 0 ]]; then
     echo "submit failed"

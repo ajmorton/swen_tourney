@@ -105,6 +105,7 @@ def create_backend_parser(parser_list):
 class FrontEndCommand(str, Enum):
     """ List of command available for the tournament frontend """
     CHECK_ELIGIBILITY = 'check_eligibility'
+    COMPILE = 'compile'
     VALIDATE_TESTS = 'validate_tests'
     VALIDATE_PROGS = 'validate_progs'
     SUBMIT = 'submit'
@@ -126,6 +127,14 @@ def create_frontend_parser(parser_list):
     )
     check_elig_parser.set_defaults(type=command_name)
     parser_list[command_name] = check_elig_parser
+
+    # add the parser for the compile command
+    command_name = FrontEndCommand.COMPILE.value
+    compile_parser = subparsers.add_parser(
+        command_name, help='Prepare and compile a submission for validation', parents=[directory_parser]
+    )
+    compile_parser.set_defaults(type=command_name)
+    parser_list[command_name] = compile_parser
 
     # add the parser for the validate_tests command
     command_name = FrontEndCommand.VALIDATE_TESTS.value

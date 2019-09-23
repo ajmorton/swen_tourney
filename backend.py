@@ -5,7 +5,7 @@ Backend interface for the tournament. This is used for starting, stopping, and m
 from datetime import datetime
 import time
 
-from tournament import main as tourney
+from tournament.main import main as tourney
 from tournament.config import configuration as cfg
 from tournament.daemon import flags, main as daemon
 from tournament.reporting import results_server

@@ -30,15 +30,7 @@ class FuzzAssignment(AbstractAssignment):
                 return Result((False, "Duplicate of {}".format(other_prog)))
         return Result((True, "No duplicates found"))
 
-    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False,
-                 compile_prog: bool = False) -> (TestResult, str):
-
-        if compile_prog:
-            compil = subprocess.run('CFLAGS="-DDEBUG_NO_PRINTF" make VERSIONS={}'.format(prog), shell=True,
-                                    cwd=submission_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                    universal_newlines=True)
-            if compil.returncode != 0:
-                return TestResult.COMPILATION_FAILED, compil.stdout
+    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False) -> (TestResult, str):
 
         if use_poc:
             test_command = "./run_tests.sh {} --use-poc".format(prog)
@@ -95,14 +87,23 @@ class FuzzAssignment(AbstractAssignment):
         subprocess.run("make clean", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, universal_newlines=True)
 
+        return Result((True, "Preparation successful"))
+
+    def compile_prog(self, submission_dir: FilePath, prog: Prog) -> Result:
+        compil = subprocess.run('CFLAGS="-DDEBUG_NO_PRINTF" make VERSIONS={}'.format(prog), cwd=submission_dir,
+                                shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+        if compil.returncode != 0:
+            return Result((False, compil.stdout))
+        return Result((True, ""))
+
+    def compile_test(self, submission_dir: FilePath, test: Test) -> Result:
         try:
             # run the fuzzer to generate a list of tests in tests/
-            subprocess.run("./run_fuzzer.sh", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,
+            subprocess.run("./run_fuzzer.sh", shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
                            stderr=subprocess.STDOUT, universal_newlines=True, timeout=300)
         except subprocess.TimeoutExpired:
             return Result((False, "Generating tests with ./run_fuzzer.sh timed out after 10 minutes"))
-
-        return Result((True, "Preparation successful"))
+        return Result((True, ""))
 
     def detect_new_tests(self, new_submission: FilePath, old_submission: FilePath) -> [Test]:
         # Fuzzers generate random tests, and so will need to be rerun every submission regardless of whether

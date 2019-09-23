@@ -56,8 +56,7 @@ class AbstractAssignment(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False,
-                 compile_prog: bool = False) -> (TestResult, str):
+    def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False) -> (TestResult, str):
         """
         Run a test against a program under test.
         :param test: the test suite
@@ -65,7 +64,6 @@ class AbstractAssignment(metaclass=ABCMeta):
         :param submission_dir: the directory of the submission
         :param use_poc: some assignments will use tests with an element of randomness to them - e.g. fuzzers -
         when validating that a program has a valid bug a proof of concept (poc) may be used instead
-        :param compile_prog: whether the program requires compilation before running the test
         :return: The result of the test run
         """
         raise NotImplementedError("Error: run_test is not implemented")
@@ -89,6 +87,26 @@ class AbstractAssignment(metaclass=ABCMeta):
         :return: whether the submission was prepared successfully
         """
         raise NotImplementedError("Error: prep_submission is not implemented")
+
+    @abstractmethod
+    def compile_prog(self, submission_dir: FilePath, prog: Prog) -> Result:
+        """
+        Compile the specified program under test.
+        :param submission_dir: The directory in which to compile the program under test
+        :param prog: The program under test to compile
+        :return: whether compilation was successful
+        """
+        raise NotImplementedError("Error: compile_prog is not implemented")
+
+    @abstractmethod
+    def compile_test(self, submission_dir: FilePath, test: Test) -> Result:
+        """
+        Compile the specified test.
+        :param submission_dir: The directory in which to compile the test
+        :param test: The test to compile
+        :return: whether compilation was successful
+        """
+        raise NotImplementedError("Error: compile_test is not implemented")
 
     @abstractmethod
     def detect_new_tests(self, new_submission: FilePath, old_submission: FilePath) -> [Test]:

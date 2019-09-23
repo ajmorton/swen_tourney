@@ -1,5 +1,6 @@
 stages:
     - check_elig
+    - compile
     - validate_tests
     - validate_progs
     - submit
@@ -13,6 +14,16 @@ check_submitter_eligibility:
     script:
         - python3 ~/swen-tourney/frontend.py check_eligibility $(realpath $(pwd)) # command sent to the tournament
     allow_failure: false # if this stage fails then the pipeline fails
+
+compile:
+    stage: compile
+    only:
+        - master
+    tags:
+        - "swen90006-tourney"
+    script:
+        - python3 ~/swen-tourney/frontend.py compile $(realpath $(pwd))
+    allow_failure: false
 
 validate_tests:
     stage: validate_tests
