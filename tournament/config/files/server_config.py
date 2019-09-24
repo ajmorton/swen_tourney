@@ -4,7 +4,7 @@ Configuration for the hosting of the results server
 import json
 import os
 
-from tournament.util import paths, print_tourney_trace
+from tournament.util import paths, print_tourney_trace, Result
 
 
 class ServerConfig:
@@ -34,11 +34,9 @@ class ServerConfig:
         """ The port on which the results server is accessible """
         return self.server_config['port']
 
-    def check_server_config(self) -> bool:
+    def check_server_config(self) -> Result:
         """ Write the details of the results server on tournament start up """
-        print("Server is listening on {}:{}".format(self.host(), self.port()))
-        print()
-        return True
+        return Result(True, "Server is listening on {}:{}\n".format(self.host(), self.port()))
 
     @staticmethod
     def write_default():

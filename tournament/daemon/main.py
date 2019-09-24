@@ -75,31 +75,31 @@ def check_submission_file_size(pre_val_dir: FilePath) -> Result:
                 subprocess.run("du -d 2 -h .", cwd=pre_val_dir, shell=True, universal_newlines=True,
                                stdout=subprocess.PIPE).stdout)
 
-            return Result((False, error_string))
-    return Result((True, "submission size valid"))
+            return Result(False, error_string)
+    return Result(True, "submission size valid")
 
 
 def is_alive() -> Result:
     """ Check if the TourneyDaemon is online via the alive flag """
     if flags.get_flag(Flag.ALIVE):
         if flags.get_flag(Flag.SHUTTING_DOWN):
-            return Result((True, "Tournament is online, but in the process of shutting down"))
+            return Result(True, "Tournament is online, but in the process of shutting down")
         else:
-            return Result((True, "Tournament is online"))
+            return Result(True, "Tournament is online")
     else:
-        return Result((False, "Tournament is not online"))
+        return Result(False, "Tournament is not online")
 
 
 def shutdown() -> Result:
     """ Set the shutdown flag for TourneyDaemon """
     if not flags.get_flag(Flag.ALIVE):
-        return Result((False, "Tournament is already offline"))
+        return Result(False, "Tournament is already offline")
     else:
         flags.set_flag(Flag.SHUTTING_DOWN, True)
         print_tourney_trace("Shutdown event received. Finishing processing")
-        return Result((True, "Tournament is shutting down. "
-                             "This may take a while as current processing must be completed.\n"
-                             "Check the tournament traces to see when the tournament has successfully stopped."))
+        return Result(True, "Tournament is shutting down. "
+                            "This may take a while as current processing must be completed.\n"
+                            "Check the tournament traces to see when the tournament has successfully stopped.")
 
 
 def make_report_request(request_time: datetime) -> Result:
@@ -107,20 +107,20 @@ def make_report_request(request_time: datetime) -> Result:
     fs.create_report_request(request_time)
     trace = "Report request made at {}".format(request_time.strftime(fmt.DATETIME_TRACE_STRING))
     print_tourney_trace(trace)
-    return Result((True, trace))
+    return Result(True, trace)
 
 
 def close_submissions() -> Result:
     """ Set the SUBMISSIONS_CLOSED flag to prevent any further submissions """
     flags.set_flag(flags.Flag.SUBMISSIONS_CLOSED, True)
-    return Result((True, "Submissions closed"))
+    return Result(True, "Submissions closed")
 
 
-def start():
+def start() -> Result:
     """ Start a new thread and run the TourneyDaemon in it """
     subprocess.Popen("python3 -m tournament.daemon.main", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return Result((True, "Tournament starting.\nTraces are being written to {}".format(paths.TRACE_FILE)))
+    return Result(True, "Tournament starting.\nTraces are being written to {}".format(paths.TRACE_FILE))
 
 
 def main():

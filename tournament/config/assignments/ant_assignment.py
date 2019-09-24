@@ -49,8 +49,8 @@ class AntAssignment(AbstractAssignment):
             diff = subprocess.run("diff -rw {} {}".format(prog, other_prog), cwd=submission_dir + "/programs",
                                   shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if diff.returncode == 0:
-                return Result((False, "Duplicate of {}".format(other_prog)))
-        return Result((True, "No duplicates found"))
+                return Result(False, "Duplicate of {}".format(other_prog))
+        return Result(True, "No duplicates found")
 
     def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False) -> (TestResult, str):
 
@@ -90,15 +90,15 @@ class AntAssignment(AbstractAssignment):
                 shell=True
             )
 
-        return Result((True, "Preparation successful"))
+        return Result(True, "Preparation successful")
 
     def compile_prog(self, submission_dir: FilePath, prog: Prog) -> Result:
         # program compilation is handled by the ant build script
-        return Result((True, ""))
+        return Result(True, "")
 
     def compile_test(self, submission_dir: FilePath, test: Test) -> Result:
         # program compilation is handled by the ant build script
-        return Result((True, ""))
+        return Result(True, "")
 
     def detect_new_tests(self, new_submission: FilePath, old_submission: FilePath) -> [Test]:
 

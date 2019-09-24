@@ -4,9 +4,10 @@ Configuration file validation performed on tournament startup
 
 from tournament.config.exceptions import NoConfigDefined
 from tournament.config.files import ApprovedSubmitters, AssignmentConfig, ServerConfig, SubmitterExtensions
+from tournament.util import Result
 
 
-def configuration_valid() -> bool:
+def configuration_valid() -> Result:
     """
     Check all configuration files on tournament startup. If any configuration file validation file fails return false.
     :return: Whether all configuration files are valid
@@ -16,20 +17,19 @@ def configuration_valid() -> bool:
         ServerConfig()
 
         # check assignment config is valid
-        valid = AssignmentConfig().check_assignment_valid() \
-            and ApprovedSubmitters().check_valid() \
-            and ServerConfig().check_server_config() \
-            and SubmitterExtensions().check_valid()
-        # and EmailConfig().check_email_valid()
+        result = AssignmentConfig().check_assignment_valid() + \
+            ApprovedSubmitters().check_valid() + \
+            ServerConfig().check_server_config() + \
+            SubmitterExtensions().check_valid()
+        # EmailConfig().check_email_valid()
 
     except NoConfigDefined as no_config_error:
-        print(no_config_error.message)
-        valid = False
+        result = Result(False, no_config_error.message)
 
-    print("=================================")
-    if valid:
-        print("Tournament configuration is valid")
+    result += "================================="
+    if result:
+        result += "Tournament configuration is valid"
     else:
-        print("Tournament has not been configured correctly. Please correct the above errors")
+        result += "Tournament has not been configured correctly. Please correct the above errors"
 
-    return valid
+    return result

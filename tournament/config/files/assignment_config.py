@@ -8,7 +8,7 @@ from enum import Enum
 
 from tournament.config.assignments import AbstractAssignment, AntAssignment, FuzzAssignment
 from tournament.config.exceptions import NoConfigDefined
-from tournament.util import paths
+from tournament.util import paths, Result
 
 
 class AssignmentType(Enum):
@@ -40,48 +40,47 @@ class AssignmentConfig:
     @staticmethod
     def write_default():
         """ Create a default AssignmentConfig file """
-        json.dump(AssignmentConfig.default_assignment_config, open(paths.ASSIGNMENT_CONFIG, 'w')
-                  , indent=4, sort_keys=True)
+        json.dump(AssignmentConfig.default_assignment_config, open(paths.ASSIGNMENT_CONFIG, 'w'),
+                  indent=4, sort_keys=True)
 
-    def check_assignment_valid(self) -> bool:
+    def check_assignment_valid(self) -> Result:
         """ Check the configuration is valid """
-        valid = self.check_assignment_type() and self.check_source_assg_exists() and self.check_for_ci_file()
-        print()
-        return valid
+        result = self.check_assignment_type()
+        if result:
+            result += self.check_source_assg_exists()
+        if result:
+            result += self.check_for_ci_file()
+        return result
 
-    def check_assignment_type(self) -> bool:
+    def check_assignment_type(self) -> Result:
         """ Check that the assignment type listed has an existing implementation """
         assignment_types = [assg.name for assg in AssignmentType]
 
         if self.config['assignment'] in assignment_types:
-            print("Tournament is configured for: {}".format(self.config['assignment']))
-            return True
+            return Result(True, "Tournament is configured for: {}".format(self.config['assignment']))
         else:
-            print("ERROR: Assignment configuration has not been configured properly.\n"
-                  "       Please update {} with one of: {}"
-                  .format(paths.ASSIGNMENT_CONFIG, assignment_types))
-            return False
+            return Result(False, "ERROR: Assignment configuration has not been configured properly.\n"
+                                 "       Please update {} with one of: {}"
+                                 .format(paths.ASSIGNMENT_CONFIG, assignment_types))
 
-    def check_source_assg_exists(self) -> bool:
+    def check_source_assg_exists(self) -> Result:
         """ Check that the path to the original source code is valid """
         source_assg_dir = self.config['source_assg_dir']
         if os.path.exists(source_assg_dir):
-            print("\tSource assignment is: {}".format(self.get_assignment().get_assignment_name()))
-            print("\tSource code dir: {}".format(source_assg_dir))
-            return True
+            return Result(True, "\tSource assignment is: {}".format(self.get_assignment().get_assignment_name()) +
+                                "\n\tSource code dir: {}".format(source_assg_dir))
         else:
-            print("ERROR: Source assg dir {} does not exist".format(source_assg_dir))
-            return False
+            return Result(False, "ERROR: Source assg dir {} does not exist".format(source_assg_dir))
 
-    def check_for_ci_file(self) -> bool:
+    def check_for_ci_file(self) -> Result:
         """
         Assignments require a .gitlab-ci.yml file in order for a gitlab runner to validate and make submissions.
         Ensure it is present
         """
         gitlab_ci_file_path = self.config['source_assg_dir'] + "/.gitlab-ci.yml"
         if os.path.exists(gitlab_ci_file_path):
-            return True
+            return Result(True, "")
         else:
-            print("ERROR: Expected gitlab_ci file not found at {}".format(gitlab_ci_file_path))
-            print("       Check docs/example_gitlab-ci.yml for an example of what this file should look like.")
-            return False
+            return Result(False,
+                          "ERROR: Expected gitlab_ci file not found at {}\n".format(gitlab_ci_file_path) +
+                          "\n     Check docs/example_gitlab-ci.yml for an example of what this file should look like.")

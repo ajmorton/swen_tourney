@@ -7,7 +7,7 @@ import socket
 from smtplib import SMTP, SMTPHeloError, SMTPAuthenticationError, SMTPConnectError
 
 from tournament.config.exceptions import NoConfigDefined
-from tournament.util import paths
+from tournament.util import paths, Result
 
 
 class EmailConfig:
@@ -59,27 +59,25 @@ class EmailConfig:
         """ Create a default EmailConfig file """
         json.dump(EmailConfig.default_email_config, open(paths.EMAIL_CONFIG, 'w'), indent=4, sort_keys=True)
 
-    def check_email_valid(self) -> bool:
+    def check_email_valid(self) -> Result:
         """ Check the email config file is valid for usage """
         valid = self.check_email_non_default()
 
         if valid:
             valid = self.check_connection()
 
-        print()
+        valid.traces += "\n"
         return valid
 
-    def check_email_non_default(self) -> bool:
+    def check_email_non_default(self) -> Result:
         """ Check the email config has been updated with non-default values """
         if self.email_config != EmailConfig.default_email_config:
-            print("Emails will be sent from: {}".format(self.sender()))
-            return True
+            return Result(True, "Emails will be sent from: {}".format(self.sender()))
         else:
-            print("ERROR: Email has not been configured.\n"
-                  "       Please update {} with the correct details".format(paths.EMAIL_CONFIG))
-            return False
+            return Result(False, "ERROR: Email has not been configured.\n"
+                                 "       Please update {} with the correct details".format(paths.EMAIL_CONFIG))
 
-    def check_connection(self) -> bool:
+    def check_connection(self) -> Result:
         """ Check that using the details in the email config and email can be sent via the SMTP server """
         smtp_server = self.smtp_server()
         port = self.port()
@@ -91,15 +89,10 @@ class EmailConfig:
             smtp.starttls()
             smtp.login(email, password)
         except socket.timeout:
-            print("\tERROR: Timeout while trying to connect {}:{}".format(smtp_server, port))
-            return False
+            return Result(False, "\tERROR: Timeout while trying to connect {}:{}".format(smtp_server, port))
         except (SMTPHeloError, SMTPConnectError):
-            print("\tERROR: Cannot connect to {}:{}".format(smtp_server, port))
-            return False
+            return Result(False, "\tERROR: Cannot connect to {}:{}".format(smtp_server, port))
         except SMTPAuthenticationError:
-            print("\tERROR: Login attempt for {} failed".format(email))
-            return False
+            return Result(False, "\tERROR: Login attempt for {} failed".format(email))
 
-        print("\tSuccessful connection and authentication with SMTP server")
-
-        return True
+        return Result(True, "\tSuccessful connection and authentication with SMTP server")

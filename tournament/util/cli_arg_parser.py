@@ -165,7 +165,6 @@ def create_frontend_parser(parser_list):
 
 def print_help_text(parser_list, root_parser):
     """ When an invalid command is received print out help text for proper usage """
-    print()
 
     # When argparse fails it throws only a SystemExit. To figure out which command failed look at sys.argv[1]
     command_name = sys.argv[1]

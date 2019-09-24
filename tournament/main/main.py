@@ -100,8 +100,8 @@ def get_diffs() -> Result:
     """
 
     if not flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED):
-        return Result((False, "Submissions are not currently closed.\n "
-                              "get_diffs should only be called once submissions are closed"))
+        return Result(False, "Submissions are not currently closed.\n "
+                             "get_diffs should only be called once submissions are closed")
 
     assg = AssignmentConfig().get_assignment()
     tourney_results = json.load(open(paths.RESULTS_FILE, 'r'))
@@ -112,7 +112,6 @@ def get_diffs() -> Result:
 
     diffs = []
     for submitter in os.listdir(paths.TOURNEY_DIR):
-        print("diffing {}".format(submitter))
         submitter_diffs = assg.get_diffs(paths.get_tourney_dir(Submitter(submitter)))
         for prog in sorted(submitter_diffs.keys()):
             num_tests_evaded = tourney_results['results'][submitter]['progs'][prog]
@@ -127,10 +126,9 @@ def get_diffs() -> Result:
     invalid = ["Y", "y", "True", "true", "X", "x"]
     valid = ["N", "n", ""]
 
-    return Result((True, "\nDiff file has been created at: {}.\n"
-                         "Invalid entries should be marked with one of {} in the 'invalid?' column, "
-                         "valid entries can be marked with one of {}."
-                   .format(paths.DIFF_FILE, invalid, valid)))
+    return Result(True, "\nDiff file has been created at: {}.\n"
+                        "Invalid entries should be marked with one of {} in the 'invalid?' column, "
+                        "valid entries can be marked with one of {}.".format(paths.DIFF_FILE, invalid, valid))
 
 
 def rescore_invalid_progs() -> Result:
@@ -140,13 +138,13 @@ def rescore_invalid_progs() -> Result:
     """
 
     if not flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED):
-        return Result((False, "Submissions are not currently closed.\n "
-                              "Rescoring invalid programs should only be performed once submissions are closed"))
+        return Result(False, "Submissions are not currently closed.\n "
+                             "Rescoring invalid programs should only be performed once submissions are closed")
 
     if not os.path.exists(paths.DIFF_FILE):
-        return Result((False, "Error the diff file '{}' does not exist.\n"
-                              "Make sure to run 'get_diffs' and update the resulting file before running "
-                              "this command.".format(paths.DIFF_FILE)))
+        return Result(False, "Error the diff file '{}' does not exist.\n"
+                             "Make sure to run 'get_diffs' and update the resulting file before running "
+                             "this command.".format(paths.DIFF_FILE))
 
     diff_csv = csv.DictReader(open(paths.DIFF_FILE, 'r'))
     tourney_state = TourneyState()
@@ -155,7 +153,7 @@ def rescore_invalid_progs() -> Result:
     valid = ["N", "n", ""]
 
     num_invalid_progs = 0
-    unrecognised_value = False
+    parsing_results = Result(True, "")
     for row in diff_csv:
         is_invalid, sub, mut = row['invalid?'], row['submitter'], row['mutant']
         if is_invalid in invalid:
@@ -164,21 +162,21 @@ def rescore_invalid_progs() -> Result:
         elif is_invalid in valid:
             continue
         else:
-            unrecognised_value = True
-            print("Error: unrecognised value '{}' in the 'invalid?' column for {} {}."
-                  .format(is_invalid, sub, mut))
+            parsing_results += Result(False, "Error: unrecognised value '{}' in the 'invalid?' column for {} {}."
+                                      .format(is_invalid, sub, mut))
 
-    if unrecognised_value:
-        print("\nUnrecognised values in the 'invalid?' column of {} have been detected. "
-              "Please use one of {} for valid entries, or one of {} for invalid entries"
-              .format(paths.DIFF_FILE, valid, invalid))
+    if not parsing_results:
+        return Result(False, parsing_results.traces +
+                      "\nUnrecognised values in the 'invalid?' column of {} have been detected. "
+                      "Please use one of {} for valid entries, or one of {} for invalid entries"
+                      .format(paths.DIFF_FILE, valid, invalid))
 
     # update tourney state and results
-    print("\nResults updated. Recalculating submitter scores.")
+    parsing_results.traces += "Results updated. Recalculating submitter scores."
     tourney_state.save_to_file()
     TourneySnapshot(report_time=datetime.now()).write_snapshot()
 
-    return Result((True, "{} invalid programs have had their score set to zero".format(num_invalid_progs)))
+    return Result(True, "{} invalid programs have had their score set to zero".format(num_invalid_progs))
 
 
 def clean():

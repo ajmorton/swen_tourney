@@ -28,31 +28,31 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str) -> Result:
     """
 
     if not flags.get_flag(flags.Flag.ALIVE):
-        return Result((False, "Error: The tournament is not currently online."))
+        return Result(False, "Error: The tournament is not currently online.")
 
     assg = AssignmentConfig().get_assignment()
     if assg_name != assg.get_assignment_name():
-        return Result((False, "Error: The submitted assignment '{}' does not match the assignment "
-                              "this tournament is configured for: '{}'".format(assg_name, assg.get_assignment_name())))
+        return Result(False, "Error: The submitted assignment '{}' does not match the assignment "
+                             "this tournament is configured for: '{}'".format(assg_name, assg.get_assignment_name()))
 
     submitter_eligible, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     if not submitter_eligible:
-        return Result((False, "Submitter '{}' is not on the approved submitters list.\n"
-                              "If this is a group assignment please check that you are committing to "
-                              "the repo of your designated team representative.\n"
-                              "If this is an individual assignment please check with your tutors that"
-                              " you are added to the approved_submitters list".format(submitter)))
+        return Result(False, "Submitter '{}' is not on the approved submitters list.\n"
+                             "If this is a group assignment please check that you are committing to "
+                             "the repo of your designated team representative.\n"
+                             "If this is an individual assignment please check with your tutors that"
+                             " you are added to the approved_submitters list".format(submitter))
 
     submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
     if os.path.isdir(submitter_pre_validation_dir):
         prior_submission_age = datetime.now().timestamp() - os.stat(submitter_pre_validation_dir).st_mtime
         stale_submission_age = 60 * 15  # 15 minutes, a prior submission older than this can be discarded
         if prior_submission_age < stale_submission_age:
-            return Result((False, "Error: A prior submission is still being validated. "
-                                  "Please wait {} seconds to push a new commit."
-                                  .format(int(stale_submission_age - prior_submission_age))))
+            return Result(False, "Error: A prior submission is still being validated. "
+                                 "Please wait {} seconds to push a new commit."
+                                 .format(int(stale_submission_age - prior_submission_age)))
 
-    return Result((True, "Submitter is eligible for the tournament"))
+    return Result(True, "Submitter is eligible for the tournament")
 
 
 def compile_submission(submitter: Submitter, submission_dir: FilePath) -> Result:
@@ -67,30 +67,30 @@ def compile_submission(submitter: Submitter, submission_dir: FilePath) -> Result
 
     # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
     subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_val_dir), shell=True)
-    success, traces = assg.prep_submission(FilePath(submission_dir), FilePath(submitter_pre_val_dir))
+    result = assg.prep_submission(FilePath(submission_dir), FilePath(submitter_pre_val_dir))
 
-    if not success:
-        return Result((False, "An error occurred while preparing the submission:\n{}".format(traces)))
+    if not result:
+        return Result(False, "An error occurred while preparing the submission:\n{}".format(result.traces))
 
     # compile progs under test
-    traces += "\n\nCompiling programs:"
+    result += "\nCompiling programs:"
     for prog in assg.get_programs_list():
-        compil_success, compil_traces = assg.compile_prog(submitter_pre_val_dir, prog)
+        compil_result = assg.compile_prog(submitter_pre_val_dir, prog)
 
-        traces += "\n\t{} compilation ".format(prog)
-        traces += "SUCCESS" if compil_success else "FAILED.\n" + compil_traces
-        success = success and compil_success
+        result.traces += "\n\t{} compilation ".format(prog)
+        result.traces += "SUCCESS" if compil_result.success else "FAILED.\n" + compil_result.traces
+        result.success = result.success and compil_result.success
 
     # compile tests
-    traces += "\n\nCompiling tests:"
+    result.traces += "\n\nCompiling tests:"
     for test in assg.get_test_list():
-        compil_success, compil_traces = assg.compile_test(submitter_pre_val_dir, test)
+        compil_result = assg.compile_test(submitter_pre_val_dir, test)
 
-        traces += "\n\t{} compilation ".format(test)
-        traces += "SUCCESS" if compil_success else "FAILED.\n" + compil_traces
-        success = success and compil_success
+        result.traces += "\n\t{} compilation ".format(test)
+        result.traces += "SUCCESS" if compil_result.success else "FAILED.\n" + compil_result.traces
+        result.success = result.success and compil_result.success
 
-    return Result((success, traces))
+    return result
 
 
 def validate_tests(submitter: Submitter) -> Result:
@@ -103,12 +103,12 @@ def validate_tests(submitter: Submitter) -> Result:
     _, submitter_pre_val_dir, assg = submission_details(submitter)
 
     if not os.path.exists(submitter_pre_val_dir):
-        return Result((False, "Student submission not found in the `pre_validation` folder.\n"
-                              "This can be caused by manually retrying a failed test stage via the gitlab web "
-                              "interface. In order to do so you will need to manually re-run all stages in order "
-                              "(including stages that have previously passed).\n"
-                              "However, the recommended approach is to push a new commit which will run the entire "
-                              "test pipeline"))
+        return Result(False, "Student submission not found in the `pre_validation` folder.\n"
+                             "This can be caused by manually retrying a failed test stage via the gitlab web "
+                             "interface. In order to do so you will need to manually re-run all stages in order "
+                             "(including stages that have previously passed).\n"
+                             "However, the recommended approach is to push a new commit which will run the entire "
+                             "test pipeline")
 
     assg = AssignmentConfig().get_assignment()
 
@@ -124,7 +124,7 @@ def validate_tests(submitter: Submitter) -> Result:
              TestResult.NO_BUGS_DETECTED:       "SUCCESS - No bugs detected in original program",
              TestResult.BUG_FOUND:              "FAIL    - Test falsely reports error in original code\n" + test_traces,
              TestResult.UNEXPECTED_RETURN_CODE: "FAIL    - Unrecognised return code found\n" + test_traces
-             }.get(test_result, "ERROR - unexpected test result: {}".format(test_result))
+             }.get(test_result,                 "ERROR   - unexpected test result: {}".format(test_result))
 
         tests_valid = tests_valid and test_result == TestResult.NO_BUGS_DETECTED
         if tests_valid:
@@ -135,7 +135,7 @@ def validate_tests(submitter: Submitter) -> Result:
     else:
         json.dump(num_tests, open(submitter_pre_val_dir + "/" + paths.NUM_TESTS_FILE, 'w'))
 
-    return Result((tests_valid, validation_traces))
+    return Result(tests_valid, validation_traces)
 
 
 def validate_programs_under_test(submitter: Submitter) -> Result:
@@ -148,12 +148,12 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
     _, submitter_pre_val_dir, assg = submission_details(submitter)
 
     if not os.path.exists(submitter_pre_val_dir):
-        return Result((False, "Student submission not found in the `pre_validation` folder.\n"
-                              "This can be caused by manually retrying a failed test stage via the gitlab web "
-                              "interface. In order to do so you will need to manually re-run all stages in order "
-                              "(including stages that have previously passed).\n"
-                              "However, the recommended approach is to push a new commit which will run the entire "
-                              "test pipeline"))
+        return Result(False, "Student submission not found in the `pre_validation` folder.\n"
+                             "This can be caused by manually retrying a failed test stage via the gitlab web "
+                             "interface. In order to do so you will need to manually re-run all stages in order "
+                             "(including stages that have previously passed).\n"
+                             "However, the recommended approach is to push a new commit which will run the entire "
+                             "test pipeline")
 
     assg = AssignmentConfig().get_assignment()
 
@@ -169,14 +169,14 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
                  TestResult.NO_BUGS_DETECTED:       "FAIL    - Test suite does not detect error",
                  TestResult.BUG_FOUND:              "SUCCESS - Test suite detects error",
                  TestResult.UNEXPECTED_RETURN_CODE: "FAIL    - Unrecognised return code found\n" + test_traces,
-                 }.get(test_result, "ERROR   - unexpected test result: {}".format(test_result))
+                 }.get(test_result,                 "ERROR   - unexpected test result: {}".format(test_result))
 
             progs_valid = progs_valid and test_result == TestResult.BUG_FOUND
 
     if not progs_valid:
         subprocess.run("rm -rf {}".format(submitter_pre_val_dir), shell=True)
 
-    return Result((progs_valid, validation_traces))
+    return Result(progs_valid, validation_traces)
 
 
 def make_submission(submitter: Submitter) -> Result:
@@ -187,8 +187,8 @@ def make_submission(submitter: Submitter) -> Result:
     submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
     if submissions_closed and submitter_username not in SubmitterExtensions().get_list():
         subprocess.run("rm -rf {}".format(submitter_pre_val_dir), shell=True)
-        return Result((False, "A new submission cannot be made at {}. Submissions have been closed"
-                       .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING))))
+        return Result(False, "A new submission cannot be made at {}. Submissions have been closed"
+                      .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING)))
 
     submission_time = datetime.now()
     pre_val_dir = paths.get_pre_validation_dir(submitter_username)
@@ -200,4 +200,4 @@ def make_submission(submitter: Submitter) -> Result:
     trace = "Submission successfully made by {} at {}".format(submitter_username,
                                                               submission_time.strftime(fmt.DATETIME_TRACE_STRING))
     print_tourney_trace(trace)
-    return Result((True, trace))
+    return Result(True, trace)

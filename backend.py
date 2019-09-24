@@ -3,67 +3,70 @@ Backend interface for the tournament. This is used for starting, stopping, and m
 """
 
 from datetime import datetime
-import time
 
 from tournament.main import main as tourney
 from tournament.config import configuration as cfg
 from tournament.daemon import flags, main as daemon
 from tournament.reporting import results_server
 from tournament.util import BackendCommands, parse_backend_args
-from tournament.util import funcs
+from tournament.util import funcs, Result
 
 
-def main():  # pylint: disable=too-many-branches
+def start_tournament() -> Result:
+    if flags.get_flag(flags.Flag.ALIVE):
+        return Result(False, "Tournament already online")
+
+    result = cfg.configuration_valid()
+    if result:
+        result += daemon.start()
+        if result:
+            result += results_server.start_server()
+    return result
+
+
+def clean() -> Result:
+    result = daemon.is_alive()
+
+    if result:
+        return Result(False, result.traces + "Current submissions should not be removed unless the server is offline")
+
+    tourney.clean()
+    return Result(True, "All submissions and tournament results have been deleted")
+
+
+def main():
     """ Parse and process backend commands """
     command = parse_backend_args()
-    traces = ""
 
     if command.type == BackendCommands.CHECK_CONFIG:
-        cfg.configuration_valid()
+        result = cfg.configuration_valid()
 
     elif command.type == BackendCommands.CLEAN:
-        server_online, traces = daemon.is_alive()
-
-        if server_online:
-            traces += "\nCurrent submissions should not be removed unless the server is offline"
-        else:
-            tourney.clean()
-            traces = "All submissions and tournament results have been deleted"
+        result = clean()
 
     elif command.type == BackendCommands.REPORT:
-        _, traces = daemon.make_report_request(datetime.now())
+        result = daemon.make_report_request(datetime.now())
 
     elif command.type == BackendCommands.SHUTDOWN:
-        _, traces = daemon.shutdown()
+        result = daemon.shutdown()
 
     elif command.type == BackendCommands.START_TOURNAMENT:
-
-        tourney_already_online = flags.get_flag(flags.Flag.ALIVE)
-        if tourney_already_online:
-            traces = "Tournament already online."
-
-        if not tourney_already_online and cfg.configuration_valid():
-
-            success, traces = daemon.start()
-
-            if success:
-                time.sleep(1)
-                _, results_server_traces = results_server.start_server()
-                traces += "\n" + results_server_traces
+        result = start_tournament()
 
     elif command.type == BackendCommands.CLOSE_SUBS:
-        _, traces = daemon.close_submissions()
+        result = daemon.close_submissions()
 
     elif command.type == BackendCommands.GET_DIFFS:
-        _, traces = tourney.get_diffs()
+        result = tourney.get_diffs()
 
     elif command.type == BackendCommands.RESCORE_INVALID:
-        _, traces = tourney.rescore_invalid_progs()
+        result = tourney.rescore_invalid_progs()
 
     else:
-        traces = "Error: unrecognised command {}".format(command.type)
+        result = Result(False, "Error: unrecognised command {}".format(command.type))
 
-    print(traces)
+    print(result.traces)
+    exit(0 if result.success else 1)
 
 
 if __name__ == "__main__":

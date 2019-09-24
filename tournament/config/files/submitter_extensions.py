@@ -6,7 +6,7 @@ import os
 
 from tournament.config.files import ApprovedSubmitters
 from tournament.config.exceptions import NoConfigDefined
-from tournament.util import paths, Submitter
+from tournament.util import paths, Submitter, Result
 
 
 class SubmitterExtensions:
@@ -38,28 +38,23 @@ class SubmitterExtensions:
         json.dump(SubmitterExtensions.default_submitter_extensions, open(paths.SUBMITTER_EXTENSIONS_LIST, 'w'),
                   indent=4, sort_keys=True)
 
-    def check_non_default(self) -> bool:
+    def check_non_default(self) -> Result:
         """ Check the list of submitters extensions has been filled with non-default values """
         if self.submitter_extensions != SubmitterExtensions.default_submitter_extensions:
-            print("Non-default submitter extensions file is present:")
-            return True
+            return Result(True, "Non-default submitter extensions file is present:")
         else:
-            print("ERROR: Submitter extensions list has not been changed from the default provided.\n"
-                  "       Please update {} with the correct details"
-                  .format(paths.SUBMITTER_EXTENSIONS_LIST))
-            return False
+            return Result(False, "ERROR: Submitter extensions list has not been changed from the default provided.\n"
+                                 "       Please update {} with the correct details"
+                          .format(paths.SUBMITTER_EXTENSIONS_LIST))
 
-    def check_submitters_exist(self) -> bool:
+    def check_submitters_exist(self) -> Result:
         unknown_submitters = [sub for sub in self.submitter_extensions if sub not in ApprovedSubmitters().get_list()]
         if unknown_submitters:
-            print("\tERROR: Submitters {} not found in approved submitters list".format(unknown_submitters))
-            return False
+            return Result(False,
+                          "\tERROR: Submitters {} not found in approved submitters list".format(unknown_submitters))
         else:
-            return True
+            return Result(True, '')
 
-    def check_valid(self) -> bool:
+    def check_valid(self) -> Result:
         """ Check the approved submitters list is valid """
-        valid = self.check_non_default() and self.check_submitters_exist()
-
-        print()
-        return valid
+        return self.check_non_default() + self.check_submitters_exist()

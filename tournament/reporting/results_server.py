@@ -206,7 +206,7 @@ def start_server() -> Result:
     """ Start the results server in its own thread """
     subprocess.Popen("python3 -m tournament.reporting.results_server", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return Result((True, "Results server starting. Listening on port {}".format(ServerConfig().port())))
+    return Result(True, "Results server starting. Listening on port {}".format(ServerConfig().port()))
 
 
 if __name__ == '__main__':

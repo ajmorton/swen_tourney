@@ -3,7 +3,7 @@ Common types used in the tournament
 """
 
 from enum import Enum
-from typing import NewType, Dict, Tuple
+from typing import NewType, Dict
 
 FilePath = NewType("FilePath", str)
 Submitter = NewType("Submitter", str)
@@ -22,4 +22,18 @@ class TestResult(str, Enum):
 
 
 TestSet = NewType("TestSet", Dict[Submitter, Dict[Submitter, TestResult]])
-Result = NewType("Result", Tuple[bool, str])
+
+
+class Result:
+    def __init__(self, success: bool, trace: str):
+        self.success = success
+        self.traces = trace
+
+    def __bool__(self):
+        return self.success
+
+    def __add__(self, other):
+        if type(other) is str:
+            return Result(self.success, self.traces + "\n" + other)
+        else:
+            return Result(self.success and other.success, self.traces + "\n" + other.traces)
