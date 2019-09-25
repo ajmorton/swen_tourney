@@ -2,19 +2,8 @@
 Provides a command line interface for the backend and frontend commands for the tournament.
 """
 
-import argparse
-import sys
+from argparse import ArgumentParser, HelpFormatter
 from enum import Enum
-
-
-# Formats the help message, removes some annoying text
-class SubcommandHelpFormatter(argparse.RawDescriptionHelpFormatter):
-    """ Format help text for the command line interface """
-    def _format_action(self, action):
-        parts = super()._format_action(action)
-        if action.nargs == argparse.PARSER:
-            parts = "\n".join(parts.split("\n")[1:])
-        return parts
 
 
 class BackendCommands(str, Enum):
@@ -29,75 +18,31 @@ class BackendCommands(str, Enum):
     RESCORE_INVALID = 'rescore_invalid_progs'
 
 
+def add_parser(parser_list: dict, subparsers, command, help_text: str, parents: [ArgumentParser] = None):
+    # add the parser for the start_server command
+    command_name = command.value
+    new_parser = subparsers.add_parser(command_name, help=help_text, parents=parents if parents else [])
+    new_parser.set_defaults(type=command_name)
+    parser_list[command_name] = new_parser
+
+
 def create_backend_parser(parser_list):
     """ Create a command parser for the backend commands """
-    parser = argparse.ArgumentParser(formatter_class=SubcommandHelpFormatter)
+    parser = ArgumentParser(formatter_class=HelpFormatter)
     subparsers = parser.add_subparsers(title='commands')
 
-    # add the parser for the start_server command
-    command_name = BackendCommands.START_TOURNAMENT.value
-    start_server_parser = subparsers.add_parser(
-        command_name, help='Start the tournament server'
-    )
-    start_server_parser.set_defaults(type=command_name)
-    parser_list[command_name] = start_server_parser
+    commands = \
+        [(BackendCommands.START_TOURNAMENT, 'Start the tournament server'),
+         (BackendCommands.SHUTDOWN, 'Shut down the tournament server'),
+         (BackendCommands.REPORT, 'Get the results of the tournament.'),
+         (BackendCommands.CLEAN, 'Remove all submissions from the tournament and reset the tournament state.'),
+         (BackendCommands.CHECK_CONFIG, 'Check the configuration of the tournament.'),
+         (BackendCommands.CLOSE_SUBS, 'Close new submissions to the tournament.'),
+         (BackendCommands.GET_DIFFS, 'Generate diffs of submitters mutants to verify mutants are valid.'),
+         (BackendCommands.RESCORE_INVALID, 'Read the diffs file and update (zero out) the score of any invalid progs')]
 
-    # add the parser for the shutdown command
-    command_name = BackendCommands.SHUTDOWN.value
-    shutdown_parser = subparsers.add_parser(
-        command_name, help='Shut down the tournament server'
-    )
-    shutdown_parser.set_defaults(type=command_name)
-    parser_list[command_name] = shutdown_parser
-
-    # add the parser for the send_report command
-    command_name = BackendCommands.REPORT.value
-    report_parser = subparsers.add_parser(
-        command_name, help='Get the results of the tournament.'
-    )
-    report_parser.set_defaults(type=command_name)
-    parser_list[command_name] = report_parser
-
-    # add the parser for the clean command
-    command_name = BackendCommands.CLEAN.value
-    clean_parser = subparsers.add_parser(
-        command_name, help='Remove all submissions from the tournament and reset the tournament state.'
-    )
-    clean_parser.set_defaults(type=command_name)
-    parser_list[command_name] = clean_parser
-
-    # add the parser for the check_config command
-    command_name = BackendCommands.CHECK_CONFIG.value
-    check_config_parser = subparsers.add_parser(
-        command_name, help='Check the configuration of the tournament.'
-    )
-    check_config_parser.set_defaults(type=command_name)
-    parser_list[command_name] = check_config_parser
-
-    # add the parser for the set_up command
-    command_name = BackendCommands.CLOSE_SUBS.value
-    close_subs_parser = subparsers.add_parser(
-        command_name, help='Close new submissions to the tournament.'
-    )
-    close_subs_parser.set_defaults(type=command_name)
-    parser_list[command_name] = close_subs_parser
-
-    # add the parser for the get_diffs command
-    command_name = BackendCommands.GET_DIFFS.value
-    get_diffs_parser = subparsers.add_parser(
-        command_name, help='Generate diffs between submitters mutants and the original '
-                           'program to verify mutants are valid.'
-    )
-    get_diffs_parser.set_defaults(type=command_name)
-    parser_list[command_name] = get_diffs_parser
-
-    # add the parser for the rescore_invalid_diffs command
-    command_name = BackendCommands.RESCORE_INVALID.value
-    rescore_invalid_diffs_parser = subparsers.add_parser(
-        command_name, help='Read the diffs file and update (zero out) the score of any progs found to be invalid.'
-    )
-    rescore_invalid_diffs_parser.set_defaults(type=command_name)
-    parser_list[command_name] = rescore_invalid_diffs_parser
+    for command, help_text in commands:
+        add_parser(parser_list, subparsers, command, help_text)
 
     return parser
 
@@ -113,84 +58,30 @@ class FrontEndCommand(str, Enum):
 
 def create_frontend_parser(parser_list):
     """ Create a command parser for the frontend commands """
-    parser = argparse.ArgumentParser(formatter_class=SubcommandHelpFormatter)
+    parser = ArgumentParser(formatter_class=HelpFormatter)
     subparsers = parser.add_subparsers(title='commands')
 
     # common parser for parsing the submission directory's path
-    directory_parser = argparse.ArgumentParser(add_help=False)
+    directory_parser = ArgumentParser(add_help=False)
     directory_parser.add_argument('dir', help="The directory of the submission to test")
 
-    # add the parser for the check_eligibility command
-    command_name = FrontEndCommand.CHECK_ELIGIBILITY.value
-    check_elig_parser = subparsers.add_parser(
-        command_name, help='Check the submitter is eligible to submit to the tournament', parents=[directory_parser]
-    )
-    check_elig_parser.set_defaults(type=command_name)
-    parser_list[command_name] = check_elig_parser
+    commands = \
+        [(FrontEndCommand.CHECK_ELIGIBILITY, 'Check the submitter is eligible to submit to the tournament'),
+         (FrontEndCommand.COMPILE, 'Prepare and compile a submission for validation'),
+         (FrontEndCommand.VALIDATE_TESTS, 'Validate the tests in a provided submission'),
+         (FrontEndCommand.VALIDATE_PROGS, 'Validate the programs under test in a provided submission'),
+         (FrontEndCommand.SUBMIT, 'Make a submission')]
 
-    # add the parser for the compile command
-    command_name = FrontEndCommand.COMPILE.value
-    compile_parser = subparsers.add_parser(
-        command_name, help='Prepare and compile a submission for validation', parents=[directory_parser]
-    )
-    compile_parser.set_defaults(type=command_name)
-    parser_list[command_name] = compile_parser
-
-    # add the parser for the validate_tests command
-    command_name = FrontEndCommand.VALIDATE_TESTS.value
-    val_test_parser = subparsers.add_parser(
-        command_name, help='Validate the tests in a provided submission', parents=[directory_parser]
-    )
-    val_test_parser.set_defaults(type=command_name)
-    parser_list[command_name] = val_test_parser
-
-    # add the parser for the process_submission command
-    command_name = FrontEndCommand.VALIDATE_PROGS.value
-    val_mut_parser = subparsers.add_parser(
-        command_name, help='Validate the programs under test in a provided submission', parents=[directory_parser]
-    )
-    val_mut_parser.set_defaults(type=command_name)
-    parser_list[command_name] = val_mut_parser
-
-    # add the parser for the submit command
-    command_name = FrontEndCommand.SUBMIT.value
-    submit_parser = subparsers.add_parser(
-        command_name, help='Make a submission', parents=[directory_parser]
-    )
-    submit_parser.set_defaults(type=command_name)
-    parser_list[command_name] = submit_parser
+    for command, help_text in commands:
+        add_parser(parser_list, subparsers, command, help_text, parents=[directory_parser])
 
     return parser
 
 
-def print_help_text(parser_list, root_parser):
-    """ When an invalid command is received print out help text for proper usage """
-
-    # When argparse fails it throws only a SystemExit. To figure out which command failed look at sys.argv[1]
-    command_name = sys.argv[1]
-
-    if command_name in parser_list:
-        parser_list[sys.argv[1]].print_help()
-    else:
-        root_parser.print_help()
-
-
-def parse_frontend_args():
-    """ Parse a command sent to the tournament frontend """
+def parse_args(backend: bool = False):
+    """ Parse a commands sent to the tournament """
     sub_parser_list = dict()
-    parser = create_frontend_parser(sub_parser_list)
-
-    try:
-        return parser.parse_args()
-
-    except SystemExit:
-        exit(1)
-
-
-def parse_backend_args():
-    """ Parse a command sent to the tournament backend """
-    sub_parser_list = dict()
-    parser = create_backend_parser(sub_parser_list)
+    parser = create_frontend_parser(sub_parser_list) if not backend else create_backend_parser(sub_parser_list)
 
     try:
         return parser.parse_args()

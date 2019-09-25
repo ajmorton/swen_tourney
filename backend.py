@@ -8,7 +8,7 @@ from tournament.main import main as tourney
 from tournament.config import configuration as cfg
 from tournament.daemon import flags, main as daemon
 from tournament.reporting import results_server
-from tournament.util import BackendCommands, parse_backend_args
+from tournament.util import BackendCommands, parse_args
 from tournament.util import funcs, Result
 
 
@@ -36,7 +36,7 @@ def clean() -> Result:
 
 def main():
     """ Parse and process backend commands """
-    command = parse_backend_args()
+    command = parse_args(backend=True)
 
     if command.type == BackendCommands.CHECK_CONFIG:
         result = cfg.configuration_valid()

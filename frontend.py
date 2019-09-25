@@ -14,7 +14,7 @@ def main():
     """
     Parse and process frontend commands
     """
-    command = parser.parse_frontend_args()
+    command = parser.parse_args()
     submission_dir = command.dir
     assg_name = os.path.basename(submission_dir.rstrip('/'))
     submitter = Submitter(os.path.basename((os.path.dirname(submission_dir).rstrip('/'))))
