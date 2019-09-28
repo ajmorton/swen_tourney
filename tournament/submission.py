@@ -12,6 +12,7 @@ from tournament.util.types import FilePath, Prog, Result, Submitter, TestResult
 
 
 def submission_details(submitter: Submitter) -> (Submitter, FilePath, AbstractAssignment):
+    """ Get important details for a submitter given their username """
     _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
     assg = AssignmentConfig().get_assignment()
@@ -78,7 +79,7 @@ def compile_submission(submitter: Submitter, submission_dir: FilePath) -> Result
         compil_result = assg.compile_prog(submitter_pre_val_dir, prog)
 
         result.traces += "\n\t{} compilation ".format(prog)
-        result.traces += "SUCCESS" if compil_result.success else "FAILED.\n" + compil_result.traces
+        result.traces += "SUCCESS" if compil_result else ("FAILED.\n" + compil_result.traces)
         result.success = result.success and compil_result.success
 
     # compile tests
@@ -87,7 +88,7 @@ def compile_submission(submitter: Submitter, submission_dir: FilePath) -> Result
         compil_result = assg.compile_test(submitter_pre_val_dir, test)
 
         result.traces += "\n\t{} compilation ".format(test)
-        result.traces += "SUCCESS" if compil_result.success else "FAILED.\n" + compil_result.traces
+        result.traces += "SUCCESS" if compil_result else ("FAILED.\n" + compil_result.traces)
         result.success = result.success and compil_result.success
 
     return result
@@ -182,16 +183,15 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
 def make_submission(submitter: Submitter) -> Result:
     """ Create a submission for a submitter in the paths.STAGED_DIR """
 
-    _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
-    submitter_pre_val_dir = paths.get_pre_validation_dir(submitter_username)
+    submitter_username, pre_val_dir, _ = submission_details(submitter)
+
     submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
     if submissions_closed and submitter_username not in SubmitterExtensions().get_list():
-        subprocess.run("rm -rf {}".format(submitter_pre_val_dir), shell=True)
+        subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
         return Result(False, "A new submission cannot be made at {}. Submissions have been closed"
                       .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING)))
 
     submission_time = datetime.now()
-    pre_val_dir = paths.get_pre_validation_dir(submitter_username)
     staged_dir = paths.STAGING_DIR + "/" + fs.create_submission_request_name(submitter_username, submission_time)
     fs.remove_previous_occurrences(submitter_username)
     subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True)
