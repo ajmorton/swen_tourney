@@ -6,6 +6,7 @@ The server delivers a static page with a ranked table of submitters
 import os
 import subprocess
 import threading
+import traceback
 import time
 from datetime import datetime
 from http import HTTPStatus, server
@@ -15,8 +16,7 @@ from tournament.config import AssignmentConfig, ServerConfig
 from tournament.daemon import flags
 from tournament.main.tourney_snapshot import TourneySnapshot
 from tournament.util import Result
-from tournament.util import format as fmt
-from tournament.util import paths
+from tournament.util import format as fmt, paths
 from tournament.util import print_tourney_trace, print_tourney_error
 
 
@@ -65,12 +65,8 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
         return
 
     def log_error(self, log_format, *args):  # pylint: disable=arguments-differ,unused-argument
-        """
-        The results server runs on a VPS, and when the session is closed but the server continues to run
-        printed messages are sent to the no-longer-existing stderr. This causes the server to crash so instead
-        suppress error logging
-        """
-        return
+        """ Print errors to the tournament traces """
+        print_tourney_error(self.address_string() + self.log_date_time_string() + str(args))
 
 
 def tournament_processing_details(snapshot: TourneySnapshot) -> str:
@@ -182,10 +178,10 @@ def main():
     """ Run the results server thread """
 
     try:
+        time.sleep(5)
         print_tourney_trace("Starting the results server")
         if not os.path.exists(paths.RESULTS_FILE):
             TourneySnapshot(report_time=datetime.now()).write_snapshot()
-
         server_config = ServerConfig()
         server_address = ('', server_config.port())
         httpd = ThreadedHTTPServer(server_address, TourneyResultsHandler)
@@ -195,7 +191,6 @@ def main():
     except Exception as exception:  # pylint: disable=broad-except
         print_tourney_error("Exception caught while running Results Server")
         print_tourney_error(str(exception))
-        import traceback
         print_tourney_error(traceback.format_exc())
         # wait 5 minutes to ensure the port is freed
         time.sleep(300)
