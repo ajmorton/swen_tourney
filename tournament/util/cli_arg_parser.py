@@ -3,85 +3,76 @@ Provides a command line interface for the backend and frontend commands for the 
 """
 
 from argparse import ArgumentParser, HelpFormatter
-from enum import Enum
+from datetime import datetime
+
+import tournament.config.configuration as cfg
+from tournament import submission as sub
+from tournament.daemon import main as daemon
+from tournament.main import main as tourney
+from tournament.util.types import Submitter
 
 
-class BackendCommands(str, Enum):
-    """ List of commands available for the tournament backend """
-    START_TOURNAMENT = 'start_tournament'
-    SHUTDOWN = 'shutdown'
-    REPORT = 'report'
-    CLEAN = 'clean'
-    CHECK_CONFIG = 'check_config'
-    CLOSE_SUBS = 'close_submissions'
-    GET_DIFFS = 'get_diffs'
-    RESCORE_INVALID = 'rescore_invalid_progs'
-
-
-def add_parser(parser_list: dict, subparsers, command, help_text: str, parents: [ArgumentParser] = None):
-    # add the parser for the start_server command
-    command_name = command.value
-    new_parser = subparsers.add_parser(command_name, help=help_text, parents=parents if parents else [])
-    new_parser.set_defaults(type=command_name)
-    parser_list[command_name] = new_parser
-
-
-def create_backend_parser(parser_list):
+def create_backend_parser():
     """ Create a command parser for the backend commands """
     parser = ArgumentParser(formatter_class=HelpFormatter)
     subparsers = parser.add_subparsers(title='commands')
 
-    commands = \
-        [(BackendCommands.START_TOURNAMENT, 'Start the tournament server'),
-         (BackendCommands.SHUTDOWN, 'Shut down the tournament server'),
-         (BackendCommands.REPORT, 'Get the results of the tournament.'),
-         (BackendCommands.CLEAN, 'Remove all submissions from the tournament and reset the tournament state.'),
-         (BackendCommands.CHECK_CONFIG, 'Check the configuration of the tournament.'),
-         (BackendCommands.CLOSE_SUBS, 'Close new submissions to the tournament.'),
-         (BackendCommands.GET_DIFFS, 'Generate diffs of submitters mutants to verify mutants are valid.'),
-         (BackendCommands.RESCORE_INVALID, 'Read the diffs file and update (zero out) the score of any invalid progs')]
-
-    for command, help_text in commands:
-        add_parser(parser_list, subparsers, command, help_text)
+    subparsers.add_parser('check_config').set_defaults(
+        func=lambda args: cfg.configuration_valid(), help='Check the configuration of the tournament.')
+    subparsers.add_parser('clean').set_defaults(
+        func=lambda args: daemon.clean(), help='Remove all submissions and reset the tournament state.')
+    subparsers.add_parser('start_tournament').set_defaults(
+        func=lambda args: daemon.start_tournament(), help='Start the tournament server.')
+    subparsers.add_parser('report').set_defaults(
+        func=lambda args: daemon.make_report_request(datetime.now()), help='Get the results of the tournament.')
+    subparsers.add_parser('shutdown').set_defaults(
+        func=lambda args: daemon.shutdown(), help='Shut down the tournament server.')
+    subparsers.add_parser('close_subs').set_defaults(
+        func=lambda args: daemon.close_submissions(), help='Close new submissions to the tournament.')
+    subparsers.add_parser('get_diffs').set_defaults(
+        func=lambda args: tourney.get_diffs(), help='Generate diffs of submitters mutants to verify mutants are valid.')
+    subparsers.add_parser('rescore_invalid_progs').set_defaults(
+        func=lambda args: tourney.rescore_invalid_progs(), help='Read the diffs file and rescore any invalid progs.')
 
     return parser
 
 
-class FrontEndCommand(str, Enum):
-    """ List of command available for the tournament frontend """
-    CHECK_ELIGIBILITY = 'check_eligibility'
-    COMPILE = 'compile'
-    VALIDATE_TESTS = 'validate_tests'
-    VALIDATE_PROGS = 'validate_progs'
-    SUBMIT = 'submit'
-
-
-def create_frontend_parser(parser_list):
+def create_frontend_parser():
     """ Create a command parser for the frontend commands """
+
     parser = ArgumentParser(formatter_class=HelpFormatter)
     subparsers = parser.add_subparsers(title='commands')
 
-    # common parser for parsing the submission directory's path
-    directory_parser = ArgumentParser(add_help=False)
-    directory_parser.add_argument('dir', help="The directory of the submission to test")
+    submitter_parser = ArgumentParser(add_help=False)
+    submitter_parser.add_argument('submitter', type=Submitter, help='The submitter')
 
-    commands = \
-        [(FrontEndCommand.CHECK_ELIGIBILITY, 'Check the submitter is eligible to submit to the tournament'),
-         (FrontEndCommand.COMPILE, 'Prepare and compile a submission for validation'),
-         (FrontEndCommand.VALIDATE_TESTS, 'Validate the tests in a provided submission'),
-         (FrontEndCommand.VALIDATE_PROGS, 'Validate the programs under test in a provided submission'),
-         (FrontEndCommand.SUBMIT, 'Make a submission')]
+    elig_parser = subparsers.add_parser('check_eligibility', parents=[submitter_parser])
+    elig_parser.add_argument('assg_name', type=str, help="The name of the assignment being submitted")
+    elig_parser.set_defaults(func=lambda args: sub.check_submitter_eligibility(args.submitter, args.assg_name),
+                             help='Check the submitter is eligible to submit to the tournament.')
 
-    for command, help_text in commands:
-        add_parser(parser_list, subparsers, command, help_text, parents=[directory_parser])
+    compile_parser = subparsers.add_parser('compile', parents=[submitter_parser])
+    compile_parser.add_argument('submitter_dir', type=str, help="The location of the submitter")
+    compile_parser.set_defaults(func=lambda args: sub.compile_submission(args.submitter, args.submitter_dir),
+                                help='Prepare and compile a submission for validation.')
+
+    val_tests_parser = subparsers.add_parser('validate_tests', parents=[submitter_parser])
+    val_tests_parser.set_defaults(func=lambda args: sub.validate_tests(args.submitter),
+                                  help='Validate the tests in a provided submission.')
+
+    val_progs_parser = subparsers.add_parser('validate_progs', parents=[submitter_parser])
+    val_progs_parser.set_defaults(func=lambda args: sub.validate_programs_under_test(args.submitter),
+                                  help='Validate the programs under test in a provided submission.')
+
+    submit_parser = subparsers.add_parser('submit', parents=[submitter_parser])
+    submit_parser.set_defaults(func=lambda args: sub.make_submission(args.submitter), help='Make a submission.')
 
     return parser
 
 
 def parse_args(backend: bool = False):
     """ Parse a commands sent to the tournament """
-    sub_parser_list = dict()
-    parser = create_frontend_parser(sub_parser_list) if not backend else create_backend_parser(sub_parser_list)
+    parser = create_frontend_parser() if not backend else create_backend_parser()
 
     try:
         return parser.parse_args()

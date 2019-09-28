@@ -9,9 +9,10 @@ import re
 from multiprocessing import Pool
 
 from tournament.main import main as tourney
-from tournament.config import AssignmentConfig
+from tournament.config import AssignmentConfig, configuration as cfg
 from tournament.daemon import flags, fs
 from tournament.daemon.flags import Flag
+from tournament.reporting import results_server
 from tournament.main.tourney_snapshot import TourneySnapshot
 from tournament.util import FilePath, Result
 from tournament.util import paths, format as fmt, print_tourney_trace, print_tourney_error
@@ -168,6 +169,27 @@ def main():
     print_tourney_trace("TourneyDaemon shutting down.")
     flags.set_flag(Flag.ALIVE, False)
     flags.set_flag(Flag.SHUTTING_DOWN, False)
+
+
+def start_tournament() -> Result:
+    if flags.get_flag(flags.Flag.ALIVE):
+        return Result(False, "Tournament already online")
+
+    result = cfg.configuration_valid()
+    if result:
+        result += start()
+        if result:
+            result += results_server.start_server()
+    return result
+
+
+def clean() -> Result:
+    result = is_alive()
+    if result:
+        return Result(False, result.traces + "Current submissions should not be removed unless the server is offline")
+
+    tourney.clean()
+    return Result(True, "All submissions and tournament results have been deleted")
 
 
 if __name__ == '__main__':
