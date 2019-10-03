@@ -78,3 +78,4 @@ See [config/assignments](tournament/config/assignments/README.md)
     - [ ] Sometimes the results server thread is not being stopped and needs to be killed manually
 - [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
 - [ ] Add checks to enforce each stage being run in order - students can't rerun submit without first running validate_progs etc
+- [ ] Update ResultsServer to ThreadedHttpServer

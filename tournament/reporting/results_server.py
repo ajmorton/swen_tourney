@@ -50,10 +50,10 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
         self.do_GET()
 
     def do_POST(self):
-        self.send_error(HTTPStatus.NOT_IMPLEMENTED, "No permission to POST")
+        self.send_error(HTTPStatus.NOT_IMPLEMENTED, "POST requests are not accepted")
 
     def list_directory(self, path):
-        """ Stub """
+        # stubbed
         return None
 
     def log_message(self, log_format, *args):  # pylint: disable=arguments-differ,unused-argument
