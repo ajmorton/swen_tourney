@@ -8,9 +8,10 @@ import os
 import subprocess
 from datetime import datetime
 
+from tournament.util import FilePath, Submitter, Result
+from tournament.util import format as fmt, paths, print_tourney_trace
+from tournament.config import SubmitterExtensions
 from tournament.daemon import flags
-from tournament.util import FilePath, Submitter
-from tournament.util import format as fmt, paths
 
 REPORT_REQUEST_PREFIX = "report_request."
 SUBMISSION_REQUEST_PREFIX = "submission."
@@ -31,7 +32,7 @@ def get_next_request() -> FilePath:
     return submissions[0].name if submissions else FilePath("")
 
 
-def remove_previous_occurrences(submitter: Submitter):
+def _remove_previous_occurrences(submitter: Submitter):
     """
     To reduce computation load on the tournament server, a submitters prior submissions will be removed from the queue
     when they make a new submission.
@@ -80,10 +81,10 @@ def is_report(file_path: FilePath) -> bool:
 def is_submission(file_path: FilePath) -> bool:
     """ Return whether a file is a submission """
     file_name = os.path.basename(file_path)
-    return file_name.startswith(SUBMISSION_REQUEST_PREFIX) and flags.submission_ready(file_path)
+    return file_name.startswith(SUBMISSION_REQUEST_PREFIX) and _submission_ready(file_path)
 
 
-def create_submission_request_name(submitter: Submitter, submission_time: datetime) -> FilePath:
+def _create_submission_request_name(submitter: Submitter, submission_time: datetime) -> FilePath:
     """
     Take a submission and its submission date and create a folder name from them.
     e.g. submitter: student_a, submission_time: 2019.09.08_12.00 --> student_a.2019_09_08__12_00
@@ -103,3 +104,48 @@ def get_submission_request_details(file_path: FilePath) -> (Submitter, datetime)
     folder_name = os.path.basename(file_path)
     [_, submitter, submission_time] = folder_name.split(".")
     return submitter, datetime.strptime(submission_time, fmt.DATETIME_FILE_STRING)
+
+
+# There are two threads that copy submissions to and from the STAGING dir respectively.
+# Use this flag to prevent the copying of partially copied submissions
+READY_FLAG = "/.ready"
+
+
+def _set_submission_ready(submission_dir: FilePath):
+    """
+    Mark a submission as ready to be copied
+    :param submission_dir: the directory of the submission to mark as ready
+    """
+    subprocess.run("touch {}".format(submission_dir + READY_FLAG), shell=True)
+
+
+def _submission_ready(submission_dir: FilePath) -> bool:
+    """
+    Check if a submission is ready to be copied
+    :param submission_dir: the directory to check
+    :return: whether the directory is ready to be copied
+    """
+    return os.path.exists(submission_dir + READY_FLAG)
+
+
+def queue_submission(submitter: Submitter) -> Result:
+    """ Create a submission for a submitter in the paths.STAGED_DIR """
+
+    pre_val_dir = paths.get_pre_validation_dir(submitter)
+
+    submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
+    if submissions_closed and submitter not in SubmitterExtensions().get_list():
+        subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
+        return Result(False, "A new submission cannot be made at {}. Submissions have been closed"
+                      .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING)))
+
+    submission_time = datetime.now()
+    staged_dir = paths.STAGING_DIR + "/" + _create_submission_request_name(submitter, submission_time)
+    _remove_previous_occurrences(submitter)
+    subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True)
+    _set_submission_ready(staged_dir)
+
+    trace = "Submission successfully made by {} at {}".format(submitter,
+                                                              submission_time.strftime(fmt.DATETIME_TRACE_STRING))
+    print_tourney_trace(trace)
+    return Result(True, trace)

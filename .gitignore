@@ -6,6 +6,7 @@ __pycache__/
 student_results.csv
 submitter_prog_diffs.csv
 tournament_traces.log
+results_server_traces.log
 
 # Directories containing test submissions
 subs

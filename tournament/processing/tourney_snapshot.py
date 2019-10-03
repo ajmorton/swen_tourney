@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 from tournament.config import AssignmentConfig
-from tournament.main.tourney_state import TourneyState
+from tournament.processing.tourney_state import TourneyState
 from tournament.util import FilePath
 from tournament.util import format as fmt
 from tournament.util import paths

@@ -12,8 +12,8 @@ from typing import Tuple
 
 from tournament.config import AssignmentConfig
 from tournament.daemon import flags
-from tournament.main.tourney_snapshot import TourneySnapshot
-from tournament.main.tourney_state import TourneyState
+from tournament.processing.tourney_snapshot import TourneySnapshot
+from tournament.processing.tourney_state import TourneyState
 from tournament.util import Prog, Result, Submitter, Test, TestSet
 from tournament.util import paths, print_tourney_trace
 
@@ -99,10 +99,6 @@ def get_diffs() -> Result:
     Print to paths.DIFF_FILE the changes each submitter made in their programs compared to the original program.
     """
 
-    if not flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED):
-        return Result(False, "Submissions are not currently closed.\n "
-                             "get_diffs should only be called once submissions are closed")
-
     assg = AssignmentConfig().get_assignment()
     tourney_results = json.load(open(paths.RESULTS_FILE, 'r'))
 
@@ -136,15 +132,6 @@ def rescore_invalid_progs() -> Result:
     Read from the diff file which submitted progs are invalid, and give those programs a score of zero in
     the tournament state
     """
-
-    if not flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED):
-        return Result(False, "Submissions are not currently closed.\n "
-                             "Rescoring invalid programs should only be performed once submissions are closed")
-
-    if not os.path.exists(paths.DIFF_FILE):
-        return Result(False, "Error the diff file '{}' does not exist.\n"
-                             "Make sure to run 'get_diffs' and update the resulting file before running "
-                             "this command.".format(paths.DIFF_FILE))
 
     diff_csv = csv.DictReader(open(paths.DIFF_FILE, 'r'))
     tourney_state = TourneyState()

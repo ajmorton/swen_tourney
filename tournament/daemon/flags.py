@@ -5,7 +5,6 @@ import os
 import subprocess
 from enum import Enum
 
-from tournament.util import FilePath
 from tournament.util import paths
 
 
@@ -40,28 +39,6 @@ def get_flag(flag: Flag) -> bool:
     :return: the value of the provided flag
     """
     return os.path.exists(flag.value)
-
-
-# There are two threads that copy submissions to and from the STAGING dir respectively.
-# Use this flag to prevent the copying of partially copied submissions
-READY_FLAG = "/.ready"
-
-
-def set_submission_ready(submission_dir: FilePath):
-    """
-    Mark a submission as ready to be copied
-    :param submission_dir: the directory of the submission to mark as ready
-    """
-    subprocess.run("touch {}".format(submission_dir + READY_FLAG), shell=True)
-
-
-def submission_ready(submission_dir: FilePath) -> bool:
-    """
-    Check if a submission is ready to be copied
-    :param submission_dir: the directory to check
-    :return: whether the directory is ready to be copied
-    """
-    return os.path.exists(submission_dir + READY_FLAG)
 
 
 def clear_all():

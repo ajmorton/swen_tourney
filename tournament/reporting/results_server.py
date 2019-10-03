@@ -14,7 +14,7 @@ from socketserver import ThreadingMixIn
 
 from tournament.config import AssignmentConfig, ServerConfig
 from tournament.daemon import flags
-from tournament.main.tourney_snapshot import TourneySnapshot
+from tournament.processing import TourneySnapshot
 from tournament.util import Result
 from tournament.util import format as fmt, paths
 from tournament.util import print_tourney_trace, print_tourney_error

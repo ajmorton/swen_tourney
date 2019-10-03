@@ -5,9 +5,8 @@ from datetime import datetime
 
 from tournament.config import AssignmentConfig, ApprovedSubmitters
 from tournament.config.assignments import AbstractAssignment
-from tournament.config.files import SubmitterExtensions
-from tournament.daemon import flags, fs
-from tournament.util import format as fmt, print_tourney_trace, paths
+from tournament import daemon
+from tournament.util import paths
 from tournament.util.types import FilePath, Prog, Result, Submitter, TestResult
 
 
@@ -28,7 +27,7 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str) -> Result:
     :return: Whether the submitter is eligible, with traces
     """
 
-    if not flags.get_flag(flags.Flag.ALIVE):
+    if not daemon.is_alive():
         return Result(False, "Error: The tournament is not currently online.")
 
     assg = AssignmentConfig().get_assignment()
@@ -178,26 +177,3 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
         subprocess.run("rm -rf {}".format(submitter_pre_val_dir), shell=True)
 
     return Result(progs_valid, validation_traces)
-
-
-def make_submission(submitter: Submitter) -> Result:
-    """ Create a submission for a submitter in the paths.STAGED_DIR """
-
-    submitter_username, pre_val_dir, _ = submission_details(submitter)
-
-    submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
-    if submissions_closed and submitter_username not in SubmitterExtensions().get_list():
-        subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
-        return Result(False, "A new submission cannot be made at {}. Submissions have been closed"
-                      .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING)))
-
-    submission_time = datetime.now()
-    staged_dir = paths.STAGING_DIR + "/" + fs.create_submission_request_name(submitter_username, submission_time)
-    fs.remove_previous_occurrences(submitter_username)
-    subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True)
-    flags.set_submission_ready(staged_dir)
-
-    trace = "Submission successfully made by {} at {}".format(submitter_username,
-                                                              submission_time.strftime(fmt.DATETIME_TRACE_STRING))
-    print_tourney_trace(trace)
-    return Result(True, trace)

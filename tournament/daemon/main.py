@@ -8,13 +8,12 @@ from time import sleep, time
 import re
 from multiprocessing import Pool
 
-from tournament.main import main as tourney
-from tournament.config import AssignmentConfig, configuration as cfg
-from tournament.daemon import flags, fs
+from tournament import processing as tourney
+from tournament.config import AssignmentConfig
+from tournament.daemon import flags, fs_queue
 from tournament.daemon.flags import Flag
-from tournament.reporting import results_server
-from tournament.main.tourney_snapshot import TourneySnapshot
-from tournament.util import FilePath, Result
+from tournament.processing import TourneySnapshot
+from tournament.util import FilePath, Result, Submitter
 from tournament.util import paths, format as fmt, print_tourney_trace, print_tourney_error
 
 
@@ -22,22 +21,22 @@ from tournament.util import paths, format as fmt, print_tourney_trace, print_tou
 pool = Pool()
 
 
-def process_report_request(file_path: FilePath):
+def _process_report_request(file_path: FilePath):
     """
     Provided a report request from paths.STAGED_DIR, create a snapshot of the current tournament state and write a
     .csv report with submitter scores
     :param file_path: the file path of the report request in paths.STAGED_DIR
     """
-    report_time = fs.get_report_request_time(file_path)
+    report_time = fs_queue.get_report_request_time(file_path)
     print_tourney_trace("Generating report for tournament submissions as of {}".format(report_time))
     snapshot = TourneySnapshot(report_time=report_time)
     snapshot.write_csv()
     subprocess.run("rm -f {}".format(file_path), shell=True)
 
 
-def process_submission_request(file_path):
+def _process_submission_request(file_path):
     """ Provided a submission from paths.STAGED_DIR, process the submission in the tournament """
-    (submitter, submission_time) = fs.get_submission_request_details(file_path)
+    (submitter, submission_time) = fs_queue.get_submission_request_details(file_path)
 
     staged_dir = file_path
     tourney_dest = paths.get_tourney_dir(submitter)
@@ -93,7 +92,7 @@ def is_alive() -> Result:
 
 def shutdown() -> Result:
     """ Set the shutdown flag for TourneyDaemon """
-    if not flags.get_flag(Flag.ALIVE):
+    if not is_alive():
         return Result(False, "Tournament is already offline")
     else:
         flags.set_flag(Flag.SHUTTING_DOWN, True)
@@ -105,10 +104,14 @@ def shutdown() -> Result:
 
 def make_report_request(request_time: datetime) -> Result:
     """ Create a report request file in paths.STAGED_DIR """
-    fs.create_report_request(request_time)
+    fs_queue.create_report_request(request_time)
     trace = "Report request made at {}".format(request_time.strftime(fmt.DATETIME_TRACE_STRING))
     print_tourney_trace(trace)
     return Result(True, trace)
+
+
+def queue_submission(submitter: Submitter) -> Result:
+    return fs_queue.queue_submission(submitter)
 
 
 def close_submissions() -> Result:
@@ -143,14 +146,14 @@ def main():
                 # In the event of an uncaught crash the ALIVE flag can be manually deleted to kill the tournament
                 break
 
-            next_submission_to_process = fs.get_next_request()
+            next_submission_to_process = fs_queue.get_next_request()
 
             if next_submission_to_process:
                 file_path = paths.STAGING_DIR + "/" + next_submission_to_process
-                if fs.is_report(file_path):
-                    process_report_request(file_path)
-                elif fs.is_submission(file_path):
-                    process_submission_request(file_path)
+                if fs_queue.is_report(file_path):
+                    _process_report_request(file_path)
+                elif fs_queue.is_submission(file_path):
+                    _process_submission_request(file_path)
                 else:
                     # submission is present in the staged folder, but has not finished being copied across
                     print_tourney_trace("Request present but not valid: {}".format(next_submission_to_process))
@@ -169,27 +172,6 @@ def main():
     print_tourney_trace("TourneyDaemon shutting down.")
     flags.set_flag(Flag.ALIVE, False)
     flags.set_flag(Flag.SHUTTING_DOWN, False)
-
-
-def start_tournament() -> Result:
-    if flags.get_flag(flags.Flag.ALIVE):
-        return Result(False, "Tournament already online")
-
-    result = cfg.configuration_valid()
-    if result:
-        result += start()
-        if result:
-            result += results_server.start_server()
-    return result
-
-
-def clean() -> Result:
-    result = is_alive()
-    if result:
-        return Result(False, result.traces + "Current submissions should not be removed unless the server is offline")
-
-    tourney.clean()
-    return Result(True, "All submissions and tournament results have been deleted")
 
 
 if __name__ == '__main__':

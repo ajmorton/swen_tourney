@@ -8,13 +8,14 @@ from datetime import datetime
 from tournament.util import format as fmt, paths
 
 
-def assert_python_version(major: int, minor: int, micro: int):
+def assert_python_version():
     """ Assert that a specific version of python is being run """
+    min_py_version = (3, 5, 2)
+
     py_version = sys.version_info
-    if py_version.major != major or py_version.minor != minor or py_version.micro != micro:
-        print("ERROR: You are currently using Python {}.{}.{}".format(
-            py_version.major, py_version.minor, py_version.micro))
-        print("Please run this program using Python {}.{}.{}".format(major, minor, micro))
+    if py_version < min_py_version:
+        print("ERROR: You are currently using Python {}.{}.{}".format(*py_version[0:3]))
+        print("Please run this program using Python {}.{}.{} or greater".format(*min_py_version))
         exit(1)
 
 
