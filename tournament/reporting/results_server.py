@@ -57,16 +57,8 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
         return None
 
     def log_message(self, log_format, *args):  # pylint: disable=arguments-differ,unused-argument
-        """
-        The results server runs on a VPS, and when the session is closed but the server continues to run
-        printed messages are sent to the no-longer-existing stdout. This causes the server to crash so instead
-        suppress logging
-        """
-        return
-
-    def log_error(self, log_format, *args):  # pylint: disable=arguments-differ,unused-argument
-        """ Print errors to the tournament traces """
-        print_tourney_error(self.address_string() + self.log_date_time_string() + str(args))
+        with open(paths.RESULTS_SERVER_TRACE_FILE, 'a') as file:
+            file.write("{} - - [{}] {}\n".format(self.address_string(), self.log_date_time_string(), *args))
 
 
 def tournament_processing_details(snapshot: TourneySnapshot) -> str:

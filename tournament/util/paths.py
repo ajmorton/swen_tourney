@@ -31,6 +31,9 @@ RESULTS_FILE = STATE_DIR + "/tourney_results.json"
 # Trace file for tournament logs
 TRACE_FILE = ROOT_DIR + "/tournament_traces.log"
 
+# Trace file for results server
+RESULTS_SERVER_TRACE_FILE = ROOT_DIR + "/results_server_traces.log"
+
 # CSV file for exporting tournament results
 CSV_FILE = ROOT_DIR + "/student_results.csv"
 
