@@ -17,7 +17,6 @@ class Flag(Enum):
     """
     ALIVE = paths.STATE_DIR + "/.alive"
     SHUTTING_DOWN = paths.STATE_DIR + "/.shutdown"
-    SUBMISSIONS_CLOSED = paths.STATE_DIR + "/.subs_closed"
 
 
 def set_flag(flag: Flag, true: bool):

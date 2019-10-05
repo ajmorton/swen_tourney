@@ -114,12 +114,6 @@ def queue_submission(submitter: Submitter) -> Result:
     return fs_queue.queue_submission(submitter)
 
 
-def close_submissions() -> Result:
-    """ Set the SUBMISSIONS_CLOSED flag to prevent any further submissions """
-    flags.set_flag(flags.Flag.SUBMISSIONS_CLOSED, True)
-    return Result(True, "Submissions closed")
-
-
 def start() -> Result:
     """ Start a new thread and run the TourneyDaemon in it """
     subprocess.Popen("python3 -m tournament.daemon.main", cwd=paths.ROOT_DIR, shell=True,

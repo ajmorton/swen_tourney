@@ -10,8 +10,7 @@ from datetime import datetime
 
 from tournament.util import FilePath, Submitter, Result
 from tournament.util import format as fmt, paths, print_tourney_trace
-from tournament.config import SubmitterExtensions
-from tournament.daemon import flags
+from tournament.config import ApprovedSubmitters, SubmitterExtensions
 
 REPORT_REQUEST_PREFIX = "report_request."
 SUBMISSION_REQUEST_PREFIX = "submission."
@@ -132,14 +131,13 @@ def queue_submission(submitter: Submitter) -> Result:
     """ Create a submission for a submitter in the paths.STAGED_DIR """
 
     pre_val_dir = paths.get_pre_validation_dir(submitter)
+    submission_time = datetime.now()
 
-    submissions_closed = flags.get_flag(flags.Flag.SUBMISSIONS_CLOSED)
-    if submissions_closed and submitter not in SubmitterExtensions().get_list():
+    if ApprovedSubmitters().submissions_closed() and not SubmitterExtensions().is_eligible(submitter):
         subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
         return Result(False, "A new submission cannot be made at {}. Submissions have been closed"
-                      .format(datetime.now().strftime(fmt.DATETIME_TRACE_STRING)))
+                      .format(submission_time.strftime(fmt.DATETIME_TRACE_STRING)))
 
-    submission_time = datetime.now()
     staged_dir = paths.STAGING_DIR + "/" + _create_submission_request_name(submitter, submission_time)
     _remove_previous_occurrences(submitter)
     subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True)

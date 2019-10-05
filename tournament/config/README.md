@@ -41,15 +41,19 @@ the tournament. Both the submitters unimelb usernames and student ids are provid
 based on either of these values.
 
 **Fields**  
-A dict of approved student usernames mapped to a `student_id`
+`submission_deadline` the date and time at which submissions are closed
+`submitters` A dict of approved student usernames mapped to a `student_id`
 
 **Example file**
 
 ```json
 {
-    "student_a": {"student_id": "123456"},
-    "student_b": {"student_id": "234567"},
-    "student_c": {"student_id": "345678"}
+    "submission_deadline": "2019-10-05 16:40:00",
+    "submitters": {
+        "student_a": { "student_id": "123456" },
+        "student_b": { "student_id": "234567" },
+        "student_n": { "student_id": "345678" }
+    }
 }
 ```
 
@@ -84,16 +88,20 @@ When submissions to the tournament are closed some submitters may be eligible fo
 Submitters in this list can continue to make submissions to the tournament.
 
 **Fields**  
-A list of submitter usernames. These names should map to the usernames used in `approved_submitters`
+`extension_deadline` the date and time at which extensions are closed
+`submitters` A list of submitter usernames. These names should map to the usernames used in `approved_submitters`
 
 **Example file**  
 
 ```json
-[
-    "student_a",
-    "student_b",
-    "student_n"
-]
+{
+    "extension_deadline": "2019-10-05 16:42:00",
+    "submitters": [
+        "student_a",
+        "student_b",
+        "student_c"
+    ]
+}
 ```
 **Validation**  
 Checks that `submitter_extensions` has been updated from its default values, and that all names provided in 

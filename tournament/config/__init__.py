@@ -17,11 +17,15 @@ def configuration_valid() -> Result:
         ServerConfig()
 
         # check assignment config is valid
-        result = AssignmentConfig().check_assignment_valid() + \
-            ApprovedSubmitters().check_valid() + \
-            ServerConfig().check_server_config() + \
-            SubmitterExtensions().check_valid()
-        # EmailConfig().check_email_valid()
+        result = AssignmentConfig().check_assignment_valid()
+        if result:
+            result += ApprovedSubmitters().check_valid()
+        if result:
+            result += ServerConfig().check_server_config()
+        if result:
+            result += SubmitterExtensions().check_valid()
+        # if result:
+        #    result += EmailConfig().check_email_valid()
 
     except NoConfigDefined as no_config_error:
         result = Result(False, no_config_error.message)

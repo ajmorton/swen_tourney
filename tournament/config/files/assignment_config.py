@@ -21,7 +21,7 @@ class AssignmentConfig:
     """ Contains configuration details for which tournament the assignment is set up for. """
 
     default_assignment_config = {
-        'assignment': "enter_assignment_type_here",
+        'assignment_type': "enter_assignment_type_here",
         'source_assg_dir': "/absolute/path/to/assignment"
     }
 
@@ -35,7 +35,7 @@ class AssignmentConfig:
 
     def get_assignment(self) -> AbstractAssignment:
         """ Get which assignment the tournament has been configured for """
-        return AssignmentType[self.config['assignment']].value(self.config['source_assg_dir'])
+        return AssignmentType[self.config['assignment_type']].value(self.config['source_assg_dir'])
 
     @staticmethod
     def write_default():
@@ -56,8 +56,8 @@ class AssignmentConfig:
         """ Check that the assignment type listed has an existing implementation """
         assignment_types = [assg.name for assg in AssignmentType]
 
-        if self.config['assignment'] in assignment_types:
-            return Result(True, "Tournament is configured for: {}".format(self.config['assignment']))
+        if self.config['assignment_type'] in assignment_types:
+            return Result(True, "Tournament is configured for: {}".format(self.config['assignment_type']))
         else:
             return Result(False, "ERROR: Assignment configuration has not been configured properly.\n"
                                  "       Please update {} with one of: {}"

@@ -3,44 +3,45 @@ The list of submitters who have received an extension beyond the submission clos
 """
 import json
 import os
+from datetime import datetime
 
-from tournament.config.files import ApprovedSubmitters
 from tournament.config.exceptions import NoConfigDefined
-from tournament.util import paths, Submitter, Result
+from tournament.config.files import ApprovedSubmitters
+from tournament.util import paths, format as fmt, Submitter, Result
 
 
 class SubmitterExtensions:
     """ The list of submitters who have received an extension in the tournament """
 
-    default_submitter_extensions = [
-        "student_a",
-        "student_b",
-        "student_c"
-    ]
+    default_extension_details = {
+        'extension_deadline': datetime.strftime(datetime.max, fmt.DATETIME_TRACE_STRING),
+        'submitters': ["student_a", "student_b", "student_c"]
+    }
 
-    submitter_extensions = []
+    extension_details = {}
 
     def __init__(self):
         if not os.path.exists(paths.SUBMITTER_EXTENSIONS_LIST):
-            SubmitterExtensions.write_default()
+            self.write_default()
             raise NoConfigDefined("No submitters extensions list found at {}. A default one has been created"
                                   .format(paths.SUBMITTER_EXTENSIONS_LIST))
         else:
-            self.submitter_extensions = json.load(open(paths.SUBMITTER_EXTENSIONS_LIST, 'r'))
+            self.extension_details = json.load(open(paths.SUBMITTER_EXTENSIONS_LIST, 'r'))
 
-    def get_list(self) -> [Submitter]:
-        """ Get the list of approved submitters """
-        return self.submitter_extensions
+    def is_eligible(self, submitter: Submitter) -> bool:
+        return submitter in self.extension_details['submitters'] and not self.extensions_closed()
 
-    @staticmethod
-    def write_default():
+    def write_default(self):
         """ Create a default ApprovedSubmitters file """
-        json.dump(SubmitterExtensions.default_submitter_extensions, open(paths.SUBMITTER_EXTENSIONS_LIST, 'w'),
-                  indent=4, sort_keys=True)
+        json.dump(self.default_extension_details, open(paths.SUBMITTER_EXTENSIONS_LIST, 'w'), indent=4, sort_keys=True)
+
+    def extensions_closed(self) -> bool:
+        return datetime.now() > datetime.strptime(self.extension_details['extension_deadline'],
+                                                  fmt.DATETIME_TRACE_STRING)
 
     def check_non_default(self) -> Result:
         """ Check the list of submitters extensions has been filled with non-default values """
-        if self.submitter_extensions != SubmitterExtensions.default_submitter_extensions:
+        if self.extension_details != SubmitterExtensions.default_extension_details:
             return Result(True, "Non-default submitter extensions file is present:")
         else:
             return Result(False, "ERROR: Submitter extensions list has not been changed from the default provided.\n"
@@ -48,7 +49,8 @@ class SubmitterExtensions:
                           .format(paths.SUBMITTER_EXTENSIONS_LIST))
 
     def check_submitters_exist(self) -> Result:
-        unknown_submitters = [sub for sub in self.submitter_extensions if sub not in ApprovedSubmitters().get_list()]
+        unknown_submitters = [sub for sub in self.extension_details['submitters']
+                              if sub not in ApprovedSubmitters().get_list()]
         if unknown_submitters:
             return Result(False,
                           "\tERROR: Submitters {} not found in approved submitters list".format(unknown_submitters))
@@ -57,4 +59,10 @@ class SubmitterExtensions:
 
     def check_valid(self) -> Result:
         """ Check the approved submitters list is valid """
-        return self.check_non_default() + self.check_submitters_exist()
+        if ApprovedSubmitters().submissions_closed():
+            result = self.check_non_default()
+            if result:
+                result += self.check_submitters_exist()
+            return result
+        else:
+            return Result(True, "")

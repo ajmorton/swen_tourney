@@ -35,7 +35,7 @@ python3 backend.py start_tournament # submissions can now be made and tournament
 	python3 frontend.py validate_tests
 	python3 frontend.py validate_progs
 	python3 frontend.py submit
-python3 backend.py close_submissions     # close submissions, can be scheduled with the `at` command
+# the submission deadline and extension deadline are passed
 python3 backend.py get_diffs             # generate diffs to be manually assessed
 python3 backend.py rescore_invalid_progs # zero-score invalid PUTs
 python3 backend.py shutdown              # shutdown the tournament
@@ -59,7 +59,6 @@ See [config/assignments](tournament/config/assignments/README.md)
 - [ ] Refactor
 	- [ ] Replace dicts with typing.NamedTuples (python 3.6.2 required)
 	- [ ] Keep removal of prior staged submissions?
-- [ ] Add deadlines to approved_submitters, submitter_extensions
 - [ ] Add a compile stage, break compilation logic out of verify_tests/verify_progs
 - [ ] Add shutdown message to shutdown command e.g. "Restarting tournament. Back in 5"
 - [ ] Update to traces?
@@ -76,6 +75,8 @@ See [config/assignments](tournament/config/assignments/README.md)
 - [ ] Simplify implementation (1400+ lines of code atm)
 - [ ] Fix handling of server when port is already in use
     - [ ] Sometimes the results server thread is not being stopped and needs to be killed manually
+- [ ] update gitlab-ci.ymls to add compile stage
+- [ ] Improve result addition - see if second arg can be evaluated lazily
 - [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
 - [ ] Add checks to enforce each stage being run in order - students can't rerun submit without first running validate_progs etc
 - [ ] Update ResultsServer to ThreadedHttpServer

@@ -2,9 +2,10 @@
 Further details on the makeup of the tournament.
 
 ### Frontend
-The frontend thread runs submissions through four stages.
+The frontend thread runs submissions through five stages.
 
  - `check_eligibility` which checks the submitter is allowed to make submissions to the tournament.
+ - `compile` check that submitter's tests and PUTs compile
  - `validate_tests` that validates the submitter provided tests work correctly and don't return false positives
  - `validate_progs` that validates the submitter provided PUTs and proves that they can be detected by the submitters
  - `submit` which adds the new submission to the tournament

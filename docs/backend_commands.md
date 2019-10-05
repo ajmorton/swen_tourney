@@ -12,7 +12,6 @@ command are provided below.
 	
     check_config            Check the configuration of the tournament.
     start_tournament        Start the tournament server
-    close_submissions       Close new submissions to the tournament.
     get_diffs               Generate diffs between submitters mutants and the original program to verify mutants are valid.
     rescore_invalid_progs   Read the diffs file and update (zero out) the score of any progs found to be invalid.
     report                  Get the results of the tournament.
@@ -27,11 +26,6 @@ Details on the configuration files checked can be [found here](../tournament/con
 #### start\_tournament  
 Starts the tournament, enabling submissions to be made and starts the HTTP results server. A call is also made to 
 `check_configs`, and if the check fails the tournament does not start.
-
-#### close\_submissions  
-A flag is set to prevent further submissions to the tournament being made. Submitters listed in the 
-`submitter_extensions` are still able to make submissions.  
-This command can be scheduled to run at a specific time using the `at` command.
 
 #### get\_diffs  
 While the tournament can performs simple checks on submissions made, manual confirmation may be required. 
