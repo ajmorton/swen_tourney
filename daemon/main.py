@@ -5,6 +5,7 @@ folder. These are then popped by the tournament daemon, oldest timestamp first, 
 import subprocess
 from datetime import datetime
 from time import sleep, time
+import re
 
 from config.configuration import AssignmentConfig, ApprovedSubmitters, SubmitterExtensions
 from daemon import flags, fs
@@ -63,6 +64,11 @@ def make_submission(submitter: Submitter) -> Result:
 
     submission_time = datetime.now()
     pre_val_dir = paths.get_pre_validation_dir(submitter_username)
+    size_check_valid, size_check_trace = check_submission_file_size(pre_val_dir)
+    if not size_check_valid:
+        subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
+        return Result((size_check_valid, size_check_trace))
+
     staged_dir = paths.STAGING_DIR + "/" + fs.create_submission_request_name(submitter_username, submission_time)
     fs.remove_previous_occurrences(submitter_username)
     subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True)
@@ -72,6 +78,29 @@ def make_submission(submitter: Submitter) -> Result:
                                                               submission_time.strftime(fmt.DATETIME_TRACE_STRING))
     print_tourney_trace(trace)
     return Result((True, trace))
+
+
+def check_submission_file_size(pre_val_dir: FilePath) -> Result:
+    """ Check that the size of the submissions is not too large """
+    result = subprocess.run("du -sh {}".format(pre_val_dir),
+                            stdout=subprocess.PIPE, universal_newlines=True, shell=True)
+    filesize_pattern = "^([0-9]+(?:\.[0-9]+)?)([BKMG])"  # number and scale, eg: "744K" = 744KB or "1.8G" == 1.8GB
+    submission_size_regex = re.search(filesize_pattern, result.stdout)
+
+    if submission_size_regex is not None:
+        size_in_bytes = float(submission_size_regex.group(1)) * \
+                        {"B": 1, "K": 1000, "M": 1000000, "G": 1000000000}.get(submission_size_regex.group(2))
+        if size_in_bytes > 150 * 1000 * 1000:  # 150 MB
+            error_string = "Error: After compilation and test generatio the submission file size ({}) is larger than " \
+                           "150 megabytes.\nServer space is limited so please keep your submissions to a " \
+                           "reasonable size".format(
+                "".join(submission_size_regex.groups()))
+            error_string += "Further details:\n{}".format(
+                subprocess.run("du -d 2 -h .", cwd=pre_val_dir, shell=True, universal_newlines=True,
+                               stdout=subprocess.PIPE).stdout)
+
+            return Result((False, error_string))
+    return Result((True, "submission size valid"))
 
 
 def is_alive() -> Result:
