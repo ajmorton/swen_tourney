@@ -25,7 +25,7 @@ class FuzzAssignment(AbstractAssignment):
                  compile_prog: bool = False) -> (TestResult, str):
 
         if compile_prog:
-            compil = subprocess.run("make VERSIONS={}".format(prog), shell=True, cwd=submission_dir,
+            compil = subprocess.run('CFLAGS="-DDEBUG_NO_PRINTF" make VERSIONS={}'.format(prog), shell=True, cwd=submission_dir,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
             if compil.returncode != 0:
                 return TestResult.COMPILATION_FAILED, compil.stdout
