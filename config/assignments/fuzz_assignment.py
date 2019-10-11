@@ -36,19 +36,25 @@ class FuzzAssignment(AbstractAssignment):
             test_command = "./run_tests.sh {}".format(prog)
 
         try:
+            # Note: Timeout does not work correctly when shell=True, stdout/stderr are written to pipes, and the
+            # subprocess spawns children. The original process is killed, but the children aren't and will hold onto
+            # the pipes until they terminate. The end result will still be a timeout, but it will take longer than 30
+            # seconds to terminate
             result = subprocess.run(test_command, shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT, universal_newlines=True, timeout=600)
+                                    stderr=subprocess.STDOUT, timeout=30)
         except subprocess.TimeoutExpired:
             return TestResult.TIMEOUT, ""
 
+        stdout = result.stdout.decode('ascii', errors='backslashreplace')
+
         if result.returncode == 0:
-            return TestResult.NO_BUGS_DETECTED, result.stdout
+            return TestResult.NO_BUGS_DETECTED, stdout
         elif result.returncode in [1, 134]:
             # The exact error codes that AddressSanitizer returns are to be determined.
             # This will be updated as more codes are discovered
-            return TestResult.BUG_FOUND, result.stdout
+            return TestResult.BUG_FOUND, stdout
         else:
-            return TestResult.UNEXPECTED_RETURN_CODE, "Exit code: {}\n".format(result.returncode) + result.stdout
+            return TestResult.UNEXPECTED_RETURN_CODE, "Exit code: {}\n".format(result.returncode) + stdout
 
     def get_num_tests(self, traces: str) -> int:
         return 0  # num tests is not needed for fuzz_assignment, as it does not impact the scoring functions
