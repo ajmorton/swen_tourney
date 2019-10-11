@@ -9,6 +9,7 @@ import threading
 import time
 from datetime import datetime
 from http import HTTPStatus, server
+from socketserver import ThreadingMixIn
 
 from config.configuration import AssignmentConfig, ServerConfig
 from daemon import flags
@@ -17,6 +18,11 @@ from util import format as fmt
 from util import paths
 from util.funcs import print_tourney_trace, print_tourney_error
 from util.types import Result
+
+
+# Add ThreadingMixIn so that server can handle multiple requests in parallel
+class ThreadedHTTPServer(ThreadingMixIn, server.HTTPServer):
+    pass
 
 
 class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
@@ -150,7 +156,7 @@ def table_row(*args) -> str:
     return row
 
 
-def server_assassin(httpd: server.HTTPServer):
+def server_assassin(httpd: ThreadedHTTPServer):
     """
     An assassin thread that checks for the removal of the tournament alive flag.
     When it get removed kill the server thread
@@ -172,7 +178,7 @@ def main():
 
         server_config = ServerConfig()
         server_address = ('', server_config.port())
-        httpd = server.HTTPServer(server_address, TourneyResultsHandler)
+        httpd = ThreadedHTTPServer(server_address, TourneyResultsHandler)
         threading.Thread(target=server_assassin, args=[httpd], daemon=True).start()
         httpd.serve_forever()
         print_tourney_trace("Shutting down the results server")
