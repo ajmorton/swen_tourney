@@ -56,6 +56,8 @@ def main():
         submitter = Submitter(os.path.basename((os.path.dirname(command.dir).rstrip('/'))))
         (success, submission_traces) = daemon.make_submission(submitter)
         print(submission_traces)
+        print()
+        print("Check the status of the tournament at http://murray.cis.unimelb.edu.au:8080/")
         print("==================================")
         print()
 

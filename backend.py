@@ -3,6 +3,7 @@ Backend interface for the tournament. This is used for starting, stopping, and m
 """
 
 from datetime import datetime
+import time
 
 from config import configuration as cfg
 from daemon import flags
@@ -47,6 +48,7 @@ def main():  # pylint: disable=too-many-branches
             success, traces = daemon.start()
 
             if success:
+                time.sleep(1)
                 _, results_server_traces = results_server.start_server()
                 traces += "\n" + results_server_traces
 

@@ -46,6 +46,16 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
 
         self.wfile.write(bytes(html, 'utf-8'))
 
+    def do_HEAD(self):
+        self.do_GET()
+
+    def do_POST(self):
+        self.send_error(HTTPStatus.NOT_IMPLEMENTED, "No permission to POST")
+
+    def list_directory(self, path):
+        """ Stub """
+        return None
+
     def log_message(self, log_format, *args):  # pylint: disable=arguments-differ,unused-argument
         """
         The results server runs on a VPS, and when the session is closed but the server continues to run
