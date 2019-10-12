@@ -139,6 +139,13 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
     progs_valid = True
     validation_traces = "Validation results:"
     for prog in assg.get_programs_list():
+
+        prog_unique, unique_trace = assg.is_prog_unique(prog, validation_dir)
+        if not prog_unique:
+            validation_traces += "\n\t{} FAIL - {}".format(prog, unique_trace)
+            progs_valid = False
+            continue
+
         for test in assg.get_test_list():
             test_result, test_traces = assg.run_test(test, prog, FilePath(validation_dir),
                                                      use_poc=True, compile_prog=True)

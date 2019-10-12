@@ -21,6 +21,15 @@ class FuzzAssignment(AbstractAssignment):
     def get_programs_list(self) -> [Prog]:
         return self.progs_list
 
+    def is_prog_unique(self, prog: Prog, submission_dir: FilePath) -> Result:
+        other_progs = [p for p in self.get_programs_list() if p != prog]
+        for other_prog in other_progs:
+            diff = subprocess.run("diff -rw {} {}".format(prog, other_prog), cwd=submission_dir + "/src",
+                                  shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if diff.returncode == 0:
+                return Result((False, "Duplicate of {}".format(other_prog)))
+        return Result((True, "No duplicates found"))
+
     def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False,
                  compile_prog: bool = False) -> (TestResult, str):
 
