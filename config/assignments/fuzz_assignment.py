@@ -45,14 +45,19 @@ class FuzzAssignment(AbstractAssignment):
             test_command = "./run_tests.sh {}".format(prog)
 
         try:
-            # Note: Timeout does not work correctly when shell=True, stdout/stderr are written to pipes, and the
-            # subprocess spawns children. The original process is killed, but the children aren't and will hold onto
-            # the pipes until they terminate. The end result will still be a timeout, but it will take longer than 30
-            # seconds to terminate
-            result = subprocess.run(test_command, shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT, timeout=30)
-        except subprocess.TimeoutExpired:
-            return TestResult.TIMEOUT, ""
+            try:
+                # Note: Timeout does not work correctly when shell=True, stdout/stderr are written to pipes, and the
+                # subprocess spawns children. The original process is killed, but the children aren't and will hold onto
+                # the pipes until they terminate. The end result will still be a timeout, but it will take longer than
+                # 30 seconds to terminate
+                result = subprocess.run(test_command, shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT, timeout=30)
+            except subprocess.TimeoutExpired:
+                return TestResult.TIMEOUT, "Took longer than 30 seconds to run"
+        except MemoryError:
+            # If a prog spams traces to stderr/stdout subprocess can run out of memory and throw a memory exception
+            # This tends to be co-morbid with timeout errors
+            return TestResult.TIMEOUT, "Memory error when extracting traces"
 
         stdout = result.stdout.decode('ascii', errors='backslashreplace')
 
@@ -69,6 +74,10 @@ class FuzzAssignment(AbstractAssignment):
         return 0  # num tests is not needed for fuzz_assignment, as it does not impact the scoring functions
 
     def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath) -> Result:
+
+        # because student keep submitting binaries and using up all the server space
+        subprocess.run("make clean", shell=True, cwd=submission_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run("rm -rf tests/*", shell=True, cwd=submission_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # copy across the fuzzer and PoCs
         for folder in ['/fuzzer', '/poc']:
@@ -88,7 +97,7 @@ class FuzzAssignment(AbstractAssignment):
         try:
             # run the fuzzer to generate a list of tests in tests/
             subprocess.run("./run_fuzzer.sh", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT, universal_newlines=True, timeout=600)
+                           stderr=subprocess.STDOUT, universal_newlines=True, timeout=300)
         except subprocess.TimeoutExpired:
             return Result((False, "Generating tests with ./run_fuzzer.sh timed out after 10 minutes"))
 

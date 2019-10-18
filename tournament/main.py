@@ -3,7 +3,7 @@ The core functions used for running the tournament
 """
 import csv
 import json
-import multiprocessing
+from multiprocessing import Pool, current_process
 import os
 import subprocess
 from datetime import datetime
@@ -90,7 +90,8 @@ def validate_tests(submitter: Submitter) -> Result:
         test_result, test_traces = assg.run_test(test, Prog("original"), FilePath(validation_dir), compile_prog=True)
 
         if test_result == TestResult.TIMEOUT:
-            validation_traces += "\n\t{} test FAIL - Timeout".format(test)
+            validation_traces += "\n\t{} test FAIL - Timeout when run against original program: {}".format(
+                test, test_traces)
         elif test_result == TestResult.NO_BUGS_DETECTED:
             validation_traces += "\n\t{} test SUCCESS - No bugs detected in original program".format(test)
         elif test_result == TestResult.BUG_FOUND:
@@ -173,7 +174,7 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
     return Result((progs_valid, validation_traces))
 
 
-def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test], new_progs: [Prog]):
+def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test], new_progs: [Prog], pool: Pool):
     """
     Run a submission against all other previously made submissions in the tournament.
     The submission has been compared against the submitters prior submission (if any). Only new tests and progs require
@@ -206,12 +207,11 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
     rt_new_tests = partial(run_tests, tourney_state=tourney_state, new_tests=new_tests, new_progs=[])
     rt_new_progs = partial(run_tests, tourney_state=tourney_state, new_tests=[], new_progs=new_progs)
 
-    with multiprocessing.Pool() as pool:
-        # run submitter tests against others progs
-        tester_results = pool.map(rt_new_tests, [(submitter, other) for other in other_submitters])
+    # run submitter tests against others progs
+    tester_results = pool.map(rt_new_tests, [(submitter, other) for other in other_submitters])
 
-        # run others tests against submitters progs
-        testee_results = pool.map(rt_new_progs, [(other, submitter) for other in other_submitters])
+    # run others tests against submitters progs
+    testee_results = pool.map(rt_new_progs, [(other, submitter) for other in other_submitters])
 
     for (tester, testee, test_set) in tester_results + testee_results:
         tourney_state.set(tester, testee, test_set)
@@ -235,7 +235,7 @@ def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, ne
 
     assg = AssignmentConfig().get_assignment()
 
-    test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/test_stage_" + multiprocessing.current_process().name
+    test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/test_stage_" + current_process().name
     if not os.path.isdir(test_stage_dir):
         subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), test_stage_dir), shell=True)
 

@@ -68,3 +68,5 @@ See [config/assignments](config/assignments/README.md)
 	- `shell` executor to `docker` executor?
 	- Shared runner to Group runner?
 - [ ] Simplify implementation (1400+ lines of code atm)
+- [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
+- [ ] Add checks to enforce each stage beign run in order - students can't rerun submit without first running validate_progs etc

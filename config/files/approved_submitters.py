@@ -44,7 +44,7 @@ class ApprovedSubmitters:
         :return: Whether a valid username was found, and the username if found
         """
         for elig_submitter in self.approved_submitters:
-            if submitter == elig_submitter.lower() or \
+            if submitter.lower() == elig_submitter.lower() or \
                submitter.lower() == self.approved_submitters[elig_submitter]['student_id']:
                 return True, elig_submitter
 
