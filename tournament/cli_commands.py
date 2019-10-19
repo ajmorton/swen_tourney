@@ -62,7 +62,7 @@ def _create_frontend_parser():
                                   help='Validate the programs under test in a provided submission.')
 
     submit_parser = subparsers.add_parser('submit', parents=[submitter_parser])
-    submit_parser.set_defaults(func=lambda args: daemon.queue_submission(args.submitter), help='Make a submission.')
+    submit_parser.set_defaults(func=lambda args: sub.submit(args.submitter), help='Make a submission.')
 
     return parser
 

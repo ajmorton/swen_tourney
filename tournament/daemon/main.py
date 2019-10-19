@@ -12,7 +12,7 @@ from tournament.config import AssignmentConfig
 from tournament.daemon import flags, fs_queue
 from tournament.daemon.flags import Flag
 from tournament.processing import TourneySnapshot
-from tournament.util import FilePath, Result, Submitter
+from tournament.util import FilePath, Result
 from tournament.util import paths, format as fmt, print_tourney_trace, print_tourney_error
 
 
@@ -85,10 +85,6 @@ def make_report_request(request_time: datetime) -> Result:
     trace = "Report request made at {}".format(request_time.strftime(fmt.DATETIME_TRACE_STRING))
     print_tourney_trace(trace)
     return Result(True, trace)
-
-
-def queue_submission(submitter: Submitter) -> Result:
-    return fs_queue.queue_submission(submitter)
 
 
 def start() -> Result:

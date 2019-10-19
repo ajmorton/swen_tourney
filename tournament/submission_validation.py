@@ -1,12 +1,13 @@
 import json
 import os
+import re
 import subprocess
 from datetime import datetime
 
-from tournament.config import AssignmentConfig, ApprovedSubmitters
+from tournament.config import AssignmentConfig, ApprovedSubmitters, SubmitterExtensions
 from tournament.config.assignments import AbstractAssignment
 from tournament import daemon
-from tournament.util import paths
+from tournament.util import paths, format as fmt
 from tournament.util.types import FilePath, Prog, Result, Submitter, TestResult
 
 
@@ -185,3 +186,44 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
         subprocess.run("rm -rf {}".format(submitter_pre_val_dir), shell=True)
 
     return Result(progs_valid, validation_traces)
+
+
+def check_submission_file_size(pre_val_dir: FilePath) -> Result:
+    """ Check that the size of the submissions is not too large """
+    result = subprocess.run("du -sh {}".format(pre_val_dir),
+                            stdout=subprocess.PIPE, universal_newlines=True, shell=True)
+    filesize_pattern = "^([0-9]+(?:\\.[0-9]+)?)([BKMG])"  # number and scale, eg: "744K" = 744KB or "1.8G" == 1.8GB
+    submission_size_regex = re.search(filesize_pattern, result.stdout)
+
+    if submission_size_regex is not None:
+        size_in_bytes = float(submission_size_regex.group(1)) * \
+                        {"B": 1, "K": 1000, "M": 1000000, "G": 1000000000}.get(submission_size_regex.group(2))
+        if size_in_bytes > 150 * 1000 * 1000:  # 150 MB
+            error_string = "Error: After compilation and test generation the submission file size ({}) is larger than "\
+                           "150 megabytes.\nServer space is limited so please keep your submissions to a " \
+                           "reasonable size\n".format("".join(submission_size_regex.groups()))
+            error_string += "Further details:\n{}".format(
+                subprocess.run("du -d 2 -h .", cwd=pre_val_dir, shell=True, universal_newlines=True,
+                               stdout=subprocess.PIPE).stdout)
+
+            return Result(False, error_string)
+    return Result(True, "submission size valid")
+
+
+def submit(submitter: Submitter) -> Result:
+    """ Create a submission for a submitter in the paths.STAGED_DIR """
+
+    pre_val_dir = paths.get_pre_validation_dir(submitter)
+    submission_time = datetime.now()
+
+    if ApprovedSubmitters().submissions_closed() and not SubmitterExtensions().is_eligible(submitter):
+        subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
+        return Result(False, "A new submission cannot be made at {}. Submissions have been closed"
+                      .format(submission_time.strftime(fmt.DATETIME_TRACE_STRING)))
+
+    size_check_result = check_submission_file_size(pre_val_dir)
+    if not size_check_result:
+        subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
+        return size_check_result
+
+    return daemon.queue_submission(submitter, submission_time)
