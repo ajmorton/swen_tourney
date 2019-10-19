@@ -1,4 +1,5 @@
 import os
+import time
 
 from tournament import config as cfg
 from tournament import daemon
@@ -18,6 +19,7 @@ def start_tournament() -> Result:
     if result:
         result += daemon.start()
         if result:
+            time.sleep(1)
             result += results_server.start_server()
     return result
 

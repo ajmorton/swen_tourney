@@ -74,7 +74,7 @@ def compile_submission(submitter: Submitter, submission_dir: FilePath) -> Result
 
     # compile progs under test
     result += "\nCompiling programs:"
-    for prog in assg.get_programs_list():
+    for prog in ["original"] + assg.get_programs_list():
         compil_result = assg.compile_prog(submitter_pre_val_dir, prog)
 
         result.traces += "\n\t{} compilation ".format(prog)
@@ -120,7 +120,8 @@ def validate_tests(submitter: Submitter) -> Result:
 
         validation_traces += "\n\t{} test ".format(test)
         validation_traces += \
-            {TestResult.TIMEOUT:                "FAIL    - Timeout",
+            {TestResult.TIMEOUT:                "FAIL    - Timeout when run against original program: {}".format(
+                                                test, test_traces),
              TestResult.NO_BUGS_DETECTED:       "SUCCESS - No bugs detected in original program",
              TestResult.BUG_FOUND:              "FAIL    - Test falsely reports error in original code\n" + test_traces,
              TestResult.UNEXPECTED_RETURN_CODE: "FAIL    - Unrecognised return code found\n" + test_traces
@@ -160,6 +161,13 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
     progs_valid = True
     validation_traces = "Validation results:"
     for prog in assg.get_programs_list():
+
+        is_unique = assg.is_prog_unique(prog, submitter_pre_val_dir)
+        if not is_unique:
+            validation_traces += "\n\t{} FAIL - {}".format(prog, is_unique.traces)
+            progs_valid = False
+            continue
+
         for test in assg.get_test_list():
             test_result, test_traces = assg.run_test(test, prog, FilePath(submitter_pre_val_dir), use_poc=True)
 

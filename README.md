@@ -75,8 +75,13 @@ See [config/assignments](tournament/config/assignments/README.md)
 - [ ] Simplify implementation (1400+ lines of code atm)
 - [ ] Fix handling of server when port is already in use
     - [ ] Sometimes the results server thread is not being stopped and needs to be killed manually
-- [ ] update gitlab-ci.ymls to add compile stage
+- [ ] example assignments
+    - [ ] Update gitlab-ci.ymls to add compile stage
+    - [ ] Make .gitignores more aggressive
+    - [ ] Add notes on which features and folder structure are required
+        - [ ] \-DDEBUG_NO_PRINTF for fuzz_assignment
 - [ ] Improve result addition - see if second arg can be evaluated lazily
 - [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
 - [ ] Add checks to enforce each stage being run in order - students can't rerun submit without first running validate_progs etc
 - [ ] Update ResultsServer to ThreadedHttpServer
+- [ ] Move is_prog_unique check out of abstract_assignment. Perform iteration outside and only have the diff in abstract_assignment
