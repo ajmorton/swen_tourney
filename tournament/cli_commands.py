@@ -6,8 +6,8 @@ from argparse import ArgumentParser, HelpFormatter
 from datetime import datetime
 
 import tournament.config as cfg
-from tournament import daemon, submission_validation as sub
 from tournament import main as tourney
+from tournament import submission as sub
 from tournament.util.types import Submitter
 
 
@@ -23,9 +23,9 @@ def _create_backend_parser():
     subparsers.add_parser('start_tournament').set_defaults(
         func=lambda args: tourney.start_tournament(), help='Start the tournament server.')
     subparsers.add_parser('report').set_defaults(
-        func=lambda args: daemon.make_report_request(datetime.now()), help='Get the results of the tournament.')
+        func=lambda args: tourney.make_report_request(datetime.now()), help='Get the results of the tournament.')
     subparsers.add_parser('shutdown').set_defaults(
-        func=lambda args: daemon.shutdown(), help='Shut down the tournament server.')
+        func=lambda args: tourney.shutdown(), help='Shut down the tournament server.')
     subparsers.add_parser('get_diffs').set_defaults(
         func=lambda args: tourney.get_diffs(), help='Generate diffs of submitters mutants to verify mutants are valid.')
     subparsers.add_parser('rescore_invalid_progs').set_defaults(

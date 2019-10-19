@@ -4,8 +4,8 @@ folder. These are then popped by the tournament daemon, oldest timestamp first, 
 """
 import subprocess
 from datetime import datetime
-from time import sleep, time
 from multiprocessing import Pool
+from time import sleep, time
 
 from tournament import processing as tourney
 from tournament.config import AssignmentConfig
@@ -14,7 +14,6 @@ from tournament.daemon.flags import Flag
 from tournament.processing import TourneySnapshot
 from tournament.util import FilePath, Result
 from tournament.util import paths, format as fmt, print_tourney_trace, print_tourney_error
-
 
 # When processing submissions testing can be parallelised. Instantiate thread pool here.
 pool = Pool()

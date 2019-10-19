@@ -2,9 +2,9 @@
 Configuration file validation performed on tournament startup
 """
 
-from .files import ApprovedSubmitters, AssignmentConfig, EmailConfig, ServerConfig, SubmitterExtensions
-from .exceptions import NoConfigDefined
 from tournament.util import Result
+from .exceptions import NoConfigDefined
+from .files import ApprovedSubmitters, AssignmentConfig, EmailConfig, ServerConfig, SubmitterExtensions
 
 
 def configuration_valid() -> Result:

@@ -4,9 +4,9 @@ import re
 import subprocess
 from datetime import datetime
 
+from tournament import daemon
 from tournament.config import AssignmentConfig, ApprovedSubmitters, SubmitterExtensions
 from tournament.config.assignments import AbstractAssignment
-from tournament import daemon
 from tournament.util import paths, format as fmt
 from tournament.util.types import FilePath, Prog, Result, Submitter, TestResult
 

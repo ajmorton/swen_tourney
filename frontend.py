@@ -1,11 +1,10 @@
 """
 Frontend interface for the tournament. This is used to make submissions to the tournament.
 """
+import tournament.submission
 import tournament.util.funcs
 from tournament.cli_commands import parse_args
 from tournament.util import Result
-import tournament.submission_validation
-
 
 if __name__ == "__main__":
     """

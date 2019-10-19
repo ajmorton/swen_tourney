@@ -6,8 +6,8 @@ The server delivers a static page with a ranked table of submitters
 import os
 import subprocess
 import threading
-import traceback
 import time
+import traceback
 from datetime import datetime
 from http import HTTPStatus, server
 from socketserver import ThreadingMixIn

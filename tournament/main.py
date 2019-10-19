@@ -1,13 +1,14 @@
 import os
 import time
+from datetime import datetime
 
 from tournament import config as cfg
 from tournament import daemon
 from tournament import processing as tourney
+from tournament.config import ApprovedSubmitters, SubmitterExtensions
 from tournament.reporting import results_server
 from tournament.util import paths
 from tournament.util.types import Result
-from tournament.config import ApprovedSubmitters, SubmitterExtensions
 
 
 def start_tournament() -> Result:
@@ -22,6 +23,10 @@ def start_tournament() -> Result:
             time.sleep(1)
             result += results_server.start_server()
     return result
+
+
+def shutdown() -> Result:
+    return daemon.shutdown()
 
 
 def clean() -> Result:
@@ -55,3 +60,7 @@ def rescore_invalid_progs() -> Result:
                              "this command.".format(paths.DIFF_FILE))
 
     return tourney.rescore_invalid_progs()
+
+
+def make_report_request(request_time: datetime) -> Result:
+    return daemon.make_report_request(request_time)

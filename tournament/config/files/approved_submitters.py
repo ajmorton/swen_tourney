@@ -6,12 +6,12 @@ username
 """
 import json
 import os
-from typing import Dict
 from datetime import datetime
+from typing import Dict
 
 from tournament.config.exceptions import NoConfigDefined
-from tournament.util import paths, Submitter, Result
 from tournament.util import format as fmt
+from tournament.util import paths, Submitter, Result
 
 
 class ApprovedSubmitters:
