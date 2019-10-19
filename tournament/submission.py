@@ -1,3 +1,4 @@
+from itertools import takewhile
 import json
 import os
 import re
@@ -163,9 +164,11 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
     validation_traces = "Validation results:"
     for prog in assg.get_programs_list():
 
-        is_unique = assg.is_prog_unique(prog, submitter_pre_val_dir)
-        if not is_unique:
-            validation_traces += "\n\t{} FAIL - {}".format(prog, is_unique.traces)
+        other_progs = takewhile(lambda p: p != prog, assg.get_programs_list())
+        duplicate_progs = [other for other in other_progs if assg.progs_identical(prog, other, submitter_pre_val_dir)]
+
+        if duplicate_progs:
+            validation_traces += "\n\t{} FAIL - Duplicate of {}".format(prog, duplicate_progs[0])
             progs_valid = False
             continue
 

@@ -65,9 +65,6 @@ See [config/assignments](tournament/config/assignments/README.md)
 - [ ] Readme per module
 - [ ] Automated testing?
 - [ ] Get a dedicated email account for the crash reports
-- [ ] Add readme to ant_assignment with requirements
-	- [ ] limit changes to gitlab-ci.yml
-	- [ ] mandatory files and folders
 - [ ] Code review
 - [ ] Update the Gitlab Runner configuration? 
 	- `shell` executor to `docker` executor?
@@ -84,4 +81,3 @@ See [config/assignments](tournament/config/assignments/README.md)
 - [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
 - [ ] Add checks to enforce each stage being run in order - students can't rerun submit without first running validate_progs etc
 - [ ] Update ResultsServer to ThreadedHttpServer
-- [ ] Move is_prog_unique check out of abstract_assignment. Perform iteration outside and only have the diff in abstract_assignment

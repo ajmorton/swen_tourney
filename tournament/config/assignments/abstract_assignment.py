@@ -47,12 +47,13 @@ class AbstractAssignment(metaclass=ABCMeta):
         raise NotImplementedError("Error: get_programs_under_test is not implemented")
 
     @abstractmethod
-    def is_prog_unique(self, prog: Prog, submission_dir: FilePath) -> Result:
+    def progs_identical(self, prog1: Prog, prog2: Prog, submission_dir: FilePath) -> bool:
         """
-        Determine whether the specified program under test is unique among all the programs in a submission
-        :param prog: the program to check
+        Determine whether two provided programs under test are identical for a submission
+        :param prog1: the first program
+        :param prog2: the second program
         :param submission_dir: the submission to check
-        :return: Whether the program is unique
+        :return: Whether the programs are identical
         """
 
     @abstractmethod
