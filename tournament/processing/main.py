@@ -10,8 +10,8 @@ from functools import partial
 from multiprocessing import current_process, Pool
 from typing import Tuple
 
+from tournament import flags
 from tournament.config import AssignmentConfig
-from tournament.daemon import flags
 from tournament.processing.tourney_snapshot import TourneySnapshot
 from tournament.processing.tourney_state import TourneyState
 from tournament.util import Prog, Result, Submitter, Test, TestSet
@@ -184,4 +184,4 @@ def clean():
     subprocess.run("rm -f  {}".format(paths.EMAIL_CONFIG), shell=True)
     subprocess.run("rm -f  {}".format(paths.SUBMITTER_EXTENSIONS_LIST), shell=True)
     subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True)
-    flags.clear_all()
+    flags.clear_all_flags()

@@ -13,6 +13,7 @@ Further details on each command are provided below.
 	python3 frontend.py --help
 	
     check_eligibility   Check the submitter is eligible to submit to the tournament
+    compile             Compile tests and progs in a provided submission
     validate_tests      Validate the tests in a provided submission
     validate_progs      Validate the programs under test in a provided submission
     submit              Make a submission    
@@ -23,9 +24,13 @@ submitted the correct assignment code.
 On success the submission is moved to a pre_validation directory for assessment by later commands.
 
 #### validate_tests
-Runs after `check_eligibilty`. Checks the submission previously moved to the pre_validation directory by 
+Runs after `check_eligibilty`. If a submission has tests or PUTs that require compilation the compile them.
+If compilation fails then the submission is removed from the pre_validation directory.		
+
+#### validate_tests
+Runs after `compile`. Checks the submission previously moved to the pre_validation directory by 
 `check_eligibility`. Validates that the submitters test suite will not falsely report bugs in the original 
-assignment code. If this check fails the submissions is removed from the pre_validation directory.		
+assignment code. If this check fails the submission is removed from the pre_validation directory.		
 
 #### validate_progs
 Runs after `validate_tests`. Checks the submission previously moved to the pre_validation directory by 

@@ -13,7 +13,7 @@ from http import HTTPStatus, server
 from socketserver import ThreadingMixIn
 
 from tournament.config import AssignmentConfig, ServerConfig
-from tournament.daemon import flags
+from tournament.flags import get_flag, TourneyFlag
 from tournament.processing import TourneySnapshot
 from tournament.util import Result
 from tournament.util import format as fmt, paths
@@ -160,7 +160,7 @@ def server_assassin(httpd: ThreadedHTTPServer):
     When it get removed kill the server thread
     :param httpd: the HTTP server to kill
     """
-    while flags.get_flag(flags.Flag.ALIVE):
+    while get_flag(TourneyFlag.ALIVE):
         time.sleep(5)
 
     httpd.shutdown()

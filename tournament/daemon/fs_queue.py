@@ -8,6 +8,7 @@ import os
 import subprocess
 from datetime import datetime
 
+from tournament.flags import get_flag, set_flag, SubmissionFlag
 from tournament.util import FilePath, Submitter, Result
 from tournament.util import format as fmt, paths, print_tourney_trace
 
@@ -79,7 +80,7 @@ def is_report(file_path: FilePath) -> bool:
 def is_submission(file_path: FilePath) -> bool:
     """ Return whether a file is a submission """
     file_name = os.path.basename(file_path)
-    return file_name.startswith(SUBMISSION_REQUEST_PREFIX) and _submission_ready(file_path)
+    return file_name.startswith(SUBMISSION_REQUEST_PREFIX) and get_flag(SubmissionFlag.SUBMISSION_READY, file_path)
 
 
 def _create_submission_request_name(submitter: Submitter, submission_time: datetime) -> FilePath:
@@ -104,28 +105,6 @@ def get_submission_request_details(file_path: FilePath) -> (Submitter, datetime)
     return submitter, datetime.strptime(submission_time, fmt.DATETIME_FILE_STRING)
 
 
-# There are two threads that copy submissions to and from the STAGING dir respectively.
-# Use this flag to prevent the copying of partially copied submissions
-READY_FLAG = "/.ready"
-
-
-def _set_submission_ready(submission_dir: FilePath):
-    """
-    Mark a submission as ready to be copied
-    :param submission_dir: the directory of the submission to mark as ready
-    """
-    subprocess.run("touch {}".format(submission_dir + READY_FLAG), shell=True)
-
-
-def _submission_ready(submission_dir: FilePath) -> bool:
-    """
-    Check if a submission is ready to be copied
-    :param submission_dir: the directory to check
-    :return: whether the directory is ready to be copied
-    """
-    return os.path.exists(submission_dir + READY_FLAG)
-
-
 def queue_submission(submitter: Submitter, submission_time: datetime) -> Result:
     """ Create a submission for a submitter in the paths.STAGED_DIR """
 
@@ -134,7 +113,7 @@ def queue_submission(submitter: Submitter, submission_time: datetime) -> Result:
     staged_dir = paths.STAGING_DIR + "/" + _create_submission_request_name(submitter, submission_time)
     _remove_previous_occurrences(submitter)
     subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True)
-    _set_submission_ready(staged_dir)
+    set_flag(SubmissionFlag.SUBMISSION_READY, True, staged_dir)
 
     trace = "Submission successfully made by {} at {}".format(submitter,
                                                               submission_time.strftime(fmt.DATETIME_TRACE_STRING))

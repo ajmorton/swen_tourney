@@ -7,7 +7,7 @@ from datetime import datetime
 
 import tournament.config as cfg
 from tournament import main as tourney
-from tournament import submission as sub
+from tournament.submission import run_stage, Stage
 from tournament.util.types import Submitter
 
 
@@ -45,24 +45,24 @@ def _create_frontend_parser():
 
     elig_parser = subparsers.add_parser('check_eligibility', parents=[submitter_parser])
     elig_parser.add_argument('assg_name', type=str, help="The name of the assignment being submitted")
-    elig_parser.set_defaults(func=lambda args: sub.check_submitter_eligibility(args.submitter, args.assg_name),
+    elig_parser.add_argument('dir', type=str, help="The location of the submission")
+    elig_parser.set_defaults(func=lambda args: run_stage(Stage.CHECK_ELIG, args.submitter, args.assg_name, args.dir),
                              help='Check the submitter is eligible to submit to the tournament.')
 
     compile_parser = subparsers.add_parser('compile', parents=[submitter_parser])
-    compile_parser.add_argument('submitter_dir', type=str, help="The location of the submitter")
-    compile_parser.set_defaults(func=lambda args: sub.compile_submission(args.submitter, args.submitter_dir),
+    compile_parser.set_defaults(func=lambda args: run_stage(Stage.COMPILE, args.submitter),
                                 help='Prepare and compile a submission for validation.')
 
     val_tests_parser = subparsers.add_parser('validate_tests', parents=[submitter_parser])
-    val_tests_parser.set_defaults(func=lambda args: sub.validate_tests(args.submitter),
+    val_tests_parser.set_defaults(func=lambda args: run_stage(Stage.VALIDATE_TESTS, args.submitter),
                                   help='Validate the tests in a provided submission.')
 
     val_progs_parser = subparsers.add_parser('validate_progs', parents=[submitter_parser])
-    val_progs_parser.set_defaults(func=lambda args: sub.validate_programs_under_test(args.submitter),
+    val_progs_parser.set_defaults(func=lambda args: run_stage(Stage.VALIDATE_PROGS, args.submitter),
                                   help='Validate the programs under test in a provided submission.')
 
     submit_parser = subparsers.add_parser('submit', parents=[submitter_parser])
-    submit_parser.set_defaults(func=lambda args: sub.submit(args.submitter), help='Make a submission.')
+    submit_parser.set_defaults(func=lambda args: run_stage(Stage.SUBMIT, args.submitter), help='Make a submission.')
 
     return parser
 

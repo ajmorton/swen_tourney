@@ -9,8 +9,8 @@ from time import sleep, time
 
 from tournament import processing as tourney
 from tournament.config import AssignmentConfig
-from tournament.daemon import flags, fs_queue
-from tournament.daemon.flags import Flag
+from tournament.daemon import fs_queue
+from tournament.flags import get_flag, set_flag, TourneyFlag
 from tournament.processing import TourneySnapshot
 from tournament.util import FilePath, Result
 from tournament.util import paths, format as fmt, print_tourney_trace, print_tourney_error
@@ -57,8 +57,8 @@ def _process_submission_request(file_path):
 
 def is_alive() -> Result:
     """ Check if the TourneyDaemon is online via the alive flag """
-    if flags.get_flag(Flag.ALIVE):
-        if flags.get_flag(Flag.SHUTTING_DOWN):
+    if get_flag(TourneyFlag.ALIVE):
+        if get_flag(TourneyFlag.SHUTTING_DOWN):
             return Result(True, "Tournament is online, but in the process of shutting down")
         else:
             return Result(True, "Tournament is online")
@@ -71,7 +71,7 @@ def shutdown() -> Result:
     if not is_alive():
         return Result(False, "Tournament is already offline")
     else:
-        flags.set_flag(Flag.SHUTTING_DOWN, True)
+        set_flag(TourneyFlag.SHUTTING_DOWN, True)
         print_tourney_trace("Shutdown event received. Finishing processing")
         return Result(True, "Tournament is shutting down. "
                             "This may take a while as current processing must be completed.\n"
@@ -101,14 +101,14 @@ def main():
     print_tourney_trace("TourneyDaemon started...")
 
     try:
-        flags.set_flag(Flag.ALIVE, True)
+        set_flag(TourneyFlag.ALIVE, True)
 
         # Create a report file on startup
         TourneySnapshot(report_time=datetime.now()).write_snapshot()
 
-        while not flags.get_flag(Flag.SHUTTING_DOWN):
+        while not get_flag(TourneyFlag.SHUTTING_DOWN):
 
-            if not flags.get_flag(Flag.ALIVE):
+            if not get_flag(TourneyFlag.ALIVE):
                 # In the event of an uncaught crash the ALIVE flag can be manually deleted to kill the tournament
                 break
 
@@ -136,8 +136,8 @@ def main():
 
     # shutdown hook
     print_tourney_trace("TourneyDaemon shutting down.")
-    flags.set_flag(Flag.ALIVE, False)
-    flags.set_flag(Flag.SHUTTING_DOWN, False)
+    set_flag(TourneyFlag.ALIVE, False)
+    set_flag(TourneyFlag.SHUTTING_DOWN, False)
 
 
 if __name__ == '__main__':

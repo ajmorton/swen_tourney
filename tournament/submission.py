@@ -1,18 +1,90 @@
-from itertools import takewhile
 import json
 import os
 import re
 import subprocess
 from datetime import datetime
+from enum import Enum
+from itertools import takewhile
 
 from tournament import daemon
 from tournament.config import AssignmentConfig, ApprovedSubmitters, SubmitterExtensions
 from tournament.config.assignments import AbstractAssignment
+from tournament.flags import get_flag, set_flag, clear_all_flags, SubmissionFlag
 from tournament.util import paths, format as fmt
 from tournament.util.types import FilePath, Prog, Result, Submitter, TestResult
 
 
-def submission_details(submitter: Submitter) -> (Submitter, FilePath, AbstractAssignment):
+class Stage(Enum):
+    """
+    Specifies the order in which submission validation stages must be performed.
+    The value of the enum is the SubmissionFlag that is set on successful completion of the stage
+    """
+    CHECK_ELIG = SubmissionFlag.ELIG
+    COMPILE = SubmissionFlag.COMPILED
+    VALIDATE_TESTS = SubmissionFlag.TESTS_VALID
+    VALIDATE_PROGS = SubmissionFlag.PROGS_VALID
+    SUBMIT = None
+
+    def prev_stage(self):
+        """ Get the preceding stage. e.g. COMPILE returns CHECK_ELIG """
+        if self.name == Stage.CHECK_ELIG.name:
+            return self
+
+        values = list(Stage.__members__.keys())
+        prev_name = values[values.index(self.name) - 1]
+        return Stage.__members__.get(prev_name)
+
+
+def run_stage(stage: Stage, submitter: Submitter, assg_name: str = None, submission_dir: FilePath = None) -> Result:
+    """
+    Run a testing stage in the submission pipeline
+    :param stage: which testing stage to run on the submission
+    :param submitter: the submitters whose submission is being tested
+    :param assg_name: the name of the assignment being tested
+    :param submission_dir: the directory of the submission. This is only used for `check_elig`. Afterwards a copy of
+                           the submission is located in the pre_validation directory
+    :return: the result of running the test stage
+    """
+
+    _, pre_val_dir, _ = _submission_details(submitter)
+
+    # Check that the test stage can be run.
+    # It should only be run if directly preceded by the stage defined in the Stage enum
+    if stage == Stage.CHECK_ELIG or get_flag(stage.prev_stage().value, pre_val_dir):
+        clear_all_flags(pre_val_dir)
+    else:
+        # Find the next stage that should be run
+        elig_stages = [st.name for st in reversed(Stage) if get_flag(st.prev_stage().value, pre_val_dir)]
+        should_run = elig_stages[0] if elig_stages else Stage.CHECK_ELIG.name
+        return Result(False, "Cannot run the {} stage. The {} stage must be run first.\n"
+                             "Note: It is recommended that you make a new commit rather than manually rerunning stages "
+                             "via the Gitlab web interface".format(stage.name, should_run))
+
+    # run the stage
+    result = {Stage.CHECK_ELIG: lambda: _check_submitter_eligibility(submitter, assg_name, submission_dir),
+              Stage.COMPILE: lambda: _compile_submission(submitter),
+              Stage.VALIDATE_TESTS: lambda: _validate_tests(submitter),
+              Stage.VALIDATE_PROGS: lambda: _validate_programs_under_test(submitter),
+              Stage.SUBMIT: lambda: _submit(submitter)
+              }.get(stage, lambda: Result(False, "Stage {} not implemented".format(stage.name)))()
+
+    # process the results
+    if result:
+        if stage != Stage.SUBMIT:
+            # Update the prev_stage flag so that the next stage can be run
+            # No need to do so for SUBMIT as it is the final stage
+            clear_all_flags(pre_val_dir)
+            set_flag(stage.value, True, pre_val_dir)
+    else:
+        if stage != Stage.CHECK_ELIG:
+            # Don't remove a submission in the pre_val dir if stage == CHECK_ELIG.
+            # This stage may fail due to a prior submission still being processed and we don't want to delete that
+            subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
+
+    return result
+
+
+def _submission_details(submitter: Submitter) -> (Submitter, FilePath, AbstractAssignment):
     """ Get important details for a submitter given their username """
     _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
     submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
@@ -21,23 +93,25 @@ def submission_details(submitter: Submitter) -> (Submitter, FilePath, AbstractAs
     return submitter_username, submitter_pre_validation_dir, assg
 
 
-def check_submitter_eligibility(submitter: Submitter, assg_name: str) -> Result:
+def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submission_dir: FilePath) -> Result:
     """
     Check that the submitter has made a submission that is eligible for the tournament.
     :param submitter: The name of the submitter
     :param assg_name: The name of the assignment submitted
+    :param submission_dir: The location of the submission prior to moving into the pre_validation directory
     :return: Whether the submitter is eligible, with traces
     """
 
     if not daemon.is_alive():
         return Result(False, "Error: The tournament is not currently online.")
 
-    assg = AssignmentConfig().get_assignment()
+    _, submitter_pre_val_dir, assg = _submission_details(submitter)
+
     if assg_name != assg.get_assignment_name():
         return Result(False, "Error: The submitted assignment '{}' does not match the assignment "
                              "this tournament is configured for: '{}'".format(assg_name, assg.get_assignment_name()))
 
-    submitter_eligible, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
+    submitter_eligible, _ = ApprovedSubmitters().get_submitter_username(submitter)
     if not submitter_eligible:
         return Result(False, "Submitter '{}' is not on the approved submitters list.\n"
                              "If this is a group assignment please check that you are committing to "
@@ -45,27 +119,13 @@ def check_submitter_eligibility(submitter: Submitter, assg_name: str) -> Result:
                              "If this is an individual assignment please check with your tutors that"
                              " you are added to the approved_submitters list".format(submitter))
 
-    submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
-    if os.path.isdir(submitter_pre_validation_dir):
-        prior_submission_age = datetime.now().timestamp() - os.stat(submitter_pre_validation_dir).st_mtime
+    if os.path.isdir(submitter_pre_val_dir):
+        prior_submission_age = datetime.now().timestamp() - os.stat(submitter_pre_val_dir).st_mtime
         stale_submission_age = 60 * 15  # 15 minutes, a prior submission older than this can be discarded
         if prior_submission_age < stale_submission_age:
             return Result(False, "Error: A prior submission is still being validated. "
                                  "Please wait {} seconds to push a new commit."
                                  .format(int(stale_submission_age - prior_submission_age)))
-
-    return Result(True, "Submitter is eligible for the tournament")
-
-
-def compile_submission(submitter: Submitter, submission_dir: FilePath) -> Result:
-    """
-    Take a submission and move it into the pre_validation directory. Compile any files if necessary.
-    :param submitter: The name of the submitter
-    :param submission_dir: the directory of the submission
-    :return: Whether the move was successful
-    """
-
-    _, submitter_pre_val_dir, assg = submission_details(submitter)
 
     # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
     subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_val_dir), shell=True)
@@ -74,8 +134,20 @@ def compile_submission(submitter: Submitter, submission_dir: FilePath) -> Result
     if not result:
         return Result(False, "An error occurred while preparing the submission:\n{}".format(result.traces))
 
+    return Result(True, "Submitter is eligible for the tournament")
+
+
+def _compile_submission(submitter: Submitter) -> Result:
+    """
+    Compile any tests or programs under test in a submission, if necessary.
+    :param submitter: The name of the submitter
+    :return: Whether compilation was successful
+    """
+
+    _, submitter_pre_val_dir, assg = _submission_details(submitter)
+
     # compile progs under test
-    result += "\nCompiling programs:"
+    result = Result(True, "Compiling programs:")
     for prog in ["original"] + assg.get_programs_list():
         compil_result = assg.compile_prog(submitter_pre_val_dir, prog)
 
@@ -95,14 +167,14 @@ def compile_submission(submitter: Submitter, submission_dir: FilePath) -> Result
     return result
 
 
-def validate_tests(submitter: Submitter) -> Result:
+def _validate_tests(submitter: Submitter) -> Result:
     """
     Validate that all tests provided by a submitter correctly detect no errors in the original assignment code.
     :param submitter: the submitter whose tests are to be validated
     :return: Whether the tests are valid, with traces
     """
     # The submission has been placed in the prevalidation dir as a result of running check_submitter_eligibility first
-    _, submitter_pre_val_dir, assg = submission_details(submitter)
+    _, submitter_pre_val_dir, assg = _submission_details(submitter)
 
     if not os.path.exists(submitter_pre_val_dir):
         return Result(False, "Student submission not found in the `pre_validation` folder.\n"
@@ -133,22 +205,20 @@ def validate_tests(submitter: Submitter) -> Result:
         if tests_valid:
             num_tests[test] = assg.get_num_tests(test_traces)
 
-    if not tests_valid:
-        subprocess.run("rm -rf {}".format(submitter_pre_val_dir), shell=True)
-    else:
+    if tests_valid:
         json.dump(num_tests, open(submitter_pre_val_dir + "/" + paths.NUM_TESTS_FILE, 'w'))
 
     return Result(tests_valid, validation_traces)
 
 
-def validate_programs_under_test(submitter: Submitter) -> Result:
+def _validate_programs_under_test(submitter: Submitter) -> Result:
     """
     Validate that all programs provided by a submitter have bugs detected by the submitters own test suites.
     :param submitter: the submitter whose programs are to be validated
     :return: Whether the programs are valid, with traces
     """
     # The submission has been placed in the prevalidation dir as a result of running check_submitter_eligibility first
-    _, submitter_pre_val_dir, assg = submission_details(submitter)
+    _, submitter_pre_val_dir, assg = _submission_details(submitter)
 
     if not os.path.exists(submitter_pre_val_dir):
         return Result(False, "Student submission not found in the `pre_validation` folder.\n"
@@ -185,13 +255,10 @@ def validate_programs_under_test(submitter: Submitter) -> Result:
 
             progs_valid = progs_valid and test_result == TestResult.BUG_FOUND
 
-    if not progs_valid:
-        subprocess.run("rm -rf {}".format(submitter_pre_val_dir), shell=True)
-
     return Result(progs_valid, validation_traces)
 
 
-def check_submission_file_size(pre_val_dir: FilePath) -> Result:
+def _check_submission_file_size(pre_val_dir: FilePath) -> Result:
     """ Check that the size of the submissions is not too large """
     result = subprocess.run("du -sh {}".format(pre_val_dir),
                             stdout=subprocess.PIPE, universal_newlines=True, shell=True)
@@ -213,20 +280,18 @@ def check_submission_file_size(pre_val_dir: FilePath) -> Result:
     return Result(True, "submission size valid")
 
 
-def submit(submitter: Submitter) -> Result:
+def _submit(submitter: Submitter) -> Result:
     """ Create a submission for a submitter in the paths.STAGED_DIR """
 
     pre_val_dir = paths.get_pre_validation_dir(submitter)
     submission_time = datetime.now()
 
     if ApprovedSubmitters().submissions_closed() and not SubmitterExtensions().is_eligible(submitter):
-        subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
         return Result(False, "A new submission cannot be made at {}. Submissions have been closed"
                       .format(submission_time.strftime(fmt.DATETIME_TRACE_STRING)))
 
-    size_check_result = check_submission_file_size(pre_val_dir)
+    size_check_result = _check_submission_file_size(pre_val_dir)
     if not size_check_result:
-        subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
         return size_check_result
 
     return daemon.queue_submission(submitter, submission_time)
