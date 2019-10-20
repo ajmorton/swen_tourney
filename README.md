@@ -59,6 +59,7 @@ See [config/assignments](tournament/config/assignments/README.md)
 	- [ ] Replace dicts with typing.NamedTuples
 	- [ ] Fix Stage.prev_stage type sig using \_\_future__.annotations
     - [ ] Update ResultsServer to ThreadedHttpServer
+    - [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
 - [ ] Refactor
 	- [ ] Keep removal of prior staged submissions?
 - [ ] Update to traces?
@@ -79,5 +80,4 @@ See [config/assignments](tournament/config/assignments/README.md)
         - [ ] \-DDEBUG_NO_PRINTF for fuzz_assignment
         - [ ] change realpath ($pwd ) commands to instead use provided Gitlab runner environment variables
 - [ ] Improve result addition - see if second arg can be evaluated lazily
-- [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
 - [ ] Re-add top level helper text for parsers

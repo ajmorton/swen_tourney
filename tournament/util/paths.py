@@ -12,7 +12,7 @@ from tournament.util.types import Submitter, FilePath
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # The directory that contains all files that determine tournament state and configuration
-STATE_DIR = ROOT_DIR + "/tournament/state"
+STATE_DIR = ROOT_DIR + "/state"
 
 # The directory that stores all config files
 CONFIGS_DIR = STATE_DIR + "/config"
