@@ -58,20 +58,24 @@ def _process_submission_request(file_path):
 def is_alive() -> Result:
     """ Check if the TourneyDaemon is online via the alive flag """
     if get_flag(TourneyFlag.ALIVE):
-        if get_flag(TourneyFlag.SHUTTING_DOWN):
+        if get_flag(TourneyFlag.SHUTDOWN):
             return Result(True, "Tournament is online, but in the process of shutting down")
         else:
             return Result(True, "Tournament is online")
     else:
-        return Result(False, "Tournament is not online")
+        is_shutdown = get_flag(TourneyFlag.SHUTDOWN)
+        if is_shutdown:
+            return Result(False, "Tournament is shutdown: {}".format(is_shutdown.traces))
+        else:
+            return Result(False, "Tournament is not online")
 
 
-def shutdown() -> Result:
+def shutdown(message: str) -> Result:
     """ Set the shutdown flag for TourneyDaemon """
     if not is_alive():
         return Result(False, "Tournament is already offline")
     else:
-        set_flag(TourneyFlag.SHUTTING_DOWN, True)
+        set_flag(TourneyFlag.SHUTDOWN, True, contents=message)
         print_tourney_trace("Shutdown event received. Finishing processing")
         return Result(True, "Tournament is shutting down. "
                             "This may take a while as current processing must be completed.\n"
@@ -102,11 +106,12 @@ def main():
 
     try:
         set_flag(TourneyFlag.ALIVE, True)
+        set_flag(TourneyFlag.SHUTDOWN, False)
 
         # Create a report file on startup
         TourneySnapshot(report_time=datetime.now()).write_snapshot()
 
-        while not get_flag(TourneyFlag.SHUTTING_DOWN):
+        while not get_flag(TourneyFlag.SHUTDOWN):
 
             if not get_flag(TourneyFlag.ALIVE):
                 # In the event of an uncaught crash the ALIVE flag can be manually deleted to kill the tournament
@@ -137,7 +142,6 @@ def main():
     # shutdown hook
     print_tourney_trace("TourneyDaemon shutting down.")
     set_flag(TourneyFlag.ALIVE, False)
-    set_flag(TourneyFlag.SHUTTING_DOWN, False)
 
 
 if __name__ == '__main__':

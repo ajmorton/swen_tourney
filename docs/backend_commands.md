@@ -40,7 +40,8 @@ been marked as invalid their scores are set to zero.
 Takes the tournament state and outputs it in a Blackboard friendly .csv format.
 
 #### shutdown  
-Shuts down the tournament.
+Shuts down the tournament.  
+Optional argument `--message` can provide a message to be displayed while the tournament is offline: `python3 backend.py --message "Down for maintenance. Back in 5"`
 
 #### clean  
 Deletes all state of the tournament; config files, submissions, and flags set. 

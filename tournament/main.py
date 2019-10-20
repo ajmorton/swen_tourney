@@ -25,8 +25,8 @@ def start_tournament() -> Result:
     return result
 
 
-def shutdown() -> Result:
-    return daemon.shutdown()
+def shutdown(message: str = "") -> Result:
+    return daemon.shutdown(message)
 
 
 def clean() -> Result:

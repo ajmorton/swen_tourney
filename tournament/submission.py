@@ -102,8 +102,9 @@ def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submissio
     :return: Whether the submitter is eligible, with traces
     """
 
-    if not daemon.is_alive():
-        return Result(False, "Error: The tournament is not currently online.")
+    daemon_online = daemon.is_alive()
+    if not daemon_online:
+        return daemon_online
 
     _, submitter_pre_val_dir, assg = _submission_details(submitter)
 

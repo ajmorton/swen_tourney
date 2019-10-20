@@ -6,6 +6,7 @@ import subprocess
 from enum import Enum
 
 from tournament.util import paths
+from tournament.util.types import Result
 
 
 class Flag(Enum):
@@ -19,7 +20,7 @@ class TourneyFlag(Flag):
         .shutdown: the TourneyDaemon should shutdown on the next poll cycle
     """
     ALIVE = paths.STATE_DIR + "/.alive"
-    SHUTTING_DOWN = paths.STATE_DIR + "/.shutdown"
+    SHUTDOWN = paths.STATE_DIR + "/.shutdown"
 
 
 class SubmissionFlag(Flag):
@@ -39,22 +40,24 @@ class SubmissionFlag(Flag):
     SUBMISSION_READY = ".submission_ready"
 
 
-def set_flag(flag: Flag, true: bool, submission: str = None):
+def set_flag(flag: Flag, true: bool, submission: str = None, contents: str = ""):
     """
     Set a flag to true by creating it in the file system, or set it to false by deleting it from the file system.
     :param flag: the flag to set
     :param true: the value of the flag to set
     :param submission: the path of the submission to write the flag in, if applicable
+    :param contents: An optional message to write inside the flag file
     """
     flag_path = flag.value if not submission else submission + "/" + flag.value
 
     if true:
         subprocess.run("touch {}".format(flag_path), shell=True)
+        subprocess.run("echo '{}' > {}".format(contents, flag_path), shell=True)
     else:
         subprocess.run("rm -f {}".format(flag_path), shell=True)
 
 
-def get_flag(flag: Flag, submission: str = None) -> bool:
+def get_flag(flag: Flag, submission: str = None) -> Result:
     """
     Get the value of the provided flag
     :param flag: the flag to check
@@ -62,7 +65,10 @@ def get_flag(flag: Flag, submission: str = None) -> bool:
     :param submission: the path of the submission to write the flag in, if applicable
     """
     flag_path = flag.value if not submission else submission + "/" + flag.value
-    return os.path.exists(flag_path)
+    if os.path.exists(flag_path):
+        return Result(True, open(flag_path, 'r').read().strip())
+    else:
+        return Result(False, "")
 
 
 def clear_all_flags(submission: str = None):

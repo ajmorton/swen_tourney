@@ -61,7 +61,6 @@ See [config/assignments](tournament/config/assignments/README.md)
     - [ ] Update ResultsServer to ThreadedHttpServer
 - [ ] Refactor
 	- [ ] Keep removal of prior staged submissions?
-- [ ] Add shutdown message to shutdown command e.g. "Restarting tournament. Back in 5"
 - [ ] Update to traces?
 - [ ] Readme per module
 - [ ] Automated testing?
@@ -81,3 +80,4 @@ See [config/assignments](tournament/config/assignments/README.md)
         - [ ] change realpath ($pwd ) commands to instead use provided Gitlab runner environment variables
 - [ ] Improve result addition - see if second arg can be evaluated lazily
 - [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
+- [ ] Re-add top level helper text for parsers

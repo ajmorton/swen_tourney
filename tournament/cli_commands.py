@@ -18,16 +18,23 @@ def _create_backend_parser():
 
     subparsers.add_parser('check_config').set_defaults(
         func=lambda args: cfg.configuration_valid(), help='Check the configuration of the tournament.')
+
     subparsers.add_parser('clean').set_defaults(
         func=lambda args: tourney.clean(), help='Remove all submissions and reset the tournament state.')
+
     subparsers.add_parser('start_tournament').set_defaults(
-        func=lambda args: tourney.start_tournament(), help='Start the tournament server.')
+        func=lambda args: tourney.start_tournament(), help='Start the tournament.')
+
     subparsers.add_parser('report').set_defaults(
         func=lambda args: tourney.make_report_request(datetime.now()), help='Get the results of the tournament.')
-    subparsers.add_parser('shutdown').set_defaults(
-        func=lambda args: tourney.shutdown(), help='Shut down the tournament server.')
+
+    shutdown_parser = subparsers.add_parser('shutdown')
+    shutdown_parser.add_argument('--message', default="", help='The message to display when tournament is shutdown')
+    shutdown_parser.set_defaults(func=lambda args: tourney.shutdown(args.message), help='Shut down the tournament.')
+
     subparsers.add_parser('get_diffs').set_defaults(
         func=lambda args: tourney.get_diffs(), help='Generate diffs of submitters mutants to verify mutants are valid.')
+
     subparsers.add_parser('rescore_invalid_progs').set_defaults(
         func=lambda args: tourney.rescore_invalid_progs(), help='Read the diffs file and rescore any invalid progs.')
 
@@ -51,7 +58,7 @@ def _create_frontend_parser():
 
     compile_parser = subparsers.add_parser('compile', parents=[submitter_parser])
     compile_parser.set_defaults(func=lambda args: run_stage(Stage.COMPILE, args.submitter),
-                                help='Prepare and compile a submission for validation.')
+                                help='Compile tests and progs in a provided submission.')
 
     val_tests_parser = subparsers.add_parser('validate_tests', parents=[submitter_parser])
     val_tests_parser.set_defaults(func=lambda args: run_stage(Stage.VALIDATE_TESTS, args.submitter),
