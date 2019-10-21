@@ -20,7 +20,7 @@ command are provided below.
     
 
 #### check\_config  
-Validates the configuration of the tournament, checking all of the config files in [files/configs](../tournament/state/config). 
+Validates the configuration of the tournament, checking all of the config files in [files/configs](../state/config). 
 Details on the configuration files checked can be [found here](../tournament/config/README.md)
 
 #### start\_tournament  

@@ -48,6 +48,9 @@ See [common errors](docs/common_errors.md)
 ## Extending the tournament to handle new assignments
 See [config/assignments](tournament/config/assignments/README.md)
 
+## Testing
+See [test/](test/README.md)
+
 ## TODO
 - [ ] Updates to documentation
     - [ ] Use cases - "I want to X"
