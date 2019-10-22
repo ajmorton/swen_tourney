@@ -10,7 +10,7 @@ from tournament import daemon
 from tournament.config import AssignmentConfig, ApprovedSubmitters, SubmitterExtensions
 from tournament.config.assignments import AbstractAssignment
 from tournament.flags import get_flag, set_flag, clear_all_flags, SubmissionFlag
-from tournament.util import paths, format as fmt
+from tournament.util import paths, format as fmt, print_tourney_trace
 from tournament.util.types import FilePath, Prog, Result, Submitter, TestResult
 
 
@@ -76,6 +76,7 @@ def run_stage(stage: Stage, submitter: Submitter, assg_name: str = None, submiss
             clear_all_flags(pre_val_dir)
             set_flag(stage.value, True, pre_val_dir)
     else:
+        print_tourney_trace("Submission from {} rejected. Did not pass the {} stage".format(submitter, stage))
         if stage != Stage.CHECK_ELIG:
             # Don't remove a submission in the pre_val dir if stage == CHECK_ELIG.
             # This stage may fail due to a prior submission still being processed and we don't want to delete that

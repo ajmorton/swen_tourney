@@ -4,7 +4,7 @@ folder. These are then popped by the tournament daemon, oldest timestamp first, 
 """
 import subprocess
 from datetime import datetime
-from multiprocessing import Pool
+from multiprocessing import Pool, current_process, Value
 from time import sleep, time
 
 from tournament import processing as tourney
@@ -15,8 +15,17 @@ from tournament.processing import TourneySnapshot
 from tournament.util import FilePath, Result
 from tournament.util import paths, format as fmt, print_tourney_trace, print_tourney_error
 
+
+def set_process_name(counter):
+    """ Set the name of each process in the pool, making use of a shared counter between all processes """
+    with counter.get_lock():
+        current_process().name = "process_" + str(counter.value)
+        counter.value = counter.value + 1
+
+
 # When processing submissions testing can be parallelised. Instantiate thread pool here.
-pool = Pool()
+# initargs contains a concurrency safe counter, used by set_process_name
+pool = Pool(initializer=set_process_name, initargs=(Value('i', 0, lock=True),))
 
 
 def _process_report_request(file_path: FilePath):

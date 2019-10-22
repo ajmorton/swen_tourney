@@ -22,11 +22,8 @@ def get_next_request() -> FilePath:
     :return: the file path of the most recent submission or report request
     """
     # get files ordered by creation date
-    submissions = sorted(os.scandir(paths.STAGING_DIR), key=lambda folder: folder.stat().st_mtime)
-
-    # ignore the .gitignore file present in STAGING_DIR. It is only needed as git can't handle empty folders
-    if submissions[0].name == ".gitignore":
-        submissions = submissions[1:]
+    submissions = [file for file in sorted(os.scandir(paths.STAGING_DIR), key=lambda folder: folder.stat().st_mtime)
+                   if file.name != ".gitignore"]
 
     return submissions[0].name if submissions else FilePath("")
 

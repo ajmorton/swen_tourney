@@ -10,7 +10,6 @@ from functools import partial
 from multiprocessing import current_process, Pool
 from typing import Tuple
 
-from tournament import flags
 from tournament.config import AssignmentConfig
 from tournament.processing.tourney_snapshot import TourneySnapshot
 from tournament.processing.tourney_state import TourneyState
@@ -74,7 +73,12 @@ def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, ne
 
     assg = AssignmentConfig().get_assignment()
 
-    test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/test_stage_" + current_process().name
+    # temporary trace file to help track the progress of the run_tests function on a per-thread basis
+    # it is overwritten on each new call to run_tests
+    trace_file = open(paths.get_head_to_head_log_file_path(current_process().name), 'w')
+
+    test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/" + current_process().name
+
     if not os.path.isdir(test_stage_dir):
         subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), test_stage_dir), shell=True)
 
@@ -85,11 +89,16 @@ def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, ne
     for test in assg.get_test_list():
         test_set[test] = {}
         for prog in assg.get_programs_list():
+            trace_file.write("Comparing {}'s test {} against {}'s program {}\n".format(tester, test, testee, prog))
             if test in new_tests or prog in new_progs:
+                trace_file.write("    Starting comparison\n")
                 test_set[test][prog], _ = assg.run_test(test, prog, test_stage_dir)
+                trace_file.write("    Completed. Result = {}\n".format(test_set[test][prog]))
             else:
                 # no need to rerun this test, keep the results from the current tournament state
                 test_set[test][prog] = tourney_state.get(tester, testee, test, prog)
+                trace_file.write("    Test and prog unchanged. Reusing prior value.\n")
+            trace_file.write("    Finished\n")
 
     return tester, testee, test_set
 
@@ -164,24 +173,3 @@ def rescore_invalid_progs() -> Result:
     TourneySnapshot(report_time=datetime.now()).write_snapshot()
 
     return Result(True, "{} invalid programs have had their score set to zero".format(num_invalid_progs))
-
-
-def clean():
-    """
-    Remove all submissions and reset the tourney state
-    """
-    subprocess.run("rm -rf {}".format(paths.PRE_VALIDATION_DIR + "/*"), shell=True)
-    subprocess.run("rm -rf {}".format(paths.STAGING_DIR + "/*"), shell=True)
-    subprocess.run("rm -rf {}".format(paths.TOURNEY_DIR + "/*"), shell=True)
-    subprocess.run("rm -rf {}".format(paths.HEAD_TO_HEAD_DIR + "/*"), shell=True)
-    subprocess.run("rm -f  {}".format(paths.TOURNEY_STATE_FILE), shell=True)
-    subprocess.run("rm -f  {}".format(paths.TRACE_FILE), shell=True)
-    subprocess.run("rm -f  {}".format(paths.RESULTS_FILE), shell=True)
-    subprocess.run("rm -f  {}/snapshot*.json".format(paths.STATE_DIR), shell=True)
-    subprocess.run("rm -f  {}".format(paths.ASSIGNMENT_CONFIG), shell=True)
-    subprocess.run("rm -f  {}".format(paths.APPROVED_SUBMITTERS_LIST), shell=True)
-    subprocess.run("rm -f  {}".format(paths.SERVER_CONFIG), shell=True)
-    subprocess.run("rm -f  {}".format(paths.EMAIL_CONFIG), shell=True)
-    subprocess.run("rm -f  {}".format(paths.SUBMITTER_EXTENSIONS_LIST), shell=True)
-    subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True)
-    flags.clear_all_flags()

@@ -1,9 +1,10 @@
 import os
+import subprocess
 import time
 from datetime import datetime
 
 from tournament import config as cfg
-from tournament import daemon
+from tournament import flags, daemon
 from tournament import processing as tourney
 from tournament.config import ApprovedSubmitters, SubmitterExtensions
 from tournament.reporting import results_server
@@ -30,12 +31,17 @@ def shutdown(message: str = "") -> Result:
 
 
 def clean() -> Result:
-    """ Check that the tournament is in a state to be clean. If so, remove files """
+    """ Remove all submissions, config files, and state from the tournament """
     result = daemon.is_alive()
     if result:
         return Result(False, result.traces + "Current submissions should not be removed unless the server is offline")
 
-    tourney.clean()
+    subprocess.run("rm -rf {}/*/*".format(paths.SUBMISSIONS_DIR), shell=True)
+    subprocess.run("rm -f  {}/*.log".format(paths.TRACES_DIR), shell=True)
+    subprocess.run("rm -f  {}/**.json".format(paths.STATE_DIR), shell=True)
+    subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True)
+    flags.clear_all_flags()
+
     return Result(True, "All submissions and tournament results have been deleted")
 
 
