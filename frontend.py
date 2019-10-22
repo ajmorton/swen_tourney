@@ -5,7 +5,8 @@ import tournament.util.funcs
 from tournament.cli_commands import parse_args
 from tournament.util import Result
 
-if __name__ == "__main__":
+
+def main():
     """
     Parse and process frontend commands
     """
@@ -18,3 +19,7 @@ if __name__ == "__main__":
 
     print(result.traces)
     exit(0 if result.success else 1)
+
+
+if __name__ == "__main__":
+    main()

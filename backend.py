@@ -6,7 +6,7 @@ from tournament.cli_commands import parse_args
 from tournament.util import funcs
 
 
-if __name__ == "__main__":
+def main():
     """ Parse and process backend commands """
     funcs.assert_python_version()
 
@@ -15,3 +15,7 @@ if __name__ == "__main__":
 
     print(result.traces)
     exit(0 if result.success else 1)
+
+
+if __name__ == "__main__":
+    main()

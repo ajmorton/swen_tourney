@@ -1,3 +1,22 @@
+"""
+Configuration for assignments using addressSanitizer and Student created fuzzers to create and detect vulnerabilities
+in C code.
+
+Expects the core file structure:
+fuzz_assignment
+├── Makefile
+├── bin
+├── build.sh
+├── fuzzer
+├── poc
+├── run_fuzzer.sh
+├── run_tests.sh
+├── src
+└── tests
+
+An example can be found at 'fuzz_assignment' in the same repo as this code
+
+"""
 import os
 import subprocess
 from typing import Dict
@@ -8,6 +27,7 @@ from tournament.util import paths
 
 
 class FuzzAssignment(AbstractAssignment):
+    """ Implementation for assignment using addressSanitizer and fuzzers """
 
     def __init__(self, source_assg_dir: FilePath):
         super().__init__(source_assg_dir)

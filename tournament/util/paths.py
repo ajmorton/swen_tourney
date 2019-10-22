@@ -75,4 +75,3 @@ def get_head_to_head_log_file_path(thread_name: str) -> FilePath:
     in the head_to_head directory
     """
     return FilePath(TRACES_DIR + "/" + "head_to_head_" + thread_name + ".log")
-

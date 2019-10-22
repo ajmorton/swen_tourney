@@ -25,6 +25,7 @@ TestSet = NewType("TestSet", Dict[Submitter, Dict[Submitter, TestResult]])
 
 
 class Result:
+    """ Contains both a boolean indicating success, and a traces string for additional detail """
     def __init__(self, success: bool, trace: str):
         self.success = success
         self.traces = trace
@@ -33,7 +34,7 @@ class Result:
         return self.success
 
     def __add__(self, other):
-        if type(other) is str:
+        if isinstance(other, str):
             return Result(self.success, self.traces + "\n" + other)
         else:
             return Result(self.success and other.success, self.traces + "\n" + other.traces)

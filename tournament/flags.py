@@ -10,7 +10,7 @@ from tournament.util.types import Result
 
 
 class Flag(Enum):
-    pass
+    """ Flags written to the file system for the tournament to track state """
 
 
 class TourneyFlag(Flag):

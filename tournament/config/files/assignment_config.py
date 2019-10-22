@@ -61,14 +61,14 @@ class AssignmentConfig:
         else:
             return Result(False, "ERROR: Assignment configuration has not been configured properly.\n"
                                  "       Please update {} with one of: {}"
-                                 .format(paths.ASSIGNMENT_CONFIG, assignment_types))
+                          .format(paths.ASSIGNMENT_CONFIG, assignment_types))
 
     def check_source_assg_exists(self) -> Result:
         """ Check that the path to the original source code is valid """
         source_assg_dir = self.config['source_assg_dir']
         if os.path.exists(source_assg_dir):
             return Result(True, "\tSource assignment is: {}".format(self.get_assignment().get_assignment_name()) +
-                                "\n\tSource code dir: {}".format(source_assg_dir))
+                          "\n\tSource code dir: {}".format(source_assg_dir))
         else:
             return Result(False, "ERROR: Source assg dir {} does not exist".format(source_assg_dir))
 

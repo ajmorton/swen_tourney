@@ -1,3 +1,5 @@
+""" Main commands sent to the tournament """
+
 import os
 import subprocess
 import time
@@ -27,6 +29,7 @@ def start_tournament() -> Result:
 
 
 def shutdown(message: str = "") -> Result:
+    """ Shutdown the tournament. Optionally provide a message to display while offline """
     return daemon.shutdown(message)
 
 
@@ -69,4 +72,5 @@ def rescore_invalid_progs() -> Result:
 
 
 def make_report_request(request_time: datetime) -> Result:
+    """ Queue a report request to the tournament """
     return daemon.make_report_request(request_time)

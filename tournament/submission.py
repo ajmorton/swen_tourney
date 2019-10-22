@@ -1,3 +1,5 @@
+""" Logic for validation of submissions made to the tournament """
+
 import json
 import os
 import re
@@ -27,7 +29,7 @@ class Stage(Enum):
 
     def prev_stage(self):
         """ Get the preceding stage. e.g. COMPILE returns CHECK_ELIG """
-        if self.name == Stage.CHECK_ELIG.name:
+        if self.name == Stage.CHECK_ELIG.name:  # pylint: disable=comparison-with-callable
             return self
 
         values = list(Stage.__members__.keys())
@@ -127,7 +129,7 @@ def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submissio
         if prior_submission_age < stale_submission_age:
             return Result(False, "Error: A prior submission is still being validated. "
                                  "Please wait {} seconds to push a new commit."
-                                 .format(int(stale_submission_age - prior_submission_age)))
+                          .format(int(stale_submission_age - prior_submission_age)))
 
     # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
     subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_val_dir), shell=True)
@@ -196,12 +198,11 @@ def _validate_tests(submitter: Submitter) -> Result:
 
         validation_traces += "\n\t{} test ".format(test)
         validation_traces += \
-            {TestResult.TIMEOUT:                "FAIL    - Timeout when run against original program: {}".format(
-                                                test, test_traces),
-             TestResult.NO_BUGS_DETECTED:       "SUCCESS - No bugs detected in original program",
-             TestResult.BUG_FOUND:              "FAIL    - Test falsely reports error in original code\n" + test_traces,
+            {TestResult.TIMEOUT: "FAIL    - Timeout when run against original program: {}".format(test_traces),
+             TestResult.NO_BUGS_DETECTED: "SUCCESS - No bugs detected in original program",
+             TestResult.BUG_FOUND: "FAIL    - Test falsely reports error in original code\n" + test_traces,
              TestResult.UNEXPECTED_RETURN_CODE: "FAIL    - Unrecognised return code found\n" + test_traces
-             }.get(test_result,                 "ERROR   - unexpected test result: {}".format(test_result))
+             }.get(test_result, "ERROR   - unexpected test result: {}".format(test_result))
 
         tests_valid = tests_valid and test_result == TestResult.NO_BUGS_DETECTED
         if tests_valid:
@@ -236,7 +237,7 @@ def _validate_programs_under_test(submitter: Submitter) -> Result:
     validation_traces = "Validation results:"
     for prog in assg.get_programs_list():
 
-        other_progs = takewhile(lambda p: p != prog, assg.get_programs_list())
+        other_progs = takewhile(lambda p, curr_prog=prog: p != curr_prog, assg.get_programs_list())
         duplicate_progs = [other for other in other_progs if assg.progs_identical(prog, other, submitter_pre_val_dir)]
 
         if duplicate_progs:
@@ -249,11 +250,11 @@ def _validate_programs_under_test(submitter: Submitter) -> Result:
 
             validation_traces += "\n\t{} {} test ".format(prog, test)
             validation_traces += \
-                {TestResult.TIMEOUT:                "FAIL    - Timeout",
-                 TestResult.NO_BUGS_DETECTED:       "FAIL    - Test suite does not detect error",
-                 TestResult.BUG_FOUND:              "SUCCESS - Test suite detects error",
+                {TestResult.TIMEOUT: "FAIL    - Timeout",
+                 TestResult.NO_BUGS_DETECTED: "FAIL    - Test suite does not detect error",
+                 TestResult.BUG_FOUND: "SUCCESS - Test suite detects error",
                  TestResult.UNEXPECTED_RETURN_CODE: "FAIL    - Unrecognised return code found\n" + test_traces,
-                 }.get(test_result,                 "ERROR   - unexpected test result: {}".format(test_result))
+                 }.get(test_result, "ERROR   - unexpected test result: {}".format(test_result))
 
             progs_valid = progs_valid and test_result == TestResult.BUG_FOUND
 

@@ -39,6 +39,7 @@ class ApprovedSubmitters:
         return self.submitters_details['submitters']
 
     def submissions_closed(self) -> bool:
+        """ Check whether the submission deadline has passed """
         return datetime.now() > datetime.strptime(self.submitters_details['submission_deadline'],
                                                   fmt.DATETIME_TRACE_STRING)
 

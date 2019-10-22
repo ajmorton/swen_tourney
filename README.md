@@ -65,7 +65,6 @@ See [test/](test/README.md)
     - [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
 - [ ] Refactor
 	- [ ] Keep removal of prior staged submissions?
-- [ ] Update to traces?
 - [ ] Readme per module
 - [ ] Automated testing?
 - [ ] Get a dedicated email account for the crash reports
@@ -73,9 +72,8 @@ See [test/](test/README.md)
 - [ ] Update the Gitlab Runner configuration? 
 	- `shell` executor to `docker` executor?
 	- Shared runner to Group runner?
-- [ ] Simplify implementation (1400+ lines of code atm)
+- [ ] Simplify implementation (1700+ lines of code atm)
 - [ ] Fix handling of server when port is already in use
-    - [ ] Sometimes the results server thread is not being stopped and needs to be killed manually
 - [ ] example assignments
     - [ ] Update gitlab-ci.ymls as submission_dir arg has been moved from `compile` to `check_elig`
     - [ ] Make .gitignores more aggressive

@@ -20,9 +20,8 @@ from tournament.util import format as fmt, paths
 from tournament.util import print_tourney_trace, print_tourney_error
 
 
-# Add ThreadingMixIn so that server can handle multiple requests in parallel
 class ThreadedHTTPServer(ThreadingMixIn, server.HTTPServer):
-    pass
+    """ Default server.HTTPServer, but uses ThreadingMixIn to be able to handle multiple HTTP requests in parallel """
 
 
 class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
@@ -49,7 +48,8 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
     def do_HEAD(self):
         self.do_GET()
 
-    def do_POST(self):
+    def do_POST(self):  # pylint: disable=invalid-name
+        """ Don't accept POST requests """
         self.send_error(HTTPStatus.NOT_IMPLEMENTED, "POST requests are not accepted")
 
     def list_directory(self, path):

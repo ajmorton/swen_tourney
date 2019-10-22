@@ -29,6 +29,7 @@ class SubmitterExtensions:
             self.extension_details = json.load(open(paths.SUBMITTER_EXTENSIONS_LIST, 'r'))
 
     def is_eligible(self, submitter: Submitter) -> bool:
+        """ Check whether a submitter is eligible for an extension """
         return submitter in self.extension_details['submitters'] and not self.extensions_closed()
 
     def write_default(self):
@@ -36,6 +37,7 @@ class SubmitterExtensions:
         json.dump(self.default_extension_details, open(paths.SUBMITTER_EXTENSIONS_LIST, 'w'), indent=4, sort_keys=True)
 
     def extensions_closed(self) -> bool:
+        """ Check whether the extensions deadline has passed """
         return datetime.now() > datetime.strptime(self.extension_details['extension_deadline'],
                                                   fmt.DATETIME_TRACE_STRING)
 
@@ -49,6 +51,7 @@ class SubmitterExtensions:
                           .format(paths.SUBMITTER_EXTENSIONS_LIST))
 
     def check_submitters_exist(self) -> Result:
+        """ Check that all submitter in SubmitterExtensions are approved submitters in the tournament """
         unknown_submitters = [sub for sub in self.extension_details['submitters']
                               if sub not in ApprovedSubmitters().get_list()]
         if unknown_submitters:

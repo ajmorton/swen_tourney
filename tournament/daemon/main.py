@@ -25,7 +25,7 @@ def set_process_name(counter):
 
 # When processing submissions testing can be parallelised. Instantiate thread pool here.
 # initargs contains a concurrency safe counter, used by set_process_name
-pool = Pool(initializer=set_process_name, initargs=(Value('i', 0, lock=True),))
+POOL = Pool(initializer=set_process_name, initargs=(Value('i', 0, lock=True),))
 
 
 def _process_report_request(file_path: FilePath):
@@ -56,7 +56,7 @@ def _process_submission_request(file_path):
     subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True)
 
     time_start = time()
-    tourney.run_submission(submitter, submission_time.strftime(fmt.DATETIME_TRACE_STRING), new_tests, new_progs, pool)
+    tourney.run_submission(submitter, submission_time.strftime(fmt.DATETIME_TRACE_STRING), new_tests, new_progs, POOL)
     time_end = time()
 
     snapshot = TourneySnapshot(report_time=submission_time)
