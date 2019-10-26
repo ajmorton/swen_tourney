@@ -81,4 +81,3 @@ See [test/](test/README.md)
         - [ ] \-DDEBUG_NO_PRINTF for fuzz_assignment
         - [ ] change realpath ($pwd ) commands to instead use provided Gitlab runner environment variables
 - [ ] Improve result addition - see if second arg can be evaluated lazily
-- [ ] Re-add top level helper text for parsers
