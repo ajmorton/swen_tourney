@@ -56,6 +56,7 @@ def run_stage(stage: Stage, submitter: Submitter, assg_name: str = None, submiss
         clear_all_flags(pre_val_dir)
     else:
         # Find the next stage that should be run
+        # noinspection PyTypeChecker
         elig_stages = [st.name for st in reversed(Stage) if get_flag(st.prev_stage().value, pre_val_dir)]
         should_run = elig_stages[0] if elig_stages else Stage.CHECK_ELIG.name
         return Result(False, "Cannot run the {} stage. The {} stage must be run first.\n"

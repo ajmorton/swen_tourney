@@ -16,7 +16,7 @@ from tournament.util import FilePath, Result
 from tournament.util import paths, format as fmt, print_tourney_trace, print_tourney_error
 
 
-def set_process_name(counter):
+def _set_process_name(counter):
     """ Set the name of each process in the pool, making use of a shared counter between all processes """
     with counter.get_lock():
         current_process().name = "process_" + str(counter.value)
@@ -25,7 +25,7 @@ def set_process_name(counter):
 
 # When processing submissions testing can be parallelised. Instantiate thread pool here.
 # initargs contains a concurrency safe counter, used by set_process_name
-POOL = Pool(initializer=set_process_name, initargs=(Value('i', 0, lock=True),))
+POOL = Pool(initializer=_set_process_name, initargs=(Value('i', 0, lock=True),))
 
 
 def _process_report_request(file_path: FilePath):

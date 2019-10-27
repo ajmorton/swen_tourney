@@ -57,8 +57,8 @@ class TourneySnapshot:
         if snapshot_file is not None:
             self.snapshot = json.load(open(snapshot_file, 'r'))
         elif report_time != datetime.min:
-            self.create_snapshot_from_tourney_state(report_time)
-            self.compute_normalised_scores()
+            self._create_snapshot_from_tourney_state(report_time)
+            self._compute_normalised_scores()
         else:
             raise NotImplementedError("Error: TourneySnapshot constructor must take one of {snapshot_file, datetime} "
                                       "as an argument")
@@ -94,7 +94,7 @@ class TourneySnapshot:
                                 [submitter_data["normalised_test_score"]] +
                                 [submitter_data["normalised_prog_score"]])
 
-    def create_snapshot_from_tourney_state(self, report_time: datetime):
+    def _create_snapshot_from_tourney_state(self, report_time: datetime):
         """
         Fetch the tournament state and process it to fill the TourneySnapshot object with useful metadata
         :param report_time: the time of the snapshot
@@ -129,7 +129,7 @@ class TourneySnapshot:
 
             self.snapshot['results'][submitter] = submitter_result
 
-    def compute_normalised_scores(self):
+    def _compute_normalised_scores(self):
         """
         Determine the best prog and test scores of any submitter in the tournament, and normalise
         the scores of all other submitters against these best scores. Update submitters scores

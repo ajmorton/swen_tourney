@@ -27,7 +27,7 @@ class AssignmentConfig:
 
     def __init__(self):
         if not os.path.exists(paths.ASSIGNMENT_CONFIG):
-            AssignmentConfig.write_default()
+            AssignmentConfig._write_default()
             raise NoConfigDefined("No assignment configuration file found at {}. A default one has been created"
                                   .format(paths.ASSIGNMENT_CONFIG))
         else:
@@ -38,7 +38,7 @@ class AssignmentConfig:
         return AssignmentType[self.config['assignment_type']].value(self.config['source_assg_dir'])
 
     @staticmethod
-    def write_default():
+    def _write_default():
         """ Create a default AssignmentConfig file """
         json.dump(AssignmentConfig.default_assignment_config, open(paths.ASSIGNMENT_CONFIG, 'w'),
                   indent=4, sort_keys=True)

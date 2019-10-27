@@ -12,7 +12,7 @@ from tournament.util import paths
 from tournament.util import print_tourney_trace, print_tourney_error
 
 
-def send_email(smtp: SMTP, sender_email: str, receiver_emails: [str], subject: str, message: str):
+def _send_email(smtp: SMTP, sender_email: str, receiver_emails: [str], subject: str, message: str):
     """ Send an email to recipients """
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -39,7 +39,7 @@ def email_crash_report():
                    "Details on this crash can be found at {} on {}.".format(paths.TRACE_FILE, socket.gethostname())
 
         print_tourney_trace("\tSending crash report email to {}".format(cfg.crash_report_recipients()))
-        send_email(smtp, cfg.sender(), cfg.crash_report_recipients(), "SWEN Tournament crash", message)
+        _send_email(smtp, cfg.sender(), cfg.crash_report_recipients(), "SWEN Tournament crash", message)
         smtp.close()
 
     except socket.timeout:

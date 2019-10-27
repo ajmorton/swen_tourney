@@ -40,7 +40,7 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
         html = '<!DOCTYPE html><html><body>' \
                '<h1>Results as of ' + report_date.strftime(fmt.DATETIME_TRACE_STRING) + '</h1>' + \
                tournament_processing_details(snapshot) + \
-               html_table_from_results(snapshot) + \
+               _html_table_from_results(snapshot) + \
                '</body></html>'
 
         self.wfile.write(bytes(html, 'utf-8'))
@@ -48,6 +48,7 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
     def do_HEAD(self):
         self.do_GET()
 
+    # noinspection PyPep8Naming
     def do_POST(self):  # pylint: disable=invalid-name
         """ Don't accept POST requests """
         self.send_error(HTTPStatus.NOT_IMPLEMENTED, "POST requests are not accepted")
@@ -70,7 +71,7 @@ def tournament_processing_details(snapshot: TourneySnapshot) -> str:
            "The most recent submission took {} seconds to process".format(time_to_process_last_submission)
 
 
-def html_table_from_results(snapshot: TourneySnapshot) -> str:
+def _html_table_from_results(snapshot: TourneySnapshot) -> str:
     """
     Convert the tournament snapshot to a ranked table of submitter results
     :param snapshot: the tournament snapshot data
@@ -88,14 +89,14 @@ def html_table_from_results(snapshot: TourneySnapshot) -> str:
                    "<tr><td>" + str(sorted(assg.get_programs_list())) + "</tr></td></table>"
 
     table = '<table style="width:100%" align="center">' + \
-        table_header("Rank", "Name", "Date of submission", tests_header, progs_header)
+        _table_header("Rank", "Name", "Date of submission", tests_header, progs_header)
 
-    table += table_body_from_results(snapshot)
+    table += _table_body_from_results(snapshot)
 
     return table
 
 
-def table_body_from_results(snapshot: TourneySnapshot) -> str:
+def _table_body_from_results(snapshot: TourneySnapshot) -> str:
     """ Generate the body of the results table from the tournament results """
     table = ''
     results = snapshot.results()
@@ -116,7 +117,7 @@ def table_body_from_results(snapshot: TourneySnapshot) -> str:
     # print results from best score to worst
     for submitter, sub_data in sorted(table_data.items(), key=lambda item: item[1]['score'], reverse=True):
         if sub_data['latest_processed_submission'] is None:
-            table += table_row("-", submitter, "No submission", "N/A", "N/A")
+            table += _table_row("-", submitter, "No submission", "N/A", "N/A")
         else:
             latest_submission_date = datetime.strptime(sub_data['latest_processed_submission'],
                                                        fmt.DATETIME_TRACE_STRING)
@@ -129,14 +130,14 @@ def table_body_from_results(snapshot: TourneySnapshot) -> str:
             if prev_score != sub_data['score']:
                 rank += 1
                 prev_score = sub_data['score']
-            table += table_row(rank, submitter, latest_submission_date, test_scores, prog_scores)
+            table += _table_row(rank, submitter, latest_submission_date, test_scores, prog_scores)
 
     table += '</table>'
 
     return table
 
 
-def table_header(*args) -> str:
+def _table_header(*args) -> str:
     """ Return an HTML table header string. The size of the row depends on the number of values in *args """
     row = '<tr>'
     for col in args:
@@ -145,7 +146,7 @@ def table_header(*args) -> str:
     return row
 
 
-def table_row(*args) -> str:
+def _table_row(*args) -> str:
     """ Return an HTML table row string. The size of the row depends on the number of values in *args """
     row = '<tr>'
     for col in args:
@@ -154,7 +155,7 @@ def table_row(*args) -> str:
     return row
 
 
-def server_assassin(httpd: ThreadedHTTPServer):
+def _server_assassin(httpd: ThreadedHTTPServer):
     """
     An assassin thread that checks for the removal of the tournament alive flag.
     When it get removed kill the server thread
@@ -177,7 +178,7 @@ def main():
         server_config = ServerConfig()
         server_address = ('', server_config.port())
         httpd = ThreadedHTTPServer(server_address, TourneyResultsHandler)
-        threading.Thread(target=server_assassin, args=[httpd], daemon=True).start()
+        threading.Thread(target=_server_assassin, args=[httpd], daemon=True).start()
         httpd.serve_forever()
         print_tourney_trace("Shutting down the results server")
     except Exception as exception:  # pylint: disable=broad-except

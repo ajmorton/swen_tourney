@@ -28,7 +28,7 @@ class EmailConfig:
 
     def __init__(self):
         if not os.path.exists(paths.EMAIL_CONFIG):
-            EmailConfig.write_default()
+            EmailConfig._write_default()
             raise NoConfigDefined("No email configuration file found at {}. A default one has been created"
                                   .format(paths.EMAIL_CONFIG))
         else:
@@ -55,21 +55,21 @@ class EmailConfig:
         return ", ".join(self.email_config['crash_report_recipients'])
 
     @staticmethod
-    def write_default():
+    def _write_default():
         """ Create a default EmailConfig file """
         json.dump(EmailConfig.default_email_config, open(paths.EMAIL_CONFIG, 'w'), indent=4, sort_keys=True)
 
     def check_email_valid(self) -> Result:
         """ Check the email config file is valid for usage """
-        valid = self.check_email_non_default()
+        valid = self._check_email_non_default()
 
         if valid:
-            valid = self.check_connection()
+            valid = self._check_connection()
 
         valid.traces += "\n"
         return valid
 
-    def check_email_non_default(self) -> Result:
+    def _check_email_non_default(self) -> Result:
         """ Check the email config has been updated with non-default values """
         if self.email_config != EmailConfig.default_email_config:
             return Result(True, "Emails will be sent from: {}".format(self.sender()))
@@ -77,7 +77,7 @@ class EmailConfig:
             return Result(False, "ERROR: Email has not been configured.\n"
                                  "       Please update {} with the correct details".format(paths.EMAIL_CONFIG))
 
-    def check_connection(self) -> Result:
+    def _check_connection(self) -> Result:
         """ Check that using the details in the email config and email can be sent via the SMTP server """
         smtp_server = self.smtp_server()
         port = self.port()
