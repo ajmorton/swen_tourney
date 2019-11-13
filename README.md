@@ -50,34 +50,3 @@ See [config/assignments](tournament/config/assignments/README.md)
 
 ## Testing
 See [test/](test/README.md)
-
-## TODO
-- [ ] Updates to documentation
-    - [ ] Use cases - "I want to X"
-    - [ ] Document how to see what expected output looks like in Gitlab
-- [ ] Organise tourney code and assignments into a single repo
-	- [ ] add comment to assignments on how to adapt for a new assignment
-	- [ ] Add comments on private repos and adding @admin to them with an expiry date
-- [ ] Python 3.7.5+ migration
-	- [ ] Replace dicts with typing.NamedTuples
-	- [ ] Fix Stage.prev_stage type sig using \_\_future__.annotations
-    - [ ] Update ResultsServer to ThreadedHttpServer
-    - [ ] Subprocess timeouts don't work when the subprocess being called creates their own subprocesses and stdout/stderr are being sent to subprocess.PIPE
-- [ ] Refactor
-	- [ ] Keep removal of prior staged submissions?
-- [ ] Readme per module
-- [ ] Automated testing?
-- [ ] Get a dedicated email account for the crash reports
-- [ ] Code review
-- [ ] Update the Gitlab Runner configuration? 
-	- `shell` executor to `docker` executor?
-	- Shared runner to Group runner?
-- [ ] Simplify implementation (1700+ lines of code atm)
-- [ ] Fix handling of server when port is already in use
-- [ ] example assignments
-    - [ ] Update gitlab-ci.ymls as submission_dir arg has been moved from `compile` to `check_elig`
-    - [ ] Make .gitignores more aggressive
-    - [ ] Add notes on which features and folder structure are required
-        - [ ] \-DDEBUG_NO_PRINTF for fuzz_assignment
-        - [ ] change realpath ($pwd ) commands to instead use provided Gitlab runner environment variables
-- [ ] Improve result addition - see if second arg can be evaluated lazily
