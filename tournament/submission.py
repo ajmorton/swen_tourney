@@ -287,7 +287,8 @@ def _check_submission_file_size(pre_val_dir: FilePath) -> Result:
 def _submit(submitter: Submitter) -> Result:
     """ Create a submission for a submitter in the paths.STAGED_DIR """
 
-    pre_val_dir = paths.get_pre_validation_dir(submitter)
+    _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
+    pre_val_dir = paths.get_pre_validation_dir(submitter_username)
     submission_time = datetime.now()
 
     if ApprovedSubmitters().submissions_closed() and not SubmitterExtensions().is_eligible(submitter):
@@ -298,4 +299,4 @@ def _submit(submitter: Submitter) -> Result:
     if not size_check_result:
         return size_check_result
 
-    return daemon.queue_submission(submitter, submission_time)
+    return daemon.queue_submission(submitter_username, submission_time)
