@@ -41,7 +41,7 @@ def clean() -> Result:
 
     subprocess.run("rm -rf {}/*/*".format(paths.SUBMISSIONS_DIR), shell=True)
     subprocess.run("rm -f  {}/*.log".format(paths.TRACES_DIR), shell=True)
-    subprocess.run("rm -f  {}/**.json".format(paths.STATE_DIR), shell=True)
+    subprocess.run("rm -f  {}/**/*.json".format(paths.STATE_DIR), shell=True)
     subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True)
     flags.clear_all_flags()
 

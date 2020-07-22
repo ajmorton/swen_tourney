@@ -118,7 +118,7 @@ class FuzzAssignment(AbstractAssignment):
             subprocess.run("./run_fuzzer.sh", shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
                            stderr=subprocess.STDOUT, universal_newlines=True, timeout=300)
         except subprocess.TimeoutExpired:
-            return Result(False, "Generating tests with ./run_fuzzer.sh timed out after 10 minutes")
+            return Result(False, "Generating tests with ./run_fuzzer.sh timed out after 5 minutes")
         return Result(True, "")
 
     def detect_new_tests(self, new_submission: FilePath, old_submission: FilePath) -> [Test]:

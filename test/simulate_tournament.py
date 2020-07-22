@@ -52,7 +52,7 @@ def get_details_all_commits(full_history) -> [CommitDetails]:
 
     for sub in submitters:
         submission_path = SUBS_DIR + "/" + sub + "/" + ASSIGNMENT
-        commits = subprocess.run('git log --first-parent --date=short --pretty="format:%at %h" master | sort -r',
+        commits = subprocess.run('git log --first-parent --date=short --pretty="format:%at %h" master.. | sort -r',
                                  cwd=submission_path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                  universal_newlines=True).stdout
 
