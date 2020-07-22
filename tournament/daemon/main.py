@@ -23,11 +23,6 @@ def _set_process_name(counter):
         counter.value = counter.value + 1
 
 
-# When processing submissions testing can be parallelised. Instantiate thread pool here.
-# initargs contains a concurrency safe counter, used by set_process_name
-POOL = Pool(initializer=_set_process_name, initargs=(Value('i', 0, lock=True),))
-
-
 def _process_report_request(file_path: FilePath):
     """
     Provided a report request from paths.STAGED_DIR, create a snapshot of the current tournament state and write a
@@ -41,8 +36,12 @@ def _process_report_request(file_path: FilePath):
     subprocess.run("rm -f {}".format(file_path), shell=True)
 
 
-def _process_submission_request(file_path):
-    """ Provided a submission from paths.STAGED_DIR, process the submission in the tournament """
+def _process_submission_request(file_path, pool):
+    """
+    Provided a submission from paths.STAGED_DIR, process the submission in the tournament
+    :param file_path: the filepath of the submission to process
+    :param pool: the threadpool to use for parallel processing
+    """
     (submitter, submission_time) = fs_queue.get_submission_request_details(file_path)
 
     staged_dir = file_path
@@ -56,7 +55,7 @@ def _process_submission_request(file_path):
     subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True)
 
     time_start = time()
-    tourney.run_submission(submitter, submission_time.strftime(fmt.DATETIME_TRACE_STRING), new_tests, new_progs, POOL)
+    tourney.run_submission(submitter, submission_time.strftime(fmt.DATETIME_TRACE_STRING), new_tests, new_progs, pool)
     time_end = time()
 
     snapshot = TourneySnapshot(report_time=submission_time)
@@ -113,6 +112,9 @@ def main():
     """
     print_tourney_trace("TourneyDaemon started...")
 
+    # Thread pool for parallel processing. initargs contains a concurrency safe counter, used by set_process_name
+    pool = Pool(initializer=_set_process_name, initargs=(Value('i', 0, lock=True),))
+
     try:
         set_flag(TourneyFlag.ALIVE, True)
         set_flag(TourneyFlag.SHUTDOWN, False)
@@ -133,7 +135,7 @@ def main():
                 if fs_queue.is_report(file_path):
                     _process_report_request(file_path)
                 elif fs_queue.is_submission(file_path):
-                    _process_submission_request(file_path)
+                    _process_submission_request(file_path, pool)
                 else:
                     # submission is present in the staged folder, but has not finished being copied across
                     print_tourney_trace("Request present but not valid: {}".format(next_submission_to_process))
