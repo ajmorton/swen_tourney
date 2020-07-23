@@ -32,5 +32,5 @@ test
 The tournament does not discriminate between submissions made via Gitlab Runner and this script and the test submissions will overwrite previous, valid, submissions.  
 If you are running this script either perform it in a fresh clone of `swen_tourney` or make sure to backup the `state` folder first_**
 
-To replay the tournament run `python3 -m test.simulate_tournament` from the root of the repository.
+To replay the tournament run `python3.8 -m test.simulate_tournament` from the root of the repository.
 

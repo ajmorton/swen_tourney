@@ -12,7 +12,7 @@ check_submitter_eligibility:
     tags:
         - "swen90006-tourney" # if this tag matches the gitlab runner's tag it will execute the task
     script:
-        - python3 ~/swen-tourney/frontend.py check_eligibility $CI_PROJECT_NAMESPACE $CI_PROJECT_NAME # command sent to the tournament
+        - python3.8 ~/swen-tourney/frontend.py check_eligibility $CI_PROJECT_NAMESPACE $CI_PROJECT_NAME # command sent to the tournament
     allow_failure: false # if this stage fails then the pipeline fails
 
 compile:
@@ -22,7 +22,7 @@ compile:
     tags:
         - "swen90006-tourney"
     script:
-        - python3 ~/swen-tourney/frontend.py compile $CI_PROJECT_NAMESPACE $CI_PROJECT_DIR
+        - python3.8 ~/swen-tourney/frontend.py compile $CI_PROJECT_NAMESPACE $CI_PROJECT_DIR
     allow_failure: false
 
 validate_tests:
@@ -32,7 +32,7 @@ validate_tests:
     tags:
         - "swen90006-tourney"
     script:
-        - python3 ~/swen-tourney/frontend.py validate_tests $CI_PROJECT_NAMESPACE
+        - python3.8 ~/swen-tourney/frontend.py validate_tests $CI_PROJECT_NAMESPACE
     allow_failure: false
 
 validate_progs:
@@ -42,7 +42,7 @@ validate_progs:
     tags:
         - "swen90006-tourney"
     script:
-        - python3 ~/swen-tourney/frontend.py validate_progs $CI_PROJECT_NAMESPACE
+        - python3.8 ~/swen-tourney/frontend.py validate_progs $CI_PROJECT_NAMESPACE
     allow_failure: false
 
 submit:
@@ -52,5 +52,5 @@ submit:
     tags:
         - "swen90006-tourney"
     script:
-        - python3 ~/swen-tourney/frontend.py submit $CI_PROJECT_NAMESPACE
+        - python3.8 ~/swen-tourney/frontend.py submit $CI_PROJECT_NAMESPACE
     allow_failure: false

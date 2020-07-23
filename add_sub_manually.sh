@@ -27,35 +27,35 @@ ASSG_NAME=$(basename ${SUBMISSION})
 echo "Adding $SUBMITTER"
 
 # checking elig
-python3 frontend.py check_eligibility ${SUBMITTER} ${ASSG_NAME} ${SUBMISSION}
+python3.8 frontend.py check_eligibility ${SUBMITTER} ${ASSG_NAME} ${SUBMISSION}
 if [[ $? -ne 0 ]]; then
     echo "student not elig"
     exit 1
 fi
 
 # compiling
-python3 frontend.py compile ${SUBMITTER}
+python3.8 frontend.py compile ${SUBMITTER}
 if [[ $? -ne 0 ]]; then
     echo "compilation failed"
     exit 1
 fi
 
 # validating tests
-python3 frontend.py validate_tests ${SUBMITTER}
+python3.8 frontend.py validate_tests ${SUBMITTER}
 if [[ $? -ne 0 ]]; then
     echo "tests_not_val"
     exit 1
 fi
 
 # validating progs
-python3 frontend.py validate_progs ${SUBMITTER}
+python3.8 frontend.py validate_progs ${SUBMITTER}
 if [[ $? -ne 0 ]]; then
     echo "progs_not_val"
     exit 1
 fi
 
 # submitting
-python3 frontend.py submit ${SUBMITTER}
+python3.8 frontend.py submit ${SUBMITTER}
 if [[ $? -ne 0 ]]; then
     echo "submit failed"
     exit 1

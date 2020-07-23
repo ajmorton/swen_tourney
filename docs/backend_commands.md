@@ -3,12 +3,12 @@ Commands sent to the backend of the tournament are used to manage the tournament
 closing submissions to the tournament, generating results from the tournament, and so on. These commands are used 
 by the tournament maintainer.
 
-Commands are sent by calling `python3 backend.py <command>`
+Commands are sent by calling `python3.8 backend.py <command>`
 
-A list of available commands can be printed to screen by running `python3 backend.py -h`. Further details on each 
+A list of available commands can be printed to screen by running `python3.8 backend.py -h`. Further details on each 
 command are provided below.
 
-	python3 backend.py --help
+	python3.8 backend.py --help
 	
     check_config            Check the configuration of the tournament.
     start_tournament        Start the tournament server
@@ -41,7 +41,7 @@ Takes the tournament state and outputs it in a Blackboard friendly .csv format.
 
 #### shutdown  
 Shuts down the tournament.  
-Optional argument `--message` can provide a message to be displayed while the tournament is offline: `python3 backend.py --message "Down for maintenance. Back in 5"`
+Optional argument `--message` can provide a message to be displayed while the tournament is offline: `python3.8 backend.py --message "Down for maintenance. Back in 5"`
 
 #### clean  
 Deletes all state of the tournament; config files, submissions, and flags set. 

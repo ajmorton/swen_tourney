@@ -9,8 +9,8 @@ from tournament.util import format as fmt, paths
 
 
 def assert_python_version():
-    """ Assert that a specific version of python is being run """
-    min_py_version = (3, 5, 2)
+    """ Assert that a minimum version of python is being run """
+    min_py_version = (3, 8, 0)
 
     py_version = sys.version_info
     if py_version < min_py_version:

@@ -22,24 +22,24 @@ Instructions for setting up the VPS, Gitlab runner, and assignment code can be [
 The tournaments only dependency is python 3.5.2 or later. The code is expected to be run on a VPS with no PyPi, apt, or other package managers and so should only depend on libraries from the python prelude.
 
 #### Commands
-Commands for the tournament are broken into [backend commands](docs/backend_commands.md) that manage the tournament, called via `python3 backend.py`, and [frontend commands](docs/frontend_commands.md) that are used to make submissions to the tournament, called via `python3 frontend.py`.
+Commands for the tournament are broken into [backend commands](docs/backend_commands.md) that manage the tournament, called via `python3.8 backend.py`, and [frontend commands](docs/frontend_commands.md) that are used to make submissions to the tournament, called via `python3.8 frontend.py`.
 
 #### Typical workflow
 A typical workflow for the tournament will look like
 
 ```sh
-python3 backend.py check_config     # check the tournament is correctly configured
-python3 backend.py start_tournament # submissions can now be made and tournament results can be seen on the 8080 port
+python3.8 backend.py check_config     # check the tournament is correctly configured
+python3.8 backend.py start_tournament # submissions can now be made and tournament results can be seen on the 8080 port
 	# students make submissions to the tournanent via the gitlab runner
-	python3 frontend.py check_eligibility
-	python3 frontend.py validate_tests
-	python3 frontend.py validate_progs
-	python3 frontend.py submit
+	python3.8 frontend.py check_eligibility
+	python3.8 frontend.py validate_tests
+	python3.8 frontend.py validate_progs
+	python3.8 frontend.py submit
 # the submission deadline and extension deadline are passed
-python3 backend.py get_diffs             # generate diffs to be manually assessed
-python3 backend.py rescore_invalid_progs # zero-score invalid PUTs
-python3 backend.py shutdown              # shutdown the tournament
-python3 backend.py clean                 # delete all submissions, config and traces
+python3.8 backend.py get_diffs             # generate diffs to be manually assessed
+python3.8 backend.py rescore_invalid_progs # zero-score invalid PUTs
+python3.8 backend.py shutdown              # shutdown the tournament
+python3.8 backend.py clean                 # delete all submissions, config and traces
 ```
 
 ## Common errors

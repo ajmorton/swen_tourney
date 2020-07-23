@@ -9,9 +9,9 @@ Some common errors and their solutions are listed below:
 ## Errors
 
 #### Running with older versions of python
-The tournament code makes use of features in python that require 3.5.2 or later, and earlier versions of python 
+The tournament code makes use of features in python that require 3.8.0 or later, and earlier versions of python 
 will fail with varying syntax errors.  
-You can verify your version of python using `python --version`, or make sure to use `python3` in place of `python`.
+You can verify your version of python using `python --version`, or make sure to use `python3.8` in place of `python`.
 
 #### You are not allowed to download code from this project
 ```

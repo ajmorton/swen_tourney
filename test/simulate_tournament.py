@@ -2,7 +2,7 @@
 This script is designed to emulate the running of a full tournament in order to perform a load test on swen_tourney.
 Example submissions with git histories should be placed in the submissions folder.
 
-Note: Due to python namespacing this must be run from the root of the repo with `python -m test.simulate_tournament`
+Note: Due to python namespacing this must be run from the root of the repo with `python3.8 -m test.simulate_tournament`
 """
 
 import os
@@ -121,12 +121,12 @@ def main():
         print("Errors must be corrected in test/submissions before testing can be run")
         exit(1)
 
-    if subprocess.run("python3 backend.py check_config", shell=True).returncode != 0:
+    if subprocess.run("python3.8 backend.py check_config", shell=True).returncode != 0:
         print("Error with tournament configuration. Stopping testing")
         exit(1)
 
     # Ensure tournament is online
-    subprocess.run("python3 backend.py start_tournament", shell=True)
+    subprocess.run("python3.8 backend.py start_tournament", shell=True)
     time.sleep(2)
 
     print()

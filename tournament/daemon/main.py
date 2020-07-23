@@ -100,7 +100,7 @@ def make_report_request(request_time: datetime) -> Result:
 
 def start() -> Result:
     """ Start a new thread and run the TourneyDaemon in it """
-    subprocess.Popen("python3 -m tournament.daemon.main", cwd=paths.ROOT_DIR, shell=True,
+    subprocess.Popen("python3.8 -m tournament.daemon.main", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return Result(True, "Tournament starting.\nTraces are being written to {}".format(paths.TRACE_FILE))
 

@@ -2,15 +2,15 @@
 Commands sent to the frontend of the tournament are used to make student submissions to the tournament. 
 These commands are expected to be run by a Gitlab Runner.
 
-Commands are sent by calling `python3 frontend.py <command> <path_to_submission>`. `path_to_submission` is the path to 
+Commands are sent by calling `python3.8 frontend.py <command> <path_to_submission>`. `path_to_submission` is the path to 
 a students submission. It expects the filepath structure 
 `/absolute/path/to/submission/<submitter_name>/<assignment_name>` as the filepath is used by the tournament to extract 
 the submitter name and assignment name. Gitlab Runners copy submissions to the server with this expected file path.
 
-A list of available commands can be printed to screen by running `python3 frontend.py -h`. 
+A list of available commands can be printed to screen by running `python3.8 frontend.py -h`. 
 Further details on each command are provided below.
 
-	python3 frontend.py --help
+	python3.8 frontend.py --help
 	
     check_eligibility   Check the submitter is eligible to submit to the tournament
     compile             Compile tests and progs in a provided submission
