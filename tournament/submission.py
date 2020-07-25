@@ -1,4 +1,5 @@
 """ Logic for validation of submissions made to the tournament """
+from __future__ import annotations
 
 import json
 import os
@@ -27,7 +28,7 @@ class Stage(Enum):
     VALIDATE_PROGS = SubmissionFlag.PROGS_VALID
     SUBMIT = None
 
-    def prev_stage(self):
+    def prev_stage(self) -> Stage:
         """ Get the preceding stage. e.g. COMPILE returns CHECK_ELIG """
         if self.name == Stage.CHECK_ELIG.name:  # pylint: disable=comparison-with-callable
             return self
