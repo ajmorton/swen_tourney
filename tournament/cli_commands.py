@@ -32,7 +32,8 @@ class ArgListFormatter(HelpFormatter):
         else:
             result = default_metavar
 
-        def format(tuple_size):
+        # pylint suppressed -> We're overriding this function, can't rename it
+        def format(tuple_size): # pylint: disable=redefined-builtin
             return result if isinstance(result, tuple) else (result,) * tuple_size
 
         return format

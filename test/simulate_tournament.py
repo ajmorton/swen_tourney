@@ -31,7 +31,7 @@ def verify_submissions_valid() -> bool:
             continue
         else:
             git = subprocess.run("git remote -v", shell=True, cwd=expected_submission_path, stdout=subprocess.PIPE,
-                                 universal_newlines=True)
+                                 universal_newlines=True, check=False)
             if ASSIGNMENT not in git.stdout:
                 print("ERROR: {} does not contain a git history".format(expected_submission_path))
                 submissions_valid = False
@@ -54,7 +54,7 @@ def get_details_all_commits(full_history) -> [CommitDetails]:
         submission_path = SUBS_DIR + "/" + sub + "/" + ASSIGNMENT
         commits = subprocess.run('git log --first-parent --date=short --pretty="format:%at %h" master.. | sort -r',
                                  cwd=submission_path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                 universal_newlines=True).stdout
+                                 universal_newlines=True, check=False).stdout
 
         if full_history:
             for commit in reversed(commits.strip().split("\n")):
@@ -90,12 +90,12 @@ def make_submission(commit: CommitDetails):
     submitter, commit_id = commit.submitter, commit.commit_id
 
     subprocess.run("git checkout {}".format(commit_id), shell=True, stdout=subprocess.DEVNULL,
-                   stderr=subprocess.DEVNULL, cwd=SUBS_DIR + "/" + submitter + "/" + ASSIGNMENT)
+                   stderr=subprocess.DEVNULL, cwd=SUBS_DIR + "/" + submitter + "/" + ASSIGNMENT, check=True)
     print("{}: checked out commit {}".format(submitter, commit_id))
     time.sleep(1)
 
     submission_path = os.path.realpath(SUBS_DIR + "/" + submitter + "/" + ASSIGNMENT)
-    subprocess.run("./add_sub_manually.sh {}".format(submission_path), shell=True)
+    subprocess.run("./add_sub_manually.sh {}".format(submission_path), shell=True, check=False)
 
 
 def main():
@@ -121,12 +121,12 @@ def main():
         print("Errors must be corrected in test/submissions before testing can be run")
         exit(1)
 
-    if subprocess.run("python3.8 backend.py check_config", shell=True).returncode != 0:
+    if subprocess.run("python3.8 backend.py check_config", shell=True, check=False).returncode != 0:
         print("Error with tournament configuration. Stopping testing")
         exit(1)
 
     # Ensure tournament is online
-    subprocess.run("python3.8 backend.py start_tournament", shell=True)
+    subprocess.run("python3.8 backend.py start_tournament", shell=True, check=True)
     time.sleep(2)
 
     print()

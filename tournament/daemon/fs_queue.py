@@ -52,13 +52,13 @@ def _remove_previous_occurrences(submitter: Submitter):
     for submission in pre_request_submissions:
         (sub, _) = get_submission_request_details(submission)
         if sub == submitter:
-            subprocess.run("rm -rf {}".format(paths.STAGING_DIR + "/" + submission), shell=True)
+            subprocess.run("rm -rf {}".format(paths.STAGING_DIR + "/" + submission), shell=True, check=True)
 
 
 def create_report_request(request_time: datetime):
     """ Create a report request """
     file_name = paths.STAGING_DIR + "/" + REPORT_REQUEST_PREFIX + request_time.strftime(fmt.DATETIME_FILE_STRING)
-    subprocess.run("touch {}".format(file_name), shell=True)
+    subprocess.run("touch {}".format(file_name), shell=True, check=True)
 
 
 def get_report_request_time(file_path: FilePath) -> datetime:
@@ -109,7 +109,7 @@ def queue_submission(submitter: Submitter, submission_time: datetime) -> Result:
 
     staged_dir = paths.STAGING_DIR + "/" + _create_submission_request_name(submitter, submission_time)
     _remove_previous_occurrences(submitter)
-    subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True)
+    subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True, check=True)
     set_flag(SubmissionFlag.SUBMISSION_READY, True, staged_dir)
 
     trace = "Submission successfully made by {} at {}".format(submitter,

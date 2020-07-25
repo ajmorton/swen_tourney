@@ -80,7 +80,7 @@ def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, ne
     test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/" + current_process().name
 
     if not os.path.isdir(test_stage_dir):
-        subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), test_stage_dir), shell=True)
+        subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), test_stage_dir), shell=True, check=True)
 
     (tester, testee) = pair
 

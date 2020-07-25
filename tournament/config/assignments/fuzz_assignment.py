@@ -43,7 +43,7 @@ class FuzzAssignment(AbstractAssignment):
 
     def progs_identical(self, prog1: Prog, prog2: Prog, submission_dir: FilePath) -> bool:
         diff = subprocess.run("diff -rw {} {}".format(prog1, prog2), cwd=submission_dir + "/src",
-                              shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                              shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
         return diff.returncode == 0
 
     def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False) -> (TestResult, str):
@@ -60,7 +60,7 @@ class FuzzAssignment(AbstractAssignment):
                 # the pipes until they terminate. The end result will still be a timeout, but it will take longer than
                 # 30 seconds to terminate
                 result = subprocess.run(test_command, shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT, timeout=30)
+                                        stderr=subprocess.STDOUT, timeout=30, check=False)
             except subprocess.TimeoutExpired:
                 return TestResult.TIMEOUT, "Took longer than 30 seconds to run"
         except MemoryError:
@@ -85,29 +85,32 @@ class FuzzAssignment(AbstractAssignment):
     def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath) -> Result:
 
         # because student keep submitting binaries and using up all the server space
-        subprocess.run("make clean", shell=True, cwd=submission_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        subprocess.run("rm -rf tests/*", shell=True, cwd=submission_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run("make clean", shell=True, cwd=submission_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                       check=True)
+        subprocess.run("rm -rf tests/*", shell=True, cwd=submission_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                       check=True)
 
         # copy across the fuzzer and PoCs
         for folder in ['/fuzzer', '/poc']:
-            subprocess.run("rm -rf {}".format(destination_dir + folder), shell=True)
-            subprocess.run("cp -rf {} {}".format(submission_dir + folder, destination_dir), shell=True)
+            subprocess.run("rm -rf {}".format(destination_dir + folder), shell=True, check=True)
+            subprocess.run("cp -rf {} {}".format(submission_dir + folder, destination_dir), shell=True, check=True)
 
         # copy across the programs, excluding 'original' and 'include'
         for program in self.get_programs_list():
-            subprocess.run("rm -rf {}".format(destination_dir + "/src/" + program), shell=True)
+            subprocess.run("rm -rf {}".format(destination_dir + "/src/" + program), shell=True, check=True)
             subprocess.run("cp -rf {} {}".format(submission_dir + "/src/" + program, destination_dir + "/src"),
-                           shell=True)
+                           shell=True, check=True)
 
         # ensure the bin/ folder is empty, submitters haven't pushed binaries
         subprocess.run("make clean", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE, universal_newlines=True)
+                       stderr=subprocess.PIPE, universal_newlines=True, check=True)
 
         return Result(True, "Preparation successful")
 
     def compile_prog(self, submission_dir: FilePath, prog: Prog) -> Result:
         compil = subprocess.run('CFLAGS="-DDEBUG_NO_PRINTF" make VERSIONS={}'.format(prog), cwd=submission_dir,
-                                shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+                                shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True,
+                                check=False)
         if compil.returncode != 0:
             return Result(False, compil.stdout)
         return Result(True, "")
@@ -116,7 +119,7 @@ class FuzzAssignment(AbstractAssignment):
         try:
             # run the fuzzer to generate a list of tests in tests/
             subprocess.run("./run_fuzzer.sh", shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT, universal_newlines=True, timeout=300)
+                           stderr=subprocess.STDOUT, universal_newlines=True, timeout=300, check=True)
         except subprocess.TimeoutExpired:
             return Result(False, "Generating tests with ./run_fuzzer.sh timed out after 5 minutes")
         return Result(True, "")
@@ -135,7 +138,7 @@ class FuzzAssignment(AbstractAssignment):
         for prog in self.get_programs_list():
             diff = subprocess.run(
                 "diff -r {} {}".format(new_submission + "/src/" + prog, old_submission + "/src/" + prog),
-                stdout=subprocess.PIPE, shell=True)
+                stdout=subprocess.PIPE, shell=True, check=False)
             if diff.returncode != 0:
                 new_progs.append(prog)
 
@@ -148,12 +151,14 @@ class FuzzAssignment(AbstractAssignment):
         testee_code_dir = paths.get_tourney_dir(testee)
 
         # symlink in testers tests
-        subprocess.run("rm -rf {}".format(test_stage_code_dir + "/tests"), shell=True)
-        subprocess.run("ln -s {} {}".format(tester_code_dir + "/tests", test_stage_code_dir + "/tests"), shell=True)
+        subprocess.run("rm -rf {}".format(test_stage_code_dir + "/tests"), shell=True, check=True)
+        subprocess.run("ln -s {} {}".format(tester_code_dir + "/tests", test_stage_code_dir + "/tests"),
+                       shell=True, check=True)
 
         # symlink in testees programs
-        subprocess.run("rm -rf {}".format(test_stage_code_dir + "/bin"), shell=True)
-        subprocess.run("ln -s {} {}".format(testee_code_dir + "/bin", test_stage_code_dir + "/bin"), shell=True)
+        subprocess.run("rm -rf {}".format(test_stage_code_dir + "/bin"), shell=True, check=True)
+        subprocess.run("ln -s {} {}".format(testee_code_dir + "/bin", test_stage_code_dir + "/bin"),
+                       shell=True, check=True)
 
     def compute_normalised_prog_score(self, submitter_score: float, best_score: float) -> float:
         if best_score == 0:
@@ -176,7 +181,7 @@ class FuzzAssignment(AbstractAssignment):
         diffs = {}
         for prog in self.get_programs_list():
             prog_diff = subprocess.run("diff -rw {} {}".format("original", prog), cwd=submission_dir + "/src/",
-                                       shell=True, stdout=subprocess.PIPE, universal_newlines=True)
+                                       shell=True, stdout=subprocess.PIPE, universal_newlines=True, check=False)
             diffs[prog] = prog_diff.stdout.strip()
 
         return diffs

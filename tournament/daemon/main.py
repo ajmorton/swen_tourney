@@ -6,6 +6,7 @@ import subprocess
 from datetime import datetime
 from multiprocessing import Pool, current_process, Value
 from time import sleep, time
+import traceback
 
 from tournament import processing as tourney
 from tournament.config import AssignmentConfig
@@ -33,7 +34,7 @@ def _process_report_request(file_path: FilePath):
     print_tourney_trace("Generating report for tournament submissions as of {}".format(report_time))
     snapshot = TourneySnapshot(report_time=report_time)
     snapshot.write_csv()
-    subprocess.run("rm -f {}".format(file_path), shell=True)
+    subprocess.run("rm -f {}".format(file_path), shell=True, check=True)
 
 
 def _process_submission_request(file_path, pool):
@@ -51,8 +52,8 @@ def _process_submission_request(file_path, pool):
     new_tests = assg.detect_new_tests(staged_dir, FilePath(tourney_dest))
     new_progs = assg.detect_new_progs(staged_dir, FilePath(tourney_dest))
 
-    subprocess.run("rm -rf {}".format(tourney_dest), shell=True)
-    subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True)
+    subprocess.run("rm -rf {}".format(tourney_dest), shell=True, check=True)
+    subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True, check=True)
 
     time_start = time()
     tourney.run_submission(submitter, submission_time.strftime(fmt.DATETIME_TRACE_STRING), new_tests, new_progs, pool)
@@ -146,7 +147,6 @@ def main():
     except Exception as exception:  # pylint: disable=broad-except
         print_tourney_error("Exception caught while running tournament")
         print_tourney_error(str(exception))
-        import traceback
         print_tourney_error(traceback.format_exc())
         # emailer.email_crash_report()
 

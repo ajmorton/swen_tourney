@@ -144,8 +144,15 @@ disable=print-statement,
         no-else-return,
         no-else-raise,
         unpacking-non-sequence,
-        duplicate-code
-
+        duplicate-code,
+        
+        # rule is targeted at interactive shells, not applicable to swen_tourneys
+        consider-using-sys-exit,
+        
+        # stylistic choice, improves readability
+        no-else-continue,
+        no-else-break
+        
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where

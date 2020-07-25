@@ -84,7 +84,7 @@ def run_stage(stage: Stage, submitter: Submitter, assg_name: str = None, submiss
         if stage != Stage.CHECK_ELIG:
             # Don't remove a submission in the pre_val dir if stage == CHECK_ELIG.
             # This stage may fail due to a prior submission still being processed and we don't want to delete that
-            subprocess.run("rm -rf {}".format(pre_val_dir), shell=True)
+            subprocess.run("rm -rf {}".format(pre_val_dir), shell=True, check=True)
 
     return result
 
@@ -134,7 +134,7 @@ def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submissio
                           .format(int(stale_submission_age - prior_submission_age)))
 
     # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
-    subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_val_dir), shell=True)
+    subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_val_dir), shell=True, check=True)
     result = assg.prep_submission(FilePath(submission_dir), FilePath(submitter_pre_val_dir))
 
     if not result:
@@ -266,7 +266,7 @@ def _validate_programs_under_test(submitter: Submitter) -> Result:
 def _check_submission_file_size(pre_val_dir: FilePath) -> Result:
     """ Check that the size of the submissions is not too large """
     result = subprocess.run("du -sh {}".format(pre_val_dir),
-                            stdout=subprocess.PIPE, universal_newlines=True, shell=True)
+                            stdout=subprocess.PIPE, universal_newlines=True, shell=True, check=False)
     filesize_pattern = "^([0-9]+(?:\\.[0-9]+)?)([BKMG])"  # number and scale, eg: "744K" = 744KB or "1.8G" == 1.8GB
     submission_size_regex = re.search(filesize_pattern, result.stdout)
 
@@ -279,7 +279,7 @@ def _check_submission_file_size(pre_val_dir: FilePath) -> Result:
                            "reasonable size\n".format("".join(submission_size_regex.groups()))
             error_string += "Further details:\n{}".format(
                 subprocess.run("du -d 2 -h .", cwd=pre_val_dir, shell=True, universal_newlines=True,
-                               stdout=subprocess.PIPE).stdout)
+                               stdout=subprocess.PIPE, check=False).stdout)
 
             return Result(False, error_string)
     return Result(True, "submission size valid")

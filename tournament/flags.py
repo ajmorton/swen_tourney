@@ -51,10 +51,10 @@ def set_flag(flag: Flag, true: bool, submission: str = None, contents: str = "")
     flag_path = flag.value if not submission else submission + "/" + flag.value
 
     if true:
-        subprocess.run("touch {}".format(flag_path), shell=True)
-        subprocess.run("echo '{}' > {}".format(contents, flag_path), shell=True)
+        subprocess.run("touch {}".format(flag_path), shell=True, check=True)
+        subprocess.run("echo '{}' > {}".format(contents, flag_path), shell=True, check=False)
     else:
-        subprocess.run("rm -f {}".format(flag_path), shell=True)
+        subprocess.run("rm -f {}".format(flag_path), shell=True, check=True)
 
 
 def get_flag(flag: Flag, submission: str = None) -> Result:

@@ -39,10 +39,10 @@ def clean() -> Result:
     if result:
         return Result(False, result.traces + "Current submissions should not be removed unless the server is offline")
 
-    subprocess.run("rm -rf {}/*/*".format(paths.SUBMISSIONS_DIR), shell=True)
-    subprocess.run("rm -f  {}/*.log".format(paths.TRACES_DIR), shell=True)
-    subprocess.run("rm -f  {}/**/*.json".format(paths.STATE_DIR), shell=True)
-    subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True)
+    subprocess.run("rm -rf {}/*/*".format(paths.SUBMISSIONS_DIR), shell=True, check=True)
+    subprocess.run("rm -f  {}/*.log".format(paths.TRACES_DIR), shell=True, check=True)
+    subprocess.run("rm -f  {}/**/*.json".format(paths.STATE_DIR), shell=True, check=True)
+    subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True, check=True)
     flags.clear_all_flags()
 
     return Result(True, "All submissions and tournament results have been deleted")
