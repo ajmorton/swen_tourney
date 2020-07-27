@@ -19,7 +19,7 @@ Instructions for setting up the VPS, Gitlab runner, and assignment code can be [
 
 ## How to run
 #### Dependencies
-The tournaments only dependency is python 3.5.2 or later. The code is expected to be run on a VPS with no PyPi, apt, or other package managers and so should only depend on libraries from the python prelude.
+The tournaments only dependency is python 3.8.0 or later. The code is expected to be run on a VPS with no PyPi, apt, or other package managers and so should only depend on libraries from the python prelude.
 
 #### Commands
 Commands for the tournament are broken into [backend commands](docs/backend_commands.md) that manage the tournament, called via `python3.8 backend.py`, and [frontend commands](docs/frontend_commands.md) that are used to make submissions to the tournament, called via `python3.8 frontend.py`.
