@@ -21,7 +21,12 @@ class TestResult(str, Enum):
     UNEXPECTED_RETURN_CODE = "UNEXPECTED_RETURN_CODE"
 
 
-TestSet = NewType("TestSet", Dict[Submitter, Dict[Submitter, TestResult]])
+# The results of running a set of tests against a set of programs under test. e.g.
+# TestSet = {
+#   "test1": { "prog1": BUG_FOUND, "prog2": NO_BUGS_DETECTED },
+#   "test2": { "prog1": BUG_FOUND, "prog2": BUG_FOUND }
+# }
+TestSet = NewType("TestSet", Dict[Test, Dict[Prog, TestResult]])
 
 
 class Result:
