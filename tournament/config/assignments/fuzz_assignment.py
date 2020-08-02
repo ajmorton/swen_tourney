@@ -55,10 +55,6 @@ class FuzzAssignment(AbstractAssignment):
 
         try:
             try:
-                # Note: Timeout does not work correctly when shell=True, stdout/stderr are written to pipes, and the
-                # subprocess spawns children. The original process is killed, but the children aren't and will hold onto
-                # the pipes until they terminate. The end result will still be a timeout, but it will take longer than
-                # 30 seconds to terminate
                 result = subprocess.run(test_command, shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT, timeout=30, check=False)
             except subprocess.TimeoutExpired:
@@ -119,7 +115,7 @@ class FuzzAssignment(AbstractAssignment):
         try:
             # run the fuzzer to generate a list of tests in tests/
             subprocess.run("./run_fuzzer.sh", shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT, universal_newlines=True, timeout=300, check=True)
+                           stderr=subprocess.STDOUT, universal_newlines=True, timeout=300, check=False)
         except subprocess.TimeoutExpired:
             return Result(False, "Generating tests with ./run_fuzzer.sh timed out after 5 minutes")
         return Result(True, "")

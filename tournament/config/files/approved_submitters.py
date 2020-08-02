@@ -29,7 +29,7 @@ class ApprovedSubmitters:
     def __init__(self):
         if not os.path.exists(paths.APPROVED_SUBMITTERS_LIST):
             ApprovedSubmitters._write_default()
-            raise NoConfigDefined("No approved submitters file found at {}. A default one has been created"
+            raise NoConfigDefined("No approved submitters file found at {} . A default one has been created"
                                   .format(paths.APPROVED_SUBMITTERS_LIST))
         else:
             self.submitters_details = json.load(open(paths.APPROVED_SUBMITTERS_LIST, 'r'))

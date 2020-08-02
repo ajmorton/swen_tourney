@@ -23,7 +23,7 @@ class SubmitterExtensions:
     def __init__(self):
         if not os.path.exists(paths.SUBMITTER_EXTENSIONS_LIST):
             SubmitterExtensions.write_default()
-            raise NoConfigDefined("No submitters extensions list found at {}. A default one has been created"
+            raise NoConfigDefined("No submitters extensions list found at {} . A default one has been created"
                                   .format(paths.SUBMITTER_EXTENSIONS_LIST))
         else:
             self.extension_details = json.load(open(paths.SUBMITTER_EXTENSIONS_LIST, 'r'))

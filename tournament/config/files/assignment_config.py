@@ -28,7 +28,7 @@ class AssignmentConfig:
     def __init__(self):
         if not os.path.exists(paths.ASSIGNMENT_CONFIG):
             AssignmentConfig._write_default()
-            raise NoConfigDefined("No assignment configuration file found at {}. A default one has been created"
+            raise NoConfigDefined("No assignment configuration file found at {} . A default one has been created"
                                   .format(paths.ASSIGNMENT_CONFIG))
         else:
             self.config = json.load(open(paths.ASSIGNMENT_CONFIG, 'r'))

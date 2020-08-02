@@ -106,8 +106,7 @@ def main():
 
     while 1:
         answer = input("Would you like replay the entire history of all commits in all submissions, "
-                       "or just submit the current version of submissions?\n"
-                       "(full_history/current): ")
+                       "or just submit the current version of submissions?\n(full_history/current): ")
         if answer == "full_history":
             full_history = True
             break
@@ -126,7 +125,7 @@ def main():
         exit(1)
 
     # Ensure tournament is online
-    subprocess.run("python3.8 backend.py start_tournament", shell=True, check=True)
+    subprocess.run("python3.8 backend.py start_tournament", shell=True, check=False)
     time.sleep(2)
 
     print()
@@ -137,7 +136,10 @@ def main():
     print("=========================")
     print()
 
+    i = 0
     for commit_detail in commit_details:
+        i += 1
+        print("Running submission {} of {}".format(i, len(commit_details)))
         make_submission(commit_detail)
 
 

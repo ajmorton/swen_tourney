@@ -29,7 +29,7 @@ class EmailConfig:
     def __init__(self):
         if not os.path.exists(paths.EMAIL_CONFIG):
             EmailConfig._write_default()
-            raise NoConfigDefined("No email configuration file found at {}. A default one has been created"
+            raise NoConfigDefined("No email configuration file found at {} . A default one has been created"
                                   .format(paths.EMAIL_CONFIG))
         else:
             self.email_config = json.load(open(paths.EMAIL_CONFIG, 'r'))
