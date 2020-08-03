@@ -11,7 +11,15 @@ import time
 from typing import NamedTuple
 from tournament.config import AssignmentConfig
 
-CommitDetails = NamedTuple('CommitDetails', [('date', int), ('submitter', str), ('commit_id', str)])
+class CommitDetails(NamedTuple):
+    """ Details of a commit to replay """
+    date: int
+    submitter: str
+    commit_id: str
+    commit_msg: str
+
+    def __repr__(self):
+        return "{}: [{}] {}".format(self.submitter, self.commit_id, self.commit_msg)
 
 ASSIGNMENT = AssignmentConfig().get_assignment().get_assignment_name()
 SUBS_DIR = "./test/submissions"
@@ -52,17 +60,17 @@ def get_details_all_commits(full_history) -> [CommitDetails]:
 
     for sub in submitters:
         submission_path = SUBS_DIR + "/" + sub + "/" + ASSIGNMENT
-        commits = subprocess.run('git log --first-parent --date=short --pretty="format:%at %h" master.. | sort -r',
+        commits = subprocess.run('git log --first-parent --pretty="format:%at||%h||%s" master -- | sort -r',
                                  cwd=submission_path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                  universal_newlines=True, check=False).stdout
 
         if full_history:
             for commit in reversed(commits.strip().split("\n")):
-                commit_date, commit_id = commit.split()
-                commit_details.append(CommitDetails(commit_date, sub, commit_id))
+                commit_date, commit_id, commit_msg = commit.split("||")
+                commit_details.append(CommitDetails(commit_date, sub, commit_id, commit_msg))
         else:
-            commit_date, commit_id = commits.strip().split("\n")[-1].split()
-            commit_details.append(CommitDetails(commit_date, sub, commit_id))
+            commit_date, commit_id, commit_msg = commits.strip().split("\n")[0].split("||")
+            commit_details.append(CommitDetails(commit_date, sub, commit_id, commit_msg))
 
     return sorted(commit_details)
 
@@ -89,10 +97,8 @@ def make_submission(commit: CommitDetails):
 
     submitter, commit_id = commit.submitter, commit.commit_id
 
-    subprocess.run("git checkout {}".format(commit_id), shell=True, stdout=subprocess.DEVNULL,
+    subprocess.run("git checkout --force {}".format(commit_id), shell=True, stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL, cwd=SUBS_DIR + "/" + submitter + "/" + ASSIGNMENT, check=True)
-    print("{}: checked out commit {}".format(submitter, commit_id))
-    time.sleep(1)
 
     submission_path = os.path.realpath(SUBS_DIR + "/" + submitter + "/" + ASSIGNMENT)
     subprocess.run("./add_sub_manually.sh {}".format(submission_path), shell=True, check=False)
@@ -139,7 +145,7 @@ def main():
     i = 0
     for commit_detail in commit_details:
         i += 1
-        print("Running submission {} of {}".format(i, len(commit_details)))
+        print("\n({}/{}) {}".format(i, len(commit_details), commit_detail))
         make_submission(commit_detail)
 
 
