@@ -162,3 +162,13 @@ class AbstractAssignment(metaclass=ABCMeta):
         :param submission_dir: the submission to fetch the diffs for
         :return: the diffs between the original source code and a submitters provided programs
         """
+
+    @abstractmethod
+    def check_diff(self, submission_dir: FilePath, prog: Prog) -> Result:
+        """
+        Compare a submitted program under test against the original code.
+        The program should be rejected if unauthorised changes have been made (i.e. too many lines changed)
+        :param submission_dir: the submission to fetch the diff for
+        :param prog: the program under test to check
+        :return: Whether the difference between the original code and program under test is acceptable
+        """

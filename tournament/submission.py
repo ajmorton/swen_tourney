@@ -239,6 +239,12 @@ def _validate_programs_under_test(submitter: Submitter) -> Result:
     validation_traces = "Validation results:"
     for prog in assg.get_programs_list():
 
+        diff_result = assg.check_diff(submitter_pre_val_dir, prog)
+        if not diff_result:
+            validation_traces += f"\n\t{prog} FAIL - Invalid changes to original code: {diff_result.traces}"
+            progs_valid = False
+            continue
+
         other_progs = takewhile(lambda p, curr_prog=prog: p != curr_prog, assg.get_programs_list())
         duplicate_progs = [other for other in other_progs if assg.progs_identical(prog, other, submitter_pre_val_dir)]
 

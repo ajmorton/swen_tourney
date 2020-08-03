@@ -184,3 +184,24 @@ class AntAssignment(AbstractAssignment):
             diffs[prog] = prog_diff.stdout.strip()
 
         return diffs
+
+    def check_diff(self, submission_dir: FilePath, prog: Prog) -> Result:
+
+        prog_diff = subprocess.run("diff -rw {} {}".format("original", prog), cwd=submission_dir + "/programs/",
+                                   shell=True, stdout=subprocess.PIPE, text=True, check=False).stdout
+
+        # don't allow dependency changes
+        if re.search(r"(<|>)\s*import", prog_diff):
+            return Result(False, f"imports have been modified:\n\n{prog_diff}")
+
+        # only allow a single code change (e.g lines added: '66a65,69', deleted: 70d71, or changed: 407c408)
+        changes = re.findall(r"\n(.*[0-9]{1,4}(a|c|d)[0-9]{1,4}.*)\n", prog_diff)
+        if len(changes) > 1:
+            return Result(False, f"Code changed in more than 1 location: {[chg[0] for chg in changes]}\n\n{prog_diff}")
+
+        # don't allow more than 1 new/modified lines (ignore single line comments //)
+        new_lines = [line for line in prog_diff.split('\n') if re.search(r"^>(?!\s*\/\/).*$", line)]
+        if len(new_lines) > 1:
+            return Result(False, f"More than 1 line modified (excluding single line // comments):\n\n{prog_diff}")
+
+        return Result(True, "Diff valid")
