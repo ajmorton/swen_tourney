@@ -137,8 +137,9 @@ def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submissio
     subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_val_dir), shell=True, check=True)
     result = assg.prep_submission(FilePath(submission_dir), FilePath(submitter_pre_val_dir))
 
-    if not result:
-        return Result(False, "An error occurred while preparing the submission:\n{}".format(result.traces))
+    if not result.success:
+        subprocess.run("rm -rf {}".format(submitter_pre_val_dir), shell=True, check=True)
+        return Result(False, "An error occurred while preparing the submission:\n\t{}".format(result.traces))
 
     return Result(True, "Submitter is eligible for the tournament")
 

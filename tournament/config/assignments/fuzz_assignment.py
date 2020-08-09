@@ -90,13 +90,18 @@ class FuzzAssignment(AbstractAssignment):
         # copy across the fuzzer and PoCs
         for folder in ['/fuzzer', '/poc']:
             subprocess.run("rm -rf {}".format(destination_dir + folder), shell=True, check=True)
-            subprocess.run("cp -rf {} {}".format(submission_dir + folder, destination_dir), shell=True, check=True)
+            res = subprocess.run("cp -rf {} {}".format(submission_dir + folder, destination_dir),
+                                 shell=True, check=False)
+            if res.returncode != 0:
+                return Result(False, res.stderr[res.stderr.find(self.get_assignment_name()): ])
 
         # copy across the programs, excluding 'original' and 'include'
         for program in self.get_programs_list():
             subprocess.run("rm -rf {}".format(destination_dir + "/src/" + program), shell=True, check=True)
-            subprocess.run("cp -rf {} {}".format(submission_dir + "/src/" + program, destination_dir + "/src"),
-                           shell=True, check=True)
+            res = subprocess.run("cp -rf {} {}".format(submission_dir + "/src/" + program, destination_dir + "/src"),
+                                 shell=True, check=False)
+            if res.returncode != 0:
+                return Result(False, res.stderr[res.stderr.find(self.get_assignment_name()): ])
 
         # ensure the bin/ folder is empty, submitters haven't pushed binaries
         subprocess.run("make clean", shell=True, cwd=destination_dir, stdout=subprocess.PIPE,

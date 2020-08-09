@@ -72,18 +72,23 @@ class AntAssignment(AbstractAssignment):
             print_tourney_error("Cannot find regex 'Tests run: ([0-9]+)' in traces:\n" + traces)
             return 20
 
-    def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath):
+    def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath) -> Result:
 
         # copy across the tests
         subprocess.run("rm -rf {}".format(destination_dir + "/tests"), shell=True, check=True)
-        subprocess.run("cp -rf {} {}".format(submission_dir + "/tests", destination_dir), shell=True, check=True)
+        res = subprocess.run("cp -rf {} {}".format(submission_dir + "/tests", destination_dir),
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, check=False, text=True)
+        if res.returncode != 0:
+            return Result(False, res.stderr[res.stderr.find(self.get_assignment_name()): ])
 
         # copy across the programs, excluding 'original'
         for program in self.get_programs_list():
             subprocess.run("rm -rf {}".format(destination_dir + "/programs/" + program), shell=True, check=True)
-            subprocess.run(
+            res = subprocess.run(
                 "cp -rf {} {}".format(submission_dir + "/programs/" + program, destination_dir + "/programs"),
-                shell=True, check=True)
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, check=False, text=True)
+            if res.returncode != 0:
+                return Result(False, res.stderr[res.stderr.find(self.get_assignment_name()): ])
 
         return Result(True, "Preparation successful")
 
