@@ -24,9 +24,19 @@ The tournament makes use of pipelines run via a [Gitlab Runner](https://docs.git
 submit student submissions. To set up the Gitlab Shared Runner:
 
 1. [Install Gitlab Runner](https://docs.gitlab.com/runner/install/) on the VPS.
+
 2. [Register a new Runner](https://docs.gitlab.com/runner/register/index.html) using the new `gitlab-runner` account.  
 The gitlab instance and registration token can be found on the 
 [Gitlab > Admin > Runners](https://gitlab.eng.unimelb.edu.au/admin/runners) page. The runner `executor` is `shell`. 
 Make sure to attach a [tag](https://docs.gitlab.com/ee/ci/runners/#using-tags) to the runner to ensure only 
 submissions to the tournament are executed by the runner.
 
+3.  Make sure the runner is started.  
+    Logged in as the `gitlab-runner` user (created in step 1) call `gitlab-runner run`. This will work without sudo permissions. 
+    This starts the runner process and when a submission is made via gitlab traces will print such as:
+    ```
+    Checking for jobs... received                       job=87272 repo_url=https://gitlab.eng.unimelb.edu.au/ajmorton/swen90006-a1-2020.git runner=Mx1vPit9
+    Job succeeded                                       duration=462.423825ms job=87272 project=9143 runner=Mx1vPit9
+    ```
+    This thread needs to continue running even after you end the ssh session on the VPS. 
+    You can do this by pausing the process with  `ctrl+z` and then backgrounding it with `bg`
