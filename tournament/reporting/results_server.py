@@ -64,7 +64,7 @@ class TourneyResultsHandler(server.SimpleHTTPRequestHandler):
 
 def tournament_processing_details(snapshot: TourneySnapshot) -> str:
     """ Return a string with submissions still to process and the current submission processing duration """
-    queued_submissions = len(os.listdir(paths.STAGING_DIR))
+    queued_submissions = len([file for file in os.listdir(paths.STAGING_DIR) if not file.startswith(".")])
     time_to_process_last_submission = snapshot.time_to_process_last_submission()
 
     return "There are {} submissions awaiting processing.\n".format(queued_submissions) + \
