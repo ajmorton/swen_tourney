@@ -98,8 +98,13 @@ def get_submission_request_details(file_path: FilePath) -> (Submitter, datetime)
     :return: the name of the submitter and the date the submission was made
     """
     folder_name = os.path.basename(file_path)
-    [_, submitter, submission_time] = folder_name.split(".")
-    return submitter, datetime.strptime(submission_time, fmt.DATETIME_FILE_STRING)
+    split = folder_name.split(".")
+    # submitter name may contain a full stop. We can assume that the first element in split is the token
+    # "submission", and the last element is the submission time. So everything in between is the submitter name
+    submitter = ".".join(split[1:-1])
+    submission_time = datetime.strptime(split[-1], fmt.DATETIME_FILE_STRING)
+
+    return submitter, submission_time
 
 
 def queue_submission(submitter: Submitter, submission_time: datetime) -> Result:
