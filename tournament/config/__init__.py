@@ -2,7 +2,7 @@
 Configuration file validation performed on tournament startup
 """
 
-from tournament.util import Result
+from tournament.util import Result, Ansi
 from .exceptions import NoConfigDefined
 from .files import ApprovedSubmitters, AssignmentConfig, EmailConfig, ServerConfig, SubmitterExtensions
 
@@ -32,8 +32,8 @@ def configuration_valid() -> Result:
 
     result += "================================="
     if result:
-        result += "Tournament configuration is valid"
+        result += f"{Ansi.GREEN}Tournament configuration is valid{Ansi.END}"
     else:
-        result += "Tournament has not been configured correctly. Please correct the above errors"
+        result += f"{Ansi.RED}Tournament has not been configured correctly. Please correct the above errors{Ansi.END}"
 
     return result

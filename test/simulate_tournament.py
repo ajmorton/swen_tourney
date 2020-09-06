@@ -10,6 +10,7 @@ import subprocess
 import time
 from typing import NamedTuple
 from tournament.config import AssignmentConfig
+from tournament.util import Ansi
 
 class CommitDetails(NamedTuple):
     """ Details of a commit to replay """
@@ -34,14 +35,14 @@ def verify_submissions_valid() -> bool:
     for submitter in submitters:
         expected_submission_path = SUBS_DIR + "/" + submitter + "/" + ASSIGNMENT
         if not os.path.exists(expected_submission_path):
-            print("ERROR: {} does not exist".format(expected_submission_path))
+            print(f"{Ansi.RED}ERROR:{Ansi.END} {expected_submission_path} does not exist")
             submissions_valid = False
             continue
         else:
             git = subprocess.run("git remote -v", shell=True, cwd=expected_submission_path, stdout=subprocess.PIPE,
                                  universal_newlines=True, check=False)
             if ASSIGNMENT not in git.stdout:
-                print("ERROR: {} does not contain a git history".format(expected_submission_path))
+                print(f"{Ansi.RED}ERROR:{Ansi.END} {expected_submission_path} does not contain a git history")
                 submissions_valid = False
 
     return submissions_valid
