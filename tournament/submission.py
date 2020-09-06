@@ -91,11 +91,10 @@ def run_stage(stage: Stage, submitter: Submitter, assg_name: str = None, submiss
 
 def _submission_details(submitter: Submitter) -> (Submitter, FilePath, AbstractAssignment):
     """ Get important details for a submitter given their username """
-    _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
-    submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter_username)
+    submitter_pre_validation_dir = paths.get_pre_validation_dir(submitter)
     assg = AssignmentConfig().get_assignment()
 
-    return submitter_username, submitter_pre_validation_dir, assg
+    return submitter, submitter_pre_validation_dir, assg
 
 
 def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submission_dir: FilePath) -> Result:
@@ -117,7 +116,7 @@ def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submissio
         return Result(False, "Error: The submitted assignment '{}' does not match the assignment "
                              "this tournament is configured for: '{}'".format(assg_name, assg.get_assignment_name()))
 
-    submitter_eligible, _ = ApprovedSubmitters().get_submitter_username(submitter)
+    submitter_eligible = submitter in ApprovedSubmitters().get_list()
     if not submitter_eligible:
         return Result(False, "Submitter '{}' is not on the approved submitters list.\n"
                       "If this is a group assignment please check that you are committing to "
@@ -297,8 +296,7 @@ def _check_submission_file_size(pre_val_dir: FilePath) -> Result:
 def _submit(submitter: Submitter) -> Result:
     """ Create a submission for a submitter in the paths.STAGED_DIR """
 
-    _, submitter_username = ApprovedSubmitters().get_submitter_username(submitter)
-    pre_val_dir = paths.get_pre_validation_dir(submitter_username)
+    pre_val_dir = paths.get_pre_validation_dir(submitter)
     submission_time = datetime.now()
 
     if ApprovedSubmitters().submissions_closed() and not SubmitterExtensions().is_eligible(submitter):
@@ -309,4 +307,4 @@ def _submit(submitter: Submitter) -> Result:
     if not size_check_result:
         return size_check_result
 
-    return daemon.queue_submission(submitter_username, submission_time)
+    return daemon.queue_submission(submitter, submission_time)

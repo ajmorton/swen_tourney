@@ -7,7 +7,6 @@ username
 import json
 import os
 from datetime import datetime
-from typing import Dict
 
 from tournament.config.exceptions import NoConfigDefined
 from tournament.util import format as fmt
@@ -19,10 +18,8 @@ class ApprovedSubmitters:
 
     default_submitters_details = {
         'submission_deadline': datetime.strftime(datetime.max, fmt.DATETIME_TRACE_STRING),
-        'submitters': {
-            "student_a": {'student_id': "123456"},
-            "student_b": {'student_id': "234567"},
-            "student_c": {'student_id': "345678"}}}
+        'submitters': ["student_a", "student_b", "student_c"]
+    }
 
     submitters_details = {}
 
@@ -34,7 +31,7 @@ class ApprovedSubmitters:
         else:
             self.submitters_details = json.load(open(paths.APPROVED_SUBMITTERS_LIST, 'r'))
 
-    def get_list(self) -> Dict[Submitter, dict]:
+    def get_list(self) -> [Submitter]:
         """ Get the list of approved submitters """
         return self.submitters_details['submitters']
 
@@ -42,21 +39,6 @@ class ApprovedSubmitters:
         """ Check whether the submission deadline has passed """
         return datetime.now() > datetime.strptime(self.submitters_details['submission_deadline'],
                                                   fmt.DATETIME_TRACE_STRING)
-
-    def get_submitter_username(self, submitter: str) -> (bool, Submitter):
-        """
-        Submitters can be identified either by their username or by their student id.
-        Map these to their username
-        :param submitter: The username or student id of the submitter
-        :return: Whether a valid username was found, and the username if found
-        """
-        for elig_submitter in self.submitters_details['submitters']:
-            if submitter.lower() in [elig_submitter.lower(),
-                                     self.submitters_details['submitters'][elig_submitter]['student_id']]:
-                return True, elig_submitter
-
-        # else elig_submitter not found
-        return False, ""
 
     @staticmethod
     def _write_default():

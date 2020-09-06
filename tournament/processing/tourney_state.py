@@ -25,7 +25,7 @@ class TourneyState:
         """
         self.state = {}
 
-        approved_submitters = ApprovedSubmitters().get_list().keys()
+        approved_submitters = ApprovedSubmitters().get_list()
 
         if os.path.isfile(paths.TOURNEY_STATE_FILE):
             state_from_file = json.load(open(paths.TOURNEY_STATE_FILE, 'r'))

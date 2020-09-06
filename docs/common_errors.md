@@ -50,11 +50,8 @@ Checking submitter eligibility
 Submitter '<submitter_name>' is not on the approved submitters list.
 ```
 The tournament checks whether a submitter is allowed to submit to the tournament by comparing against the data 
-in approved_submitters.json. However, approved_submitters.json is populated using unimelb blackboard details, 
-and the name of the submitter is dictated by their gitlab username.  
-The tournament code provides some leeway when checking submitter names, ignoring case and mapping student ids 
-to their usernames (according to details from approved_submitters.py).  
-If a submitter still sees the above message then confirm that they are using their unimelb provided login details, 
-and if that does not fix the error then approved_submitters.json can be updated to match their Gitlab username.
+in approved_submitters.json. The Gitlab CI/CD pipeline determines the submitters username by extracting it from their 
+git URL, e.g. `https://gitlab.eng.unimelb.edu.au/submitter_name/swen90006-a1-2020` will register the submitter name as 
+`submitter_name`, and `submitter_name` needs to be present in approved_submitters.json.
 
 

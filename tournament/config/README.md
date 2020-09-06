@@ -42,18 +42,14 @@ based on either of these values.
 
 **Fields**  
 `submission_deadline` the date and time at which submissions are closed
-`submitters` A dict of approved student usernames mapped to a `student_id`
+`submitters` A list of approved submitters, identified by their gitlab username
 
 **Example file**
 
 ```json
 {
     "submission_deadline": "2019-10-05 16:40:00",
-    "submitters": {
-        "student_a": { "student_id": "123456" },
-        "student_b": { "student_id": "234567" },
-        "student_n": { "student_id": "345678" }
-    }
+    "submitters": ["student_a", "student_b", "student_c"]
 }
 ```
 
