@@ -67,8 +67,8 @@ def tournament_processing_details(snapshot: TourneySnapshot) -> str:
     queued_submissions = len([file for file in os.listdir(paths.STAGING_DIR) if not file.startswith(".")])
     time_to_process_last_submission = snapshot.time_to_process_last_submission()
 
-    return "There are {} submissions awaiting processing.\n".format(queued_submissions) + \
-           "The most recent submission took {} seconds to process".format(time_to_process_last_submission)
+    return f"There are {queued_submissions} submissions awaiting processing.\n" + \
+           f"The most recent submission took {time_to_process_last_submission} seconds to process"
 
 
 def _html_table_from_results(snapshot: TourneySnapshot) -> str:
@@ -83,10 +83,10 @@ def _html_table_from_results(snapshot: TourneySnapshot) -> str:
     num_tests = 0 if num_submitters == 0 else (num_submitters - 1) * len(assg.get_test_list())
     num_progs = 0 if num_submitters == 0 else (num_submitters - 1) * len(assg.get_programs_list())
 
-    tests_header = "<table><tr><th>Bugs detected (out of {})</th></tr>".format(num_progs) + \
-                   "<tr><td>" + str(sorted(assg.get_test_list())) + "</tr></td></table>"
-    progs_header = "<table><tr><th>Tests evaded (out of {})</th></tr>".format(num_tests) + \
-                   "<tr><td>" + str(sorted(assg.get_programs_list())) + "</tr></td></table>"
+    tests_header = f"<table><tr><th>Bugs detected (out of {num_progs})</th></tr>" + \
+                   f"<tr><td>{str(sorted(assg.get_test_list()))}</tr></td></table>"
+    progs_header = f"<table><tr><th>Tests evaded (out of {num_tests})</th></tr>" + \
+                   f"<tr><td>{str(sorted(assg.get_programs_list()))}</tr></td></table>"
 
     table = '<table style="width:100%" align="center">' + \
         _table_header("Rank", "Name", "Date of submission", tests_header, progs_header)
@@ -194,7 +194,7 @@ def start_server() -> Result:
     """ Start the results server in its own thread """
     subprocess.Popen("python3.8 -m tournament.reporting.results_server", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return Result(True, "Results server starting. Listening on port {}".format(ServerConfig().port()))
+    return Result(True, f"Results server starting. Listening on port {ServerConfig().port()}")
 
 
 if __name__ == '__main__':

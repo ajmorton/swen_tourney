@@ -32,12 +32,12 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
     tourney_state = TourneyState()
     other_submitters = [sub for sub in tourney_state.get_valid_submitters() if sub != submitter]
 
-    print_tourney_trace("Processing submission for {}.".format(submitter))
-    print_tourney_trace("\tNew tests: {}".format(new_tests))
-    print_tourney_trace("\tNew progs: {}".format(new_progs))
+    print_tourney_trace(f"Processing submission for {submitter}.")
+    print_tourney_trace(f"\tNew tests: {new_tests}")
+    print_tourney_trace(f"\tNew progs: {new_progs}")
 
     tourney_state.set_time_of_submission(submitter, submission_time)
-    num_tests = json.load(open(paths.get_tourney_dir(submitter) + "/" + paths.NUM_TESTS_FILE, 'r'))
+    num_tests = json.load(open(f"{paths.get_tourney_dir(submitter)}/{paths.NUM_TESTS_FILE}", 'r'))
     tourney_state.set_number_of_tests(submitter, num_tests)
 
     # multiprocessing.Pool.map can only work on one argument, use functools.partial to curry
@@ -54,7 +54,7 @@ def run_submission(submitter: Submitter, submission_time: str, new_tests: [Test]
     for (tester, testee, test_set) in tester_results + testee_results:
         tourney_state.set(tester, testee, test_set)
 
-    print_tourney_trace("Submission from {} tested".format(submitter))
+    print_tourney_trace(f"Submission from {submitter} tested")
     tourney_state.save_to_file()
 
 
@@ -77,10 +77,10 @@ def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, ne
     # it is overwritten on each new call to run_tests
     trace_file = open(paths.get_head_to_head_log_file_path(current_process().name), 'w')
 
-    test_stage_dir = paths.HEAD_TO_HEAD_DIR + "/" + current_process().name
+    test_stage_dir = f"{paths.HEAD_TO_HEAD_DIR}/{current_process().name}"
 
     if not os.path.isdir(test_stage_dir):
-        subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), test_stage_dir), shell=True, check=True)
+        subprocess.run(f"cp -rf {assg.get_source_assg_dir()} {test_stage_dir}", shell=True, check=True)
 
     (tester, testee) = pair
 
@@ -89,11 +89,11 @@ def run_tests(pair: Tuple[Submitter, Submitter], tourney_state: TourneyState, ne
     for test in assg.get_test_list():
         test_set[test] = {}
         for prog in assg.get_programs_list():
-            trace_file.write("Comparing {}'s test {} against {}'s program {}\n".format(tester, test, testee, prog))
+            trace_file.write(f"Comparing {tester}'s test {test} against {testee}'s program {prog}\n")
             if test in new_tests or prog in new_progs:
                 trace_file.write("    Starting comparison\n")
                 test_set[test][prog], _ = assg.run_test(test, prog, test_stage_dir)
-                trace_file.write("    Completed. Result = {}\n".format(test_set[test][prog]))
+                trace_file.write(f"    Completed. Result = {test_set[test][prog]}\n")
             else:
                 # no need to rerun this test, keep the results from the current tournament state
                 test_set[test][prog] = tourney_state.get(tester, testee, test, prog)
@@ -131,9 +131,9 @@ def get_diffs() -> Result:
     invalid = ["Y", "y", "True", "true", "X", "x"]
     valid = ["N", "n", ""]
 
-    return Result(True, "\nDiff file has been created at: {}.\n"
-                        "Invalid entries should be marked with one of {} in the 'invalid?' column, "
-                        "valid entries can be marked with one of {}.".format(paths.DIFF_FILE, invalid, valid))
+    return Result(True, f"\nDiff file has been created at: {paths.DIFF_FILE}.\n"
+                        f"Invalid entries should be marked with one of {invalid} in the 'invalid?' column, "
+                        f"valid entries can be marked with one of {valid}.")
 
 
 def rescore_invalid_progs() -> Result:
@@ -158,18 +158,17 @@ def rescore_invalid_progs() -> Result:
         elif is_invalid in valid:
             continue
         else:
-            parsing_results += Result(False, "Error: unrecognised value '{}' in the 'invalid?' column for {} {}."
-                                      .format(is_invalid, sub, mut))
+            parsing_results += Result(False, f"Error: unrecognised value '{is_invalid}' in the 'invalid?' column for "
+                                             f"{sub} {mut}.")
 
     if not parsing_results:
         return Result(False, parsing_results.traces +
-                      "\nUnrecognised values in the 'invalid?' column of {} have been detected. "
-                      "Please use one of {} for valid entries, or one of {} for invalid entries"
-                      .format(paths.DIFF_FILE, valid, invalid))
+                      f"\nUnrecognised values in the 'invalid?' column of {paths.DIFF_FILE} have been detected. "
+                      f"Please use one of {valid} for valid entries, or one of {invalid} for invalid entries")
 
     # update tourney state and results
     parsing_results.traces += "Results updated. Recalculating submitter scores."
     tourney_state.save_to_file()
     TourneySnapshot(report_time=datetime.now()).write_snapshot()
 
-    return Result(True, "{} invalid programs have had their score set to zero".format(num_invalid_progs))
+    return Result(True, f"{num_invalid_progs} invalid programs have had their score set to zero")

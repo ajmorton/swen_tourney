@@ -20,8 +20,10 @@ def assert_python_version():
 
     py_version = sys.version_info
     if py_version < min_py_version:
-        print("ERROR: You are currently using Python {}.{}.{}".format(*py_version[0:3]))
-        print("Please run this program using Python {}.{}.{} or greater".format(*min_py_version))
+        py_version = ".".join(map(str, py_version[0:3]))
+        min_py_version = ".".join(map(str, min_py_version))
+        print(f"ERROR: You are currently using Python {py_version}")
+        print(f"Please run this program using Python {min_py_version} or greater")
         exit(1)
 
 

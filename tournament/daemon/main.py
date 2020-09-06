@@ -20,7 +20,7 @@ from tournament.util import paths, format as fmt, print_tourney_trace, print_tou
 def _set_process_name(counter):
     """ Set the name of each process in the pool, making use of a shared counter between all processes """
     with counter.get_lock():
-        current_process().name = "process_" + str(counter.value)
+        current_process().name = f"process_{str(counter.value)}"
         counter.value = counter.value + 1
 
 
@@ -31,10 +31,10 @@ def _process_report_request(file_path: FilePath):
     :param file_path: the file path of the report request in paths.STAGED_DIR
     """
     report_time = fs_queue.get_report_request_time(file_path)
-    print_tourney_trace("Generating report for tournament submissions as of {}".format(report_time))
+    print_tourney_trace(f"Generating report for tournament submissions as of {report_time}")
     snapshot = TourneySnapshot(report_time=report_time)
     snapshot.write_csv()
-    subprocess.run("rm -f {}".format(file_path), shell=True, check=True)
+    subprocess.run(f"rm -f {file_path}", shell=True, check=True)
 
 
 def _process_submission_request(file_path, pool):
@@ -52,8 +52,8 @@ def _process_submission_request(file_path, pool):
     new_tests = assg.detect_new_tests(staged_dir, FilePath(tourney_dest))
     new_progs = assg.detect_new_progs(staged_dir, FilePath(tourney_dest))
 
-    subprocess.run("rm -rf {}".format(tourney_dest), shell=True, check=True)
-    subprocess.run("mv {} {}".format(staged_dir, tourney_dest), shell=True, check=True)
+    subprocess.run(f"rm -rf {tourney_dest}", shell=True, check=True)
+    subprocess.run(f"mv {staged_dir} {tourney_dest}", shell=True, check=True)
 
     time_start = time()
     tourney.run_submission(submitter, submission_time.strftime(fmt.DATETIME_TRACE_STRING), new_tests, new_progs, pool)
@@ -74,7 +74,7 @@ def is_alive() -> Result:
     else:
         is_shutdown = get_flag(TourneyFlag.SHUTDOWN)
         if is_shutdown:
-            return Result(False, "Tournament is shutdown: {}".format(is_shutdown.traces))
+            return Result(False, f"Tournament is shutdown: {is_shutdown.traces}")
         else:
             return Result(False, "Tournament is not online")
 
@@ -94,7 +94,7 @@ def shutdown(message: str) -> Result:
 def make_report_request(request_time: datetime) -> Result:
     """ Create a report request file in paths.STAGED_DIR """
     fs_queue.create_report_request(request_time)
-    trace = "Report request made at {}".format(request_time.strftime(fmt.DATETIME_TRACE_STRING))
+    trace = f"Report request made at {request_time.strftime(fmt.DATETIME_TRACE_STRING)}"
     print_tourney_trace(trace)
     return Result(True, trace)
 
@@ -103,7 +103,7 @@ def start() -> Result:
     """ Start a new thread and run the TourneyDaemon in it """
     subprocess.Popen("python3.8 -m tournament.daemon.main", cwd=paths.ROOT_DIR, shell=True,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return Result(True, "Tournament starting.\nTraces are being written to {}".format(paths.TRACE_FILE))
+    return Result(True, f"Tournament starting.\nTraces are being written to {paths.TRACE_FILE}")
 
 
 def main():
@@ -132,14 +132,14 @@ def main():
             next_submission_to_process = fs_queue.get_next_request()
 
             if next_submission_to_process:
-                file_path = paths.STAGING_DIR + "/" + next_submission_to_process
+                file_path = f"{paths.STAGING_DIR}/{next_submission_to_process}"
                 if fs_queue.is_report(file_path):
                     _process_report_request(file_path)
                 elif fs_queue.is_submission(file_path):
                     _process_submission_request(file_path, pool)
                 else:
                     # submission is present in the staged folder, but has not finished being copied across
-                    print_tourney_trace("Request present but not valid: {}".format(next_submission_to_process))
+                    print_tourney_trace(f"Request present but not valid: {next_submission_to_process}")
                     sleep(5)
             else:
                 print_tourney_trace("Nothing to process")

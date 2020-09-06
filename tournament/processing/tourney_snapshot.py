@@ -75,7 +75,7 @@ class TourneySnapshot:
             report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.DATETIME_TRACE_STRING)
             report_file_path = paths.get_snapshot_file_path(report_time)
             json.dump(self.snapshot, open(report_file_path, 'w'), indent=4, sort_keys=True)
-            print_tourney_trace("Snapshot of tournament at {} written to {}".format(report_time, report_file_path))
+            print_tourney_trace(f"Snapshot of tournament at {report_time} written to {report_file_path}")
 
     def write_csv(self):
         """

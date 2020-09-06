@@ -56,17 +56,17 @@ HEAD_TO_HEAD_DIR = SUBMISSIONS_DIR + "/head_to_head"
 
 def get_pre_validation_dir(submitter: Submitter) -> FilePath:
     """ Given a submitter, return the file path of their submission in the prevalidation directory """
-    return FilePath(PRE_VALIDATION_DIR + "/" + submitter)
+    return FilePath(f"{PRE_VALIDATION_DIR}/{submitter}")
 
 
 def get_tourney_dir(submitter: Submitter) -> FilePath:
     """ Given a submitter, return the file path of their submission in the tournament directory """
-    return FilePath(TOURNEY_DIR + "/" + submitter)
+    return FilePath(f"{TOURNEY_DIR}/{submitter}")
 
 
 def get_snapshot_file_path(report_time: datetime):
     """ Given a datetime, return a file path for a snapshot file with the datetime appended """
-    return STATE_DIR + "/snapshot_" + report_time.strftime(fmt.DATETIME_FILE_STRING) + ".json"
+    return f"{STATE_DIR}/snapshot_{report_time.strftime(fmt.DATETIME_FILE_STRING)}.json"
 
 
 def get_head_to_head_log_file_path(thread_name: str) -> FilePath:
@@ -74,4 +74,4 @@ def get_head_to_head_log_file_path(thread_name: str) -> FilePath:
     Given the name of the current thread, return a file path to save its logs to when running tests against progs
     in the head_to_head directory
     """
-    return FilePath(TRACES_DIR + "/" + "head_to_head_" + thread_name + ".log")
+    return FilePath(f"{TRACES_DIR}/head_to_head_{thread_name}.log")

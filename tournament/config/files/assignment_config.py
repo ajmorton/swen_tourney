@@ -28,8 +28,8 @@ class AssignmentConfig:
     def __init__(self):
         if not os.path.exists(paths.ASSIGNMENT_CONFIG):
             AssignmentConfig._write_default()
-            raise NoConfigDefined("No assignment configuration file found at {} . A default one has been created"
-                                  .format(paths.ASSIGNMENT_CONFIG))
+            raise NoConfigDefined(f"No assignment configuration file found at {paths.ASSIGNMENT_CONFIG} . "
+                                  f"A default one has been created")
         else:
             self.config = json.load(open(paths.ASSIGNMENT_CONFIG, 'r'))
 
@@ -57,20 +57,19 @@ class AssignmentConfig:
         assignment_types = [assg.name for assg in AssignmentType]
 
         if self.config['assignment_type'] in assignment_types:
-            return Result(True, "Tournament is configured for: {}".format(self.config['assignment_type']))
+            return Result(True, f"Tournament is configured for: {self.config['assignment_type']}")
         else:
-            return Result(False, "ERROR: Assignment configuration has not been configured properly.\n"
-                                 "       Please update {} with one of: {}"
-                          .format(paths.ASSIGNMENT_CONFIG, assignment_types))
+            return Result(False, f"ERROR: Assignment configuration has not been configured properly.\n"
+                                 f"       Please update {paths.ASSIGNMENT_CONFIG} with one of: {assignment_types}")
 
     def check_source_assg_exists(self) -> Result:
         """ Check that the path to the original source code is valid """
         source_assg_dir = self.config['source_assg_dir']
         if os.path.exists(source_assg_dir):
-            return Result(True, "\tSource assignment is: {}".format(self.get_assignment().get_assignment_name()) +
-                          "\n\tSource code dir: {}".format(source_assg_dir))
+            return Result(True, f"\tSource assignment is: {self.get_assignment().get_assignment_name()}" +
+                          f"\n\tSource code dir: {source_assg_dir}")
         else:
-            return Result(False, "ERROR: Source assg dir {} does not exist".format(source_assg_dir))
+            return Result(False, f"ERROR: Source assg dir {source_assg_dir} does not exist")
 
     def check_for_ci_file(self) -> Result:
         """
@@ -82,5 +81,5 @@ class AssignmentConfig:
             return Result(True, "")
         else:
             return Result(False,
-                          "ERROR: Expected gitlab_ci file not found at {}\n".format(gitlab_ci_file_path) +
+                          f"ERROR: Expected gitlab_ci file not found at {gitlab_ci_file_path}\n" +
                           "\n     Check docs/example_gitlab-ci.yml for an example of what this file should look like.")

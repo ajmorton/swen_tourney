@@ -34,11 +34,11 @@ def email_crash_report():
         smtp.login(cfg.sender(), cfg.password())
 
         message = "Hi,\n\n"
-        message += "The swen-tourney code has raised an exception and has been stopped.\n" \
-                   "Please correct this error and restart the tournament. " \
-                   "Details on this crash can be found at {} on {}.".format(paths.TRACE_FILE, socket.gethostname())
+        message += f"The swen-tourney code has raised an exception and has been stopped.\n" \
+                   f"Please correct this error and restart the tournament. " \
+                   f"Details on this crash can be found at {paths.TRACE_FILE} on {socket.gethostname()}."
 
-        print_tourney_trace("\tSending crash report email to {}".format(cfg.crash_report_recipients()))
+        print_tourney_trace(f"\tSending crash report email to {cfg.crash_report_recipients()}")
         _send_email(smtp, cfg.sender(), cfg.crash_report_recipients(), "SWEN Tournament crash", message)
         smtp.close()
 
@@ -49,5 +49,5 @@ def email_crash_report():
     except SMTPAuthenticationError:
         print_tourney_error("Login attempt failed")
     except OSError as os_error:
-        print_tourney_error("Error raised while sending emails: {}".format(os_error))
+        print_tourney_error(f"Error raised while sending emails: {os_error}")
         print_tourney_error("Email sending has been aborted.")

@@ -60,9 +60,9 @@ def run_stage(stage: Stage, submitter: Submitter, assg_name: str = None, submiss
         # noinspection PyTypeChecker
         elig_stages = [st.name for st in reversed(Stage) if get_flag(st.prev_stage().value, pre_val_dir)]
         should_run = elig_stages[0] if elig_stages else Stage.CHECK_ELIG.name
-        return Result(False, "Cannot run the {} stage. The {} stage must be run first.\n"
-                             "Note: It is recommended that you make a new commit rather than manually rerunning stages "
-                             "via the Gitlab web interface".format(stage.name, should_run))
+        return Result(False, f"Cannot run the {stage.name} stage. The {should_run} stage must be run first.\n"
+                             f"Note: It is recommended that you make a new commit rather than manually rerunning "
+                             f"stages via the Gitlab web interface")
 
     # run the stage
     result = {Stage.CHECK_ELIG: lambda: _check_submitter_eligibility(submitter, assg_name, submission_dir),
@@ -70,7 +70,7 @@ def run_stage(stage: Stage, submitter: Submitter, assg_name: str = None, submiss
               Stage.VALIDATE_TESTS: lambda: _validate_tests(submitter),
               Stage.VALIDATE_PROGS: lambda: _validate_programs_under_test(submitter),
               Stage.SUBMIT: lambda: _submit(submitter)
-              }.get(stage, lambda: Result(False, "Stage {} not implemented".format(stage.name)))()
+              }.get(stage, lambda: Result(False, f"Stage {stage.name} not implemented"))()
 
     # process the results
     if result:
@@ -80,11 +80,11 @@ def run_stage(stage: Stage, submitter: Submitter, assg_name: str = None, submiss
             clear_all_flags(pre_val_dir)
             set_flag(stage.value, True, pre_val_dir)
     else:
-        print_tourney_trace("Submission from {} rejected. Did not pass the {} stage".format(submitter, stage))
+        print_tourney_trace(f"Submission from {submitter} rejected. Did not pass the {stage} stage")
         if stage != Stage.CHECK_ELIG:
             # Don't remove a submission in the pre_val dir if stage == CHECK_ELIG.
             # This stage may fail due to a prior submission still being processed and we don't want to delete that
-            subprocess.run("rm -rf {}".format(pre_val_dir), shell=True, check=True)
+            subprocess.run(f"rm -rf {pre_val_dir}", shell=True, check=True)
 
     return result
 
@@ -113,8 +113,8 @@ def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submissio
     _, submitter_pre_val_dir, assg = _submission_details(submitter)
 
     if assg_name != assg.get_assignment_name():
-        return Result(False, "Error: The submitted assignment '{}' does not match the assignment "
-                             "this tournament is configured for: '{}'".format(assg_name, assg.get_assignment_name()))
+        return Result(False, f"Error: The submitted assignment '{assg_name}' does not match the assignment "
+                             f"this tournament is configured for: '{assg.get_assignment_name()}'")
 
     submitter_eligible = submitter in ApprovedSubmitters().get_list()
     if not submitter_eligible:
@@ -129,18 +129,18 @@ def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submissio
     if os.path.isdir(submitter_pre_val_dir):
         prior_submission_age = datetime.now().timestamp() - os.stat(submitter_pre_val_dir).st_mtime
         stale_submission_age = 60 * 15  # 15 minutes, a prior submission older than this can be discarded
-        if prior_submission_age < stale_submission_age:
-            return Result(False, "Error: A prior submission is still being validated. "
-                                 "Please wait {} seconds to push a new commit."
-                          .format(int(stale_submission_age - prior_submission_age)))
+        time_until_stale = stale_submission_age - prior_submission_age
+        if time_until_stale > 0:
+            return Result(False, f"Error: A prior submission is still being validated. Please wait "
+                                 f"{int(time_until_stale)} seconds to push a new commit.")
 
     # if submitter is eligible then move submission into the pre_validation folder and prepare for validation
-    subprocess.run("cp -rf {} {}".format(assg.get_source_assg_dir(), submitter_pre_val_dir), shell=True, check=True)
+    subprocess.run(f"cp -rf {assg.get_source_assg_dir()} {submitter_pre_val_dir}", shell=True, check=True)
     result = assg.prep_submission(FilePath(submission_dir), FilePath(submitter_pre_val_dir))
 
     if not result.success:
-        subprocess.run("rm -rf {}".format(submitter_pre_val_dir), shell=True, check=True)
-        return Result(False, "An error occurred while preparing the submission:\n\t{}".format(result.traces))
+        subprocess.run(f"rm -rf {submitter_pre_val_dir}", shell=True, check=True)
+        return Result(False, f"An error occurred while preparing the submission:\n\t{result.traces}")
 
     return Result(True, "Submitter is eligible for the tournament")
 
@@ -159,8 +159,8 @@ def _compile_submission(submitter: Submitter) -> Result:
     for prog in ["original"] + assg.get_programs_list():
         compil_result = assg.compile_prog(submitter_pre_val_dir, prog)
 
-        result.traces += "\n\t{} compilation ".format(prog)
-        result.traces += "SUCCESS" if compil_result else ("FAILED.\n" + compil_result.traces)
+        result.traces += f"\n\t{prog} compilation "
+        result.traces += "SUCCESS" if compil_result else (f"FAILED.\n{compil_result.traces}")
         result.success = result.success and compil_result.success
 
     # compile tests
@@ -168,8 +168,8 @@ def _compile_submission(submitter: Submitter) -> Result:
     for test in assg.get_test_list():
         compil_result = assg.compile_test(submitter_pre_val_dir, test)
 
-        result.traces += "\n\t{} compilation ".format(test)
-        result.traces += "SUCCESS" if compil_result else ("FAILED.\n" + compil_result.traces)
+        result.traces += f"\n\t{test} compilation "
+        result.traces += "SUCCESS" if compil_result else (f"FAILED.\n{compil_result.traces}")
         result.success = result.success and compil_result.success
 
     return result
@@ -200,20 +200,20 @@ def _validate_tests(submitter: Submitter) -> Result:
     for test in assg.get_test_list():
         test_result, test_traces = assg.run_test(test, Prog("original"), FilePath(submitter_pre_val_dir))
 
-        validation_traces += "\n\t{} test ".format(test)
+        validation_traces += f"\n\t{test} test "
         validation_traces += \
-            {TestResult.TIMEOUT: "FAIL    - Timeout when run against original program: {}".format(test_traces),
+            {TestResult.TIMEOUT: f"FAIL    - Timeout when run against original program: {test_traces}",
              TestResult.NO_BUGS_DETECTED: "SUCCESS - No bugs detected in original program",
-             TestResult.BUG_FOUND: "FAIL    - Test falsely reports error in original code\n" + test_traces,
-             TestResult.UNEXPECTED_RETURN_CODE: "FAIL    - Unrecognised return code found\n" + test_traces
-             }.get(test_result, "ERROR   - unexpected test result: {}".format(test_result))
+             TestResult.BUG_FOUND: f"FAIL    - Test falsely reports error in original code\n{test_traces}",
+             TestResult.UNEXPECTED_RETURN_CODE: f"FAIL    - Unrecognised return code found\n{test_traces}"
+             }.get(test_result, f"ERROR   - unexpected test result: {test_result}")
 
         tests_valid = tests_valid and test_result == TestResult.NO_BUGS_DETECTED
         if tests_valid:
             num_tests[test] = assg.get_num_tests(test_traces)
 
     if tests_valid:
-        json.dump(num_tests, open(submitter_pre_val_dir + "/" + paths.NUM_TESTS_FILE, 'w'))
+        json.dump(num_tests, open(f"{submitter_pre_val_dir}/{paths.NUM_TESTS_FILE}", 'w'))
 
     return Result(tests_valid, validation_traces)
 
@@ -251,20 +251,20 @@ def _validate_programs_under_test(submitter: Submitter) -> Result:
         duplicate_progs = [other for other in other_progs if assg.progs_identical(prog, other, submitter_pre_val_dir)]
 
         if duplicate_progs:
-            validation_traces += "\n\t{} FAIL - Duplicate of {}".format(prog, duplicate_progs[0])
+            validation_traces += f"\n\t{prog} FAIL - Duplicate of {duplicate_progs[0]}"
             progs_valid = False
             continue
 
         for test in assg.get_test_list():
             test_result, test_traces = assg.run_test(test, prog, FilePath(submitter_pre_val_dir), use_poc=True)
 
-            validation_traces += "\n\t{} {} test ".format(prog, test)
+            validation_traces += f"\n\t{prog} {test} test "
             validation_traces += \
                 {TestResult.TIMEOUT: "FAIL    - Timeout",
                  TestResult.NO_BUGS_DETECTED: "FAIL    - Test suite does not detect error",
                  TestResult.BUG_FOUND: "SUCCESS - Test suite detects error",
-                 TestResult.UNEXPECTED_RETURN_CODE: "FAIL    - Unrecognised return code found\n" + test_traces,
-                 }.get(test_result, "ERROR   - unexpected test result: {}".format(test_result))
+                 TestResult.UNEXPECTED_RETURN_CODE: f"FAIL    - Unrecognised return code found\n{test_traces}",
+                 }.get(test_result, f"ERROR   - unexpected test result: {test_result}")
 
             progs_valid = progs_valid and test_result == TestResult.BUG_FOUND
 
@@ -273,7 +273,7 @@ def _validate_programs_under_test(submitter: Submitter) -> Result:
 
 def _check_submission_file_size(pre_val_dir: FilePath) -> Result:
     """ Check that the size of the submissions is not too large """
-    result = subprocess.run("du -sh {}".format(pre_val_dir),
+    result = subprocess.run(f"du -sh {pre_val_dir}",
                             stdout=subprocess.PIPE, universal_newlines=True, shell=True, check=False)
     filesize_pattern = "^([0-9]+(?:\\.[0-9]+)?)([BKMG])"  # number and scale, eg: "744K" = 744KB or "1.8G" == 1.8GB
     submission_size_regex = re.search(filesize_pattern, result.stdout)
@@ -300,8 +300,8 @@ def _submit(submitter: Submitter) -> Result:
     submission_time = datetime.now()
 
     if ApprovedSubmitters().submissions_closed() and not SubmitterExtensions().is_eligible(submitter):
-        return Result(False, "A new submission cannot be made at {}. Submissions have been closed"
-                      .format(submission_time.strftime(fmt.DATETIME_TRACE_STRING)))
+        return Result(False, f"A new submission can't be made at {submission_time.strftime(fmt.DATETIME_TRACE_STRING)}."
+                             f" Submissions have been closed")
 
     size_check_result = _check_submission_file_size(pre_val_dir)
     if not size_check_result:

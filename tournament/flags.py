@@ -48,13 +48,13 @@ def set_flag(flag: Flag, true: bool, submission: str = None, contents: str = "")
     :param submission: the path of the submission to write the flag in, if applicable
     :param contents: An optional message to write inside the flag file
     """
-    flag_path = flag.value if not submission else submission + "/" + flag.value
+    flag_path = flag.value if not submission else f"{submission}/{flag.value}"
 
     if true:
-        subprocess.run("touch {}".format(flag_path), shell=True, check=True)
-        subprocess.run("echo '{}' > {}".format(contents, flag_path), shell=True, check=False)
+        subprocess.run(f"touch {flag_path}", shell=True, check=True)
+        subprocess.run(f"echo '{contents}' > {flag_path}", shell=True, check=False)
     else:
-        subprocess.run("rm -f {}".format(flag_path), shell=True, check=True)
+        subprocess.run(f"rm -f {flag_path}", shell=True, check=True)
 
 
 def get_flag(flag: Flag, submission: str = None) -> Result:
@@ -64,7 +64,7 @@ def get_flag(flag: Flag, submission: str = None) -> Result:
     :return: the value of the provided flag
     :param submission: the path of the submission to write the flag in, if applicable
     """
-    flag_path = flag.value if not submission else submission + "/" + flag.value
+    flag_path = flag.value if not submission else f"{submission}/{flag.value}"
     if os.path.exists(flag_path):
         return Result(True, open(flag_path, 'r').read().strip())
     else:

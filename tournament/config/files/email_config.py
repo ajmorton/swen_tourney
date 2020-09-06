@@ -29,8 +29,8 @@ class EmailConfig:
     def __init__(self):
         if not os.path.exists(paths.EMAIL_CONFIG):
             EmailConfig._write_default()
-            raise NoConfigDefined("No email configuration file found at {} . A default one has been created"
-                                  .format(paths.EMAIL_CONFIG))
+            raise NoConfigDefined(f"No email configuration file found at {paths.EMAIL_CONFIG} . "
+                                  f"A default one has been created")
         else:
             self.email_config = json.load(open(paths.EMAIL_CONFIG, 'r'))
 
@@ -72,10 +72,10 @@ class EmailConfig:
     def _check_email_non_default(self) -> Result:
         """ Check the email config has been updated with non-default values """
         if self.email_config != EmailConfig.default_email_config:
-            return Result(True, "Emails will be sent from: {}".format(self.sender()))
+            return Result(True, f"Emails will be sent from: {self.sender()}")
         else:
-            return Result(False, "ERROR: Email has not been configured.\n"
-                                 "       Please update {} with the correct details".format(paths.EMAIL_CONFIG))
+            return Result(False, f"ERROR: Email has not been configured.\n"
+                                 f"       Please update {paths.EMAIL_CONFIG} with the correct details")
 
     def _check_connection(self) -> Result:
         """ Check that using the details in the email config and email can be sent via the SMTP server """
@@ -89,10 +89,10 @@ class EmailConfig:
             smtp.starttls()
             smtp.login(email, password)
         except socket.timeout:
-            return Result(False, "\tERROR: Timeout while trying to connect {}:{}".format(smtp_server, port))
+            return Result(False, f"\tERROR: Timeout while trying to connect {smtp_server}:{port}")
         except (SMTPHeloError, SMTPConnectError):
-            return Result(False, "\tERROR: Cannot connect to {}:{}".format(smtp_server, port))
+            return Result(False, f"\tERROR: Cannot connect to {smtp_server}:{port}")
         except SMTPAuthenticationError:
-            return Result(False, "\tERROR: Login attempt for {} failed".format(email))
+            return Result(False, f"\tERROR: Login attempt for {email} failed")
 
         return Result(True, "\tSuccessful connection and authentication with SMTP server")

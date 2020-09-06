@@ -39,11 +39,11 @@ def clean() -> Result:
     if result:
         return Result(False, result.traces + "Current submissions should not be removed unless the server is offline")
 
-    subprocess.run("rm -rf {}/*/*".format(paths.SUBMISSIONS_DIR), shell=True, check=True)
-    subprocess.run("rm -f  {}/*.log".format(paths.TRACES_DIR), shell=True, check=True)
-    subprocess.run("rm -f  {}/**.json".format(paths.STATE_DIR), shell=True, check=True)
-    subprocess.run("rm -f  {}/**/*.json".format(paths.STATE_DIR), shell=True, check=True)
-    subprocess.run("rm -f  {}".format(paths.DIFF_FILE), shell=True, check=True)
+    subprocess.run(f"rm -rf {paths.SUBMISSIONS_DIR}/*/*", shell=True, check=True)
+    subprocess.run(f"rm -f  {paths.TRACES_DIR}/*.log", shell=True, check=True)
+    subprocess.run(f"rm -f  {paths.STATE_DIR}/**.json", shell=True, check=True)
+    subprocess.run(f"rm -f  {paths.STATE_DIR}/**/*.json", shell=True, check=True)
+    subprocess.run(f"rm -f  {paths.DIFF_FILE}", shell=True, check=True)
     flags.clear_all_flags()
 
     return Result(True, "All submissions and tournament results have been deleted")
@@ -65,9 +65,9 @@ def rescore_invalid_progs() -> Result:
                              "Rescoring invalid programs should only be performed once submissions are closed")
 
     if not os.path.exists(paths.DIFF_FILE):
-        return Result(False, "Error the diff file '{}' does not exist.\n"
-                             "Make sure to run 'get_diffs' and update the resulting file before running "
-                             "this command.".format(paths.DIFF_FILE))
+        return Result(False, f"Error the diff file '{paths.DIFF_FILE}' does not exist.\n"
+                             f"Make sure to run 'get_diffs' and update the resulting file before running "
+                             f"this command.")
 
     return tourney.rescore_invalid_progs()
 

@@ -19,8 +19,8 @@ class ServerConfig:
 
     def __init__(self):
         if not os.path.exists(paths.SERVER_CONFIG):
-            print_tourney_trace("No server configuration file found at {}. Using default configuration.".format(
-                paths.SERVER_CONFIG))
+            print_tourney_trace(f"No server configuration file found at {paths.SERVER_CONFIG}. "
+                                f"Using default configuration.")
             ServerConfig.write_default()
             self.server_config = self.default_server_config
         else:
@@ -36,7 +36,7 @@ class ServerConfig:
 
     def check_server_config(self) -> Result:
         """ Write the details of the results server on tournament start up """
-        return Result(True, "Server is listening on {}:{}\n".format(self.host(), self.port()))
+        return Result(True, f"Server is listening on {self.host()}:{self.port()}\n")
 
     @staticmethod
     def write_default():

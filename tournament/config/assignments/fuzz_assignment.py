@@ -43,16 +43,16 @@ class FuzzAssignment(AbstractAssignment):
         return self.progs_list
 
     def progs_identical(self, prog1: Prog, prog2: Prog, submission_dir: FilePath) -> bool:
-        diff = subprocess.run("diff -rw {} {}".format(prog1, prog2), cwd=submission_dir + "/src",
+        diff = subprocess.run(f"diff -rw {prog1} {prog2}", cwd=submission_dir + "/src",
                               shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
         return diff.returncode == 0
 
     def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False) -> (TestResult, str):
 
         if use_poc:
-            test_command = "./run_tests.sh {} --use-poc".format(prog)
+            test_command = f"./run_tests.sh {prog} --use-poc"
         else:
-            test_command = "./run_tests.sh {}".format(prog)
+            test_command = f"./run_tests.sh {prog}"
 
         try:
             try:
@@ -74,7 +74,7 @@ class FuzzAssignment(AbstractAssignment):
             # This will be updated as more codes are discovered
             return TestResult.BUG_FOUND, stdout
         else:
-            return TestResult.UNEXPECTED_RETURN_CODE, "Exit code: {}\n".format(result.returncode) + stdout
+            return TestResult.UNEXPECTED_RETURN_CODE, f"Exit code: {result.returncode}\n{stdout}"
 
     def get_num_tests(self, traces: str) -> int:
         return 0  # num tests is not needed for fuzz_assignment, as it does not impact the scoring functions
@@ -89,16 +89,16 @@ class FuzzAssignment(AbstractAssignment):
 
         # copy across the fuzzer and PoCs
         for folder in ['/fuzzer', '/poc']:
-            subprocess.run("rm -rf {}".format(destination_dir + folder), shell=True, check=True)
-            res = subprocess.run("cp -rf {} {}".format(submission_dir + folder, destination_dir),
+            subprocess.run(f"rm -rf {destination_dir + folder}", shell=True, check=True)
+            res = subprocess.run(f"cp -rf {submission_dir + folder} {destination_dir}",
                                  shell=True, check=False)
             if res.returncode != 0:
                 return Result(False, res.stderr[res.stderr.find(self.get_assignment_name()): ])
 
         # copy across the programs, excluding 'original' and 'include'
         for program in self.get_programs_list():
-            subprocess.run("rm -rf {}".format(destination_dir + "/src/" + program), shell=True, check=True)
-            res = subprocess.run("cp -rf {} {}".format(submission_dir + "/src/" + program, destination_dir + "/src"),
+            subprocess.run(f"rm -rf {destination_dir}/src/{program}", shell=True, check=True)
+            res = subprocess.run(f"cp -rf {submission_dir}/src/{program} {destination_dir}/src",
                                  shell=True, check=False)
             if res.returncode != 0:
                 return Result(False, res.stderr[res.stderr.find(self.get_assignment_name()): ])
@@ -110,7 +110,7 @@ class FuzzAssignment(AbstractAssignment):
         return Result(True, "Preparation successful")
 
     def compile_prog(self, submission_dir: FilePath, prog: Prog) -> Result:
-        compil = subprocess.run('CFLAGS="-DDEBUG_NO_PRINTF" make VERSIONS={}'.format(prog), cwd=submission_dir,
+        compil = subprocess.run(f'CFLAGS="-DDEBUG_NO_PRINTF" make VERSIONS={prog}', cwd=submission_dir,
                                 shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True,
                                 check=False)
         if compil.returncode != 0:
@@ -139,7 +139,7 @@ class FuzzAssignment(AbstractAssignment):
         new_progs = []
         for prog in self.get_programs_list():
             diff = subprocess.run(
-                "diff -r {} {}".format(new_submission + "/src/" + prog, old_submission + "/src/" + prog),
+                f"diff -r {new_submission}/src/{prog} {old_submission}/src/{prog}",
                 stdout=subprocess.PIPE, shell=True, check=False)
             if diff.returncode != 0:
                 new_progs.append(prog)
@@ -153,13 +153,13 @@ class FuzzAssignment(AbstractAssignment):
         testee_code_dir = paths.get_tourney_dir(testee)
 
         # symlink in testers tests
-        subprocess.run("rm -rf {}".format(test_stage_code_dir + "/tests"), shell=True, check=True)
-        subprocess.run("ln -s {} {}".format(tester_code_dir + "/tests", test_stage_code_dir + "/tests"),
+        subprocess.run(f"rm -rf {test_stage_code_dir}/tests", shell=True, check=True)
+        subprocess.run(f"ln -s {tester_code_dir}/tests {test_stage_code_dir}/tests",
                        shell=True, check=True)
 
         # symlink in testees programs
-        subprocess.run("rm -rf {}".format(test_stage_code_dir + "/bin"), shell=True, check=True)
-        subprocess.run("ln -s {} {}".format(testee_code_dir + "/bin", test_stage_code_dir + "/bin"),
+        subprocess.run(f"rm -rf {test_stage_code_dir}/bin", shell=True, check=True)
+        subprocess.run(f"ln -s {testee_code_dir}/bin {test_stage_code_dir}/bin",
                        shell=True, check=True)
 
     def compute_normalised_prog_score(self, submitter_score: float, best_score: float) -> float:
@@ -182,7 +182,7 @@ class FuzzAssignment(AbstractAssignment):
 
         diffs = {}
         for prog in self.get_programs_list():
-            prog_diff = subprocess.run("diff -rw {} {}".format("original", prog), cwd=submission_dir + "/src/",
+            prog_diff = subprocess.run(f"diff -rw original {prog}", cwd=submission_dir + "/src/",
                                        shell=True, stdout=subprocess.PIPE, universal_newlines=True, check=False)
             diffs[prog] = prog_diff.stdout.strip()
 
@@ -190,7 +190,7 @@ class FuzzAssignment(AbstractAssignment):
 
     def check_diff(self, submission_dir: FilePath, prog: Prog) -> Result:
 
-        prog_diff = subprocess.run("diff -rw {} {}".format("original", prog), cwd=submission_dir + "/src/",
+        prog_diff = subprocess.run(f"diff -rw original {prog}", cwd=submission_dir + "/src/",
                                    shell=True, stdout=subprocess.PIPE, text=True, check=False).stdout
 
         # don't allow dependency changes

@@ -40,6 +40,6 @@ class Result:
 
     def __add__(self, other):
         if isinstance(other, str):
-            return Result(self.success, self.traces + "\n" + other)
+            return Result(self.success, f"{self.traces}\n{other}")
         else:
-            return Result(self.success and other.success, self.traces + "\n" + other.traces)
+            return Result(self.success and other.success, f"{self.traces}\n{other.traces}")

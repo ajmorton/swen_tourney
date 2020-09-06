@@ -52,13 +52,13 @@ def _remove_previous_occurrences(submitter: Submitter):
     for submission in pre_request_submissions:
         (sub, _) = get_submission_request_details(submission)
         if sub == submitter:
-            subprocess.run("rm -rf {}".format(paths.STAGING_DIR + "/" + submission), shell=True, check=True)
+            subprocess.run(f"rm -rf {paths.STAGING_DIR}/{submission}", shell=True, check=True)
 
 
 def create_report_request(request_time: datetime):
     """ Create a report request """
-    file_name = paths.STAGING_DIR + "/" + REPORT_REQUEST_PREFIX + request_time.strftime(fmt.DATETIME_FILE_STRING)
-    subprocess.run("touch {}".format(file_name), shell=True, check=True)
+    file_name = f"{paths.STAGING_DIR}/{REPORT_REQUEST_PREFIX + request_time.strftime(fmt.DATETIME_FILE_STRING)}"
+    subprocess.run(f"touch {file_name}", shell=True, check=True)
 
 
 def get_report_request_time(file_path: FilePath) -> datetime:
@@ -88,7 +88,7 @@ def _create_submission_request_name(submitter: Submitter, submission_time: datet
     :param submission_time: the time of the submission
     :return: the folder name for the new submission
     """
-    return FilePath(SUBMISSION_REQUEST_PREFIX + submitter + "." + submission_time.strftime(fmt.DATETIME_FILE_STRING))
+    return FilePath(f"{SUBMISSION_REQUEST_PREFIX + submitter}.{submission_time.strftime(fmt.DATETIME_FILE_STRING)}")
 
 
 def get_submission_request_details(file_path: FilePath) -> (Submitter, datetime):
@@ -112,12 +112,11 @@ def queue_submission(submitter: Submitter, submission_time: datetime) -> Result:
 
     pre_val_dir = paths.get_pre_validation_dir(submitter)
 
-    staged_dir = paths.STAGING_DIR + "/" + _create_submission_request_name(submitter, submission_time)
+    staged_dir = f"{paths.STAGING_DIR}/{_create_submission_request_name(submitter, submission_time)}"
     _remove_previous_occurrences(submitter)
-    subprocess.run("mv {} {}".format(pre_val_dir, staged_dir), shell=True, check=True)
+    subprocess.run(f"mv {pre_val_dir} {staged_dir}", shell=True, check=True)
     set_flag(SubmissionFlag.SUBMISSION_READY, True, staged_dir)
 
-    trace = "Submission successfully made by {} at {}".format(submitter,
-                                                              submission_time.strftime(fmt.DATETIME_TRACE_STRING))
+    trace = f"Submission successfully made by {submitter} at {submission_time.strftime(fmt.DATETIME_TRACE_STRING)}"
     print_tourney_trace(trace)
     return Result(True, trace)

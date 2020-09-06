@@ -26,8 +26,8 @@ class ApprovedSubmitters:
     def __init__(self):
         if not os.path.exists(paths.APPROVED_SUBMITTERS_LIST):
             ApprovedSubmitters._write_default()
-            raise NoConfigDefined("No approved submitters file found at {} . A default one has been created"
-                                  .format(paths.APPROVED_SUBMITTERS_LIST))
+            raise NoConfigDefined(f"No approved submitters file found at {paths.APPROVED_SUBMITTERS_LIST} . "
+                                  f"A default one has been created")
         else:
             self.submitters_details = json.load(open(paths.APPROVED_SUBMITTERS_LIST, 'r'))
 
@@ -51,8 +51,8 @@ class ApprovedSubmitters:
         if self.submitters_details != ApprovedSubmitters.default_submitters_details:
             return Result(True, "Non-default approved submitters file is present:")
         else:
-            return Result(False, "ERROR: Approved submitters list has not been changed from the default provided.\n"
-                                 "Please update {} with the correct details".format(paths.APPROVED_SUBMITTERS_LIST))
+            return Result(False, f"ERROR: Approved submitters list has not been changed from the default provided.\n"
+                                 f"Please update {paths.APPROVED_SUBMITTERS_LIST} with the correct details")
 
     def _check_num_submitters(self) -> Result:
         """ Check that more than one submitter has been added to the approved submitters list """
@@ -60,7 +60,7 @@ class ApprovedSubmitters:
         if num_submitters < 2:
             return Result(False, "\tERROR: There are less than 2 submitters in the approved submitters list")
         else:
-            return Result(True, "\tThere are {} approved submitters for the tournament".format(num_submitters))
+            return Result(True, f"\tThere are {num_submitters} approved submitters for the tournament")
 
     def check_valid(self) -> Result:
         """ Check the approved submitters list is valid """

@@ -23,8 +23,8 @@ class SubmitterExtensions:
     def __init__(self):
         if not os.path.exists(paths.SUBMITTER_EXTENSIONS_LIST):
             SubmitterExtensions.write_default()
-            raise NoConfigDefined("No submitters extensions list found at {} . A default one has been created"
-                                  .format(paths.SUBMITTER_EXTENSIONS_LIST))
+            raise NoConfigDefined(f"No submitters extensions list found at {paths.SUBMITTER_EXTENSIONS_LIST} . "
+                                  f"A default one has been created")
         else:
             self.extension_details = json.load(open(paths.SUBMITTER_EXTENSIONS_LIST, 'r'))
 
@@ -48,9 +48,8 @@ class SubmitterExtensions:
         if self.extension_details != SubmitterExtensions.default_extension_details:
             return Result(True, "Non-default submitter extensions file is present:")
         else:
-            return Result(False, "ERROR: Submitter extensions list has not been changed from the default provided.\n"
-                                 "       Please update {} with the correct details"
-                          .format(paths.SUBMITTER_EXTENSIONS_LIST))
+            return Result(False, f"ERROR: Submitter extensions list has not been changed from the default provided.\n"
+                                 f"       Please update {paths.SUBMITTER_EXTENSIONS_LIST} with the correct details")
 
     def _check_submitters_exist(self) -> Result:
         """ Check that all submitter in SubmitterExtensions are approved submitters in the tournament """
@@ -58,7 +57,7 @@ class SubmitterExtensions:
                               if sub not in ApprovedSubmitters().get_list()]
         if unknown_submitters:
             return Result(False,
-                          "\tERROR: Submitters {} not found in approved submitters list".format(unknown_submitters))
+                          f"\tERROR: Submitters {unknown_submitters} not found in approved submitters list")
         else:
             return Result(True, '')
 

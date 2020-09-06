@@ -44,14 +44,14 @@ class AntAssignment(AbstractAssignment):
         return self.progs_list
 
     def progs_identical(self, prog1: Prog, prog2: Prog, submission_dir: FilePath) -> bool:
-        diff = subprocess.run("diff -rw {} {}".format(prog1, prog2), cwd=submission_dir + "/programs",
+        diff = subprocess.run(f"diff -rw {prog1} {prog2}", cwd=submission_dir + "/programs",
                               shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
         return diff.returncode == 0
 
     def run_test(self, test: Test, prog: Prog, submission_dir: FilePath, use_poc: bool = False) -> (TestResult, str):
 
         result = subprocess.run(
-            "ant test -Dtest=\"{}\" -Dprogram=\"{}\"".format(test, prog),
+            f"ant test -Dtest=\"{test}\" -Dprogram=\"{prog}\"",
             shell=True, cwd=submission_dir,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, check=False
         )
@@ -69,23 +69,23 @@ class AntAssignment(AbstractAssignment):
             return int(num_tests_regex.group(1))
         else:
             # Assumed default test count of 20
-            print_tourney_error("Cannot find regex 'Tests run: ([0-9]+)' in traces:\n" + traces)
+            print_tourney_error(f"Cannot find regex 'Tests run: ([0-9]+)' in traces:\n{traces}")
             return 20
 
     def prep_submission(self, submission_dir: FilePath, destination_dir: FilePath) -> Result:
 
         # copy across the tests
-        subprocess.run("rm -rf {}".format(destination_dir + "/tests"), shell=True, check=True)
-        res = subprocess.run("cp -rf {} {}".format(submission_dir + "/tests", destination_dir),
+        subprocess.run(f"rm -rf {destination_dir}/tests", shell=True, check=True)
+        res = subprocess.run(f"cp -rf {submission_dir}/tests {destination_dir}",
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, check=False, text=True)
         if res.returncode != 0:
             return Result(False, res.stderr[res.stderr.find(self.get_assignment_name()): ])
 
         # copy across the programs, excluding 'original'
         for program in self.get_programs_list():
-            subprocess.run("rm -rf {}".format(destination_dir + "/programs/" + program), shell=True, check=True)
+            subprocess.run(f"rm -rf {destination_dir}/programs/{program}", shell=True, check=True)
             res = subprocess.run(
-                "cp -rf {} {}".format(submission_dir + "/programs/" + program, destination_dir + "/programs"),
+                f"cp -rf {submission_dir}/programs/{program} {destination_dir}/programs",
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, check=False, text=True)
             if res.returncode != 0:
                 return Result(False, res.stderr[res.stderr.find(self.get_assignment_name()): ])
@@ -110,7 +110,7 @@ class AntAssignment(AbstractAssignment):
         tests_path = "/tests/"
         for test in self.get_test_list():
             diff = subprocess.run(
-                "diff -r {} {}".format(new_submission + tests_path + test, old_submission + tests_path + test),
+                f"diff -r {new_submission + tests_path + test} {old_submission + tests_path + test}",
                 stdout=subprocess.PIPE, shell=True, check=False)
             if diff.returncode != 0:
                 new_tests.append(test)
@@ -126,7 +126,7 @@ class AntAssignment(AbstractAssignment):
         programs_path = "/programs/"
         for prog in self.get_programs_list():
             diff = subprocess.run(
-                "diff -r {} {}".format(new_submission + programs_path + prog, old_submission + programs_path + prog),
+                f"diff -r {new_submission + programs_path + prog} {old_submission + programs_path + prog}",
                 stdout=subprocess.PIPE, shell=True, check=False)
             if diff.returncode != 0:
                 new_progs.append(prog)
@@ -141,10 +141,10 @@ class AntAssignment(AbstractAssignment):
 
         # make sure folders that are required are present
         if not os.path.isdir(test_stage_code_dir + "/.depcache"):
-            subprocess.run("mkdir {}".format(test_stage_code_dir + "/.depcache"), shell=True, check=True)
+            subprocess.run(f"mkdir {test_stage_code_dir}/.depcache", shell=True, check=True)
 
         if not os.path.isdir(test_stage_code_dir + "/classes"):
-            subprocess.run("mkdir {}".format(test_stage_code_dir + "/classes"), shell=True, check=True)
+            subprocess.run(f"mkdir {test_stage_code_dir}/classes", shell=True, check=True)
 
         # clean test_stage_dir of previous tests
         tester_files = ["/.depcache/tests", "/tests", "/classes/tests"]
@@ -152,16 +152,16 @@ class AntAssignment(AbstractAssignment):
 
         # remove previous files
         for file in tester_files + testee_files:
-            subprocess.run("rm -rf {}".format(test_stage_code_dir + file), shell=True, check=True)
+            subprocess.run(f"rm -rf {test_stage_code_dir + file}", shell=True, check=True)
 
         # link in files from tester
         for file in tester_files:
-            subprocess.run("ln -s {} {}".format(tester_code_dir + file, test_stage_code_dir + file),
+            subprocess.run(f"ln -s {tester_code_dir + file} {test_stage_code_dir + file}",
                            shell=True, check=True)
 
         # link in files from testee
         for file in testee_files:
-            subprocess.run("ln -s {} {}".format(testee_code_dir + file, test_stage_code_dir + file),
+            subprocess.run(f"ln -s {testee_code_dir + file} {test_stage_code_dir + file}",
                            shell=True, check=True)
 
     def compute_normalised_prog_score(self, submitter_score: float, best_score: float) -> float:
@@ -184,7 +184,7 @@ class AntAssignment(AbstractAssignment):
 
         diffs = {}
         for prog in self.get_programs_list():
-            prog_diff = subprocess.run("diff -rw {} {}".format("original", prog), cwd=submission_dir + "/programs/",
+            prog_diff = subprocess.run(f"diff -rw original {prog}", cwd=submission_dir + "/programs/",
                                        shell=True, stdout=subprocess.PIPE, universal_newlines=True, check=False)
             diffs[prog] = prog_diff.stdout.strip()
 
@@ -192,7 +192,7 @@ class AntAssignment(AbstractAssignment):
 
     def check_diff(self, submission_dir: FilePath, prog: Prog) -> Result:
 
-        prog_diff = subprocess.run("diff -rw {} {}".format("original", prog), cwd=submission_dir + "/programs/",
+        prog_diff = subprocess.run(f"diff -rw original {prog}", cwd=submission_dir + "/programs/",
                                    shell=True, stdout=subprocess.PIPE, text=True, check=False).stdout
 
         # don't allow dependency changes

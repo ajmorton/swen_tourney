@@ -20,7 +20,7 @@ class CommitDetails(NamedTuple):
     commit_msg: str
 
     def __repr__(self):
-        return "{}: [{}] {}".format(self.submitter, self.commit_id, self.commit_msg)
+        return f"{self.submitter}: [{self.commit_id}] {self.commit_msg}"
 
 ASSIGNMENT = AssignmentConfig().get_assignment().get_assignment_name()
 SUBS_DIR = "./test/submissions"
@@ -33,7 +33,7 @@ def verify_submissions_valid() -> bool:
     submissions_valid = True
 
     for submitter in submitters:
-        expected_submission_path = SUBS_DIR + "/" + submitter + "/" + ASSIGNMENT
+        expected_submission_path = f"{SUBS_DIR}/{submitter}/{ASSIGNMENT}"
         if not os.path.exists(expected_submission_path):
             print(f"{Ansi.RED}ERROR:{Ansi.END} {expected_submission_path} does not exist")
             submissions_valid = False
@@ -57,10 +57,10 @@ def get_details_all_commits(full_history) -> [CommitDetails]:
     commit_details = []
 
     submitters = [file for file in os.listdir(SUBS_DIR) if not file.startswith(".")]
-    print("Simulating tournament for {} submitters".format(len(submitters)))
+    print(f"Simulating tournament for {len(submitters)} submitters")
 
     for sub in submitters:
-        submission_path = SUBS_DIR + "/" + sub + "/" + ASSIGNMENT
+        submission_path = f"{SUBS_DIR}/{sub}/{ASSIGNMENT}"
         commits = subprocess.run('git log --first-parent --pretty="format:%at||%h||%s" master -- | sort -r',
                                  cwd=submission_path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                  universal_newlines=True, check=False).stdout
@@ -86,7 +86,7 @@ def strip_unneeded_commits(commit_details: [CommitDetails]) -> [CommitDetails]:
         else:
             stripped.append(new_commit)
 
-    print("Replaying {} commits".format(len(stripped)))
+    print(f"Replaying {len(stripped)} commits")
     return stripped
 
 
@@ -98,11 +98,11 @@ def make_submission(commit: CommitDetails):
 
     submitter, commit_id = commit.submitter, commit.commit_id
 
-    subprocess.run("git checkout --force {}".format(commit_id), shell=True, stdout=subprocess.DEVNULL,
-                   stderr=subprocess.DEVNULL, cwd=SUBS_DIR + "/" + submitter + "/" + ASSIGNMENT, check=True)
+    subprocess.run(f"git checkout --force {commit_id}", shell=True, stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL, cwd=f"{SUBS_DIR}/{submitter}/{ASSIGNMENT}", check=True)
 
-    submission_path = os.path.realpath(SUBS_DIR + "/" + submitter + "/" + ASSIGNMENT)
-    subprocess.run("./add_sub_manually.sh {}".format(submission_path), shell=True, check=False)
+    submission_path = os.path.realpath(f"{SUBS_DIR}/{submitter}/{ASSIGNMENT}")
+    subprocess.run(f"./add_sub_manually.sh {submission_path}", shell=True, check=False)
 
 
 def main():
@@ -146,7 +146,7 @@ def main():
     i = 0
     for commit_detail in commit_details:
         i += 1
-        print("\n({}/{}) {}".format(i, len(commit_details), commit_detail))
+        print(f"\n({i}/{len(commit_details)}) {commit_detail}")
         make_submission(commit_detail)
 
 
