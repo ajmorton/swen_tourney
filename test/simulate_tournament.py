@@ -8,6 +8,7 @@ Note: Due to python namespacing this must be run from the root of the repo with 
 import os
 import subprocess
 import time
+from collections import Counter
 from typing import NamedTuple
 from tournament.config import AssignmentConfig
 from tournament.util import Ansi
@@ -80,11 +81,17 @@ def strip_unneeded_commits(commit_details: [CommitDetails]) -> [CommitDetails]:
     """ Remove unnecessary commit details. If a submitter submits multiple times in a row only keep the most recent """
     stripped = [commit_details[0]]
 
+    # ignore consecutive commits from the same submitter
     for new_commit in commit_details:
         if stripped[-1].submitter is new_commit.submitter:
             stripped[-1] = new_commit
         else:
             stripped.append(new_commit)
+
+    # remove commits common across multiple submissions, these are from the original source assignment
+    hash_frequencies = Counter(list(map(lambda x: x.commit_id, commit_details)))
+    common_commit_hashes = [hash for (hash, count) in hash_frequencies.items() if count > 50]
+    stripped = [commit for commit in stripped if commit.commit_id not in common_commit_hashes]
 
     print(f"Replaying {len(stripped)} commits")
     return stripped
