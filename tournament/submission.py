@@ -120,10 +120,12 @@ def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submissio
     submitter_eligible, _ = ApprovedSubmitters().get_submitter_username(submitter)
     if not submitter_eligible:
         return Result(False, "Submitter '{}' is not on the approved submitters list.\n"
-                             "If this is a group assignment please check that you are committing to "
-                             "the repo of your designated team representative.\n"
-                             "If this is an individual assignment please check with your tutors that"
-                             " you are added to the approved_submitters list".format(submitter))
+                      "If this is a group assignment please check that you are committing to "
+                      "the repo of your designated team representative.\n"
+                      "If this is an individual assignment please check with your tutors that"
+                      " you are added to the approved_submitters list\n\n"
+                      "Approved submitters:\n  {}"
+                      .format(submitter, "\n  ".join(sorted(ApprovedSubmitters().get_list()))))
 
     if os.path.isdir(submitter_pre_val_dir):
         prior_submission_age = datetime.now().timestamp() - os.stat(submitter_pre_val_dir).st_mtime
