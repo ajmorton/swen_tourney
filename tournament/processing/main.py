@@ -173,3 +173,10 @@ def rescore_invalid_progs() -> Result:
     TourneySnapshot(report_time=datetime.now()).write_snapshot()
 
     return Result(True, f"{num_invalid_progs} invalid programs have had their score set to zero")
+
+
+def create_results_csv():
+    """ Output the results of the tournament to a csv file """
+    print_tourney_trace(f"Exporting tournament results to {paths.CSV_FILE}")
+    TourneySnapshot(report_time=datetime.now()).write_csv()
+    return Result(True, f"Results exported to {paths.CSV_FILE}")

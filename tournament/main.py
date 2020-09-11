@@ -72,6 +72,13 @@ def rescore_invalid_progs() -> Result:
     return tourney.rescore_invalid_progs()
 
 
-def make_report_request(request_time: datetime) -> Result:
-    """ Queue a report request to the tournament """
-    return daemon.make_report_request(request_time)
+def create_results_csv() -> Result:
+    """ Generate a csv containing student results """
+
+    if not ApprovedSubmitters().submissions_closed():
+        return Result(False, "Cannot export results. Submissions are still open")
+
+    if not SubmitterExtensions().extensions_closed():
+        return Result(False, "Cannot export results. Submissions are still open for students with an extension")
+
+    return tourney.create_results_csv()

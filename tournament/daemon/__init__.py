@@ -4,4 +4,4 @@ order of submission
 """
 
 from .fs_queue import queue_submission
-from .main import main, shutdown, make_report_request, is_alive, start
+from .main import main, shutdown, is_alive, start

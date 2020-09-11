@@ -1,5 +1,5 @@
 """
-Submissions and report requests are made to the tournament asynchronously by placing them in the paths.STAGED_DIR
+Submissions are made to the tournament asynchronously by placing them in the paths.STAGED_DIR
 folder. These are then popped by the tournament daemon, oldest timestamp first, and processed in the tournament.
 """
 import subprocess
@@ -22,19 +22,6 @@ def _set_process_name(counter):
     with counter.get_lock():
         current_process().name = f"process_{str(counter.value)}"
         counter.value = counter.value + 1
-
-
-def _process_report_request(file_path: FilePath):
-    """
-    Provided a report request from paths.STAGED_DIR, create a snapshot of the current tournament state and write a
-    .csv report with submitter scores
-    :param file_path: the file path of the report request in paths.STAGED_DIR
-    """
-    report_time = fs_queue.get_report_request_time(file_path)
-    print_tourney_trace(f"Generating report for tournament submissions as of {report_time}")
-    snapshot = TourneySnapshot(report_time=report_time)
-    snapshot.write_csv()
-    subprocess.run(f"rm -f {file_path}", shell=True, check=True)
 
 
 def _process_submission_request(file_path, pool):
@@ -91,14 +78,6 @@ def shutdown(message: str) -> Result:
                             "Check the tournament traces to see when the tournament has successfully stopped.")
 
 
-def make_report_request(request_time: datetime) -> Result:
-    """ Create a report request file in paths.STAGED_DIR """
-    fs_queue.create_report_request(request_time)
-    trace = f"Report request made at {request_time.strftime(fmt.DATETIME_TRACE_STRING)}"
-    print_tourney_trace(trace)
-    return Result(True, trace)
-
-
 def start() -> Result:
     """ Start a new thread and run the TourneyDaemon in it """
     subprocess.Popen("python3.8 -m tournament.daemon.main", cwd=paths.ROOT_DIR, shell=True,
@@ -120,7 +99,7 @@ def main():
         set_flag(TourneyFlag.ALIVE, True)
         set_flag(TourneyFlag.SHUTDOWN, False)
 
-        # Create a report file on startup
+        # Create a snapshot file on startup
         TourneySnapshot(report_time=datetime.now()).write_snapshot()
 
         while not get_flag(TourneyFlag.SHUTDOWN):
@@ -133,9 +112,7 @@ def main():
 
             if next_submission_to_process:
                 file_path = f"{paths.STAGING_DIR}/{next_submission_to_process}"
-                if fs_queue.is_report(file_path):
-                    _process_report_request(file_path)
-                elif fs_queue.is_submission(file_path):
+                if fs_queue.is_submission(file_path):
                     _process_submission_request(file_path, pool)
                 else:
                     # submission is present in the staged folder, but has not finished being copied across

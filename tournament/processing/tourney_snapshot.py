@@ -63,19 +63,9 @@ class TourneySnapshot:
             raise NotImplementedError("Error: TourneySnapshot constructor must take one of {snapshot_file, datetime} "
                                       "as an argument")
 
-    def write_snapshot(self, save_with_timestamp=False):
-        """
-        Write the snapshot to a json file
-        :param save_with_timestamp: If true then the snapshot file will be appended with the time of the snapshot
-                                    e.g. snapshot.json.2019.09.08.12.00
-        """
+    def write_snapshot(self):
+        """ Write the snapshot to a json file """
         json.dump(self.snapshot, open(paths.RESULTS_FILE, 'w'), indent=4, sort_keys=True)
-
-        if save_with_timestamp:
-            report_time = datetime.strptime(self.snapshot['snapshot_date'], fmt.DATETIME_TRACE_STRING)
-            report_file_path = paths.get_snapshot_file_path(report_time)
-            json.dump(self.snapshot, open(report_file_path, 'w'), indent=4, sort_keys=True)
-            print_tourney_trace(f"Snapshot of tournament at {report_time} written to {report_file_path}")
 
     def write_csv(self):
         """

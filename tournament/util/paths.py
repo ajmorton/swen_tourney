@@ -64,11 +64,6 @@ def get_tourney_dir(submitter: Submitter) -> FilePath:
     return FilePath(f"{TOURNEY_DIR}/{submitter}")
 
 
-def get_snapshot_file_path(report_time: datetime):
-    """ Given a datetime, return a file path for a snapshot file with the datetime appended """
-    return f"{STATE_DIR}/snapshot_{report_time.strftime(fmt.DATETIME_FILE_STRING)}.json"
-
-
 def get_head_to_head_log_file_path(thread_name: str) -> FilePath:
     """
     Given the name of the current thread, return a file path to save its logs to when running tests against progs

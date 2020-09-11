@@ -38,6 +38,7 @@ python3.8 backend.py start_tournament # submissions can now be made and tourname
 # the submission deadline and extension deadline are passed
 python3.8 backend.py get_diffs             # generate diffs to be manually assessed
 python3.8 backend.py rescore_invalid_progs # zero-score invalid PUTs
+python3.8 backend.py export_results        # export the tournament results to a .csv file
 python3.8 backend.py shutdown              # shutdown the tournament
 python3.8 backend.py clean                 # delete all submissions, config and traces
 ```

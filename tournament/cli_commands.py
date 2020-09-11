@@ -62,8 +62,8 @@ def _create_backend_parser():
     subparsers.add_parser('start_tournament', description='Start the tournament.').set_defaults(
         func=lambda args: tourney.start_tournament())
 
-    subparsers.add_parser('report', description='Get the results of the tournament.').set_defaults(
-        func=lambda args: tourney.make_report_request(datetime.now()))
+    subparsers.add_parser('export_results', description='Export tournament results in csv format.').set_defaults(
+        func=lambda args: tourney.create_results_csv())
 
     shutdown_parser = subparsers.add_parser('shutdown', description='Shut down the tournament.')
     shutdown_parser.add_argument('--message', default="", help='The message to display while tournament is shutdown')
