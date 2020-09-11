@@ -85,14 +85,18 @@ class TourneySnapshot:
             writer = csv.writer(csv_file)
             assg = AssignmentConfig().get_assignment()
             writer.writerow(["Student"] + assg.get_test_list() + assg.get_programs_list() +
-                            ["normalised_test_score"] + ["normalised_prog_score"])
+                            ["normalised_test_score"] + ["normalised_prog_score"] + ["total"] + ["total_rounded"])
 
             for (submitter, submitter_data) in sorted(self.snapshot['results'].items()):
+                total_score = submitter_data["normalised_test_score"] + submitter_data["normalised_prog_score"]
+                total_rounded = round(total_score * 2) / 2  # total score rounded to nearest 0.5
                 writer.writerow([submitter] +
                                 [submitter_data["tests"][test] for test in sorted(submitter_data["tests"])] +
                                 [submitter_data["progs"][prog] for prog in sorted(submitter_data["progs"])] +
                                 [submitter_data["normalised_test_score"]] +
-                                [submitter_data["normalised_prog_score"]])
+                                [submitter_data["normalised_prog_score"]] +
+                                [round(total_score, 2)] +
+                                [total_rounded])
 
     def _create_snapshot_from_tourney_state(self, report_time: datetime):
         """
@@ -156,6 +160,13 @@ class TourneySnapshot:
             results[submitter]['normalised_prog_score'] = assg.compute_normalised_prog_score(
                 submitter_tests_escaped, self.snapshot['best_average_tests_evaded']
             )
+
+        # The current scoring algo for tests doesn't give the best test suite a maximums score.
+        # re-normalise to make this happen
+        best_test_score = max([results[submitter]['normalised_test_score'] for submitter in results.keys()])
+        for submitter in results.keys():
+            new_score = round(results[submitter]['normalised_test_score'] * (2.5 / best_test_score), 2)
+            results[submitter]['normalised_test_score'] = new_score
 
     def set_time_to_process_last_submission(self, seconds: int):
         """ Set the time to process the last submission """

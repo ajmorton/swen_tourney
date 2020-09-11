@@ -116,7 +116,8 @@ def get_diffs() -> Result:
     diff_csv.writeheader()
 
     diffs = []
-    for submitter in os.listdir(paths.TOURNEY_DIR):
+    submissions = [folder for folder in os.listdir(paths.TOURNEY_DIR) if not folder.startswith(".")]
+    for submitter in submissions:
         submitter_diffs = assg.get_diffs(paths.get_tourney_dir(Submitter(submitter)))
         for prog in sorted(submitter_diffs.keys()):
             num_tests_evaded = tourney_results['results'][submitter]['progs'][prog]
