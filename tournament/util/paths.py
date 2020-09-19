@@ -3,9 +3,7 @@ File paths used by the tournament
 """
 
 import os
-from datetime import datetime
 
-from tournament.util import format as fmt
 from tournament.util.types import Submitter, FilePath
 
 # The root of the project
@@ -19,7 +17,6 @@ CONFIGS_DIR = STATE_DIR + "/config"
 
 # Configuration files for the tournament
 APPROVED_SUBMITTERS_LIST = CONFIGS_DIR + "/approved_submitters.json"
-SUBMITTER_EXTENSIONS_LIST = CONFIGS_DIR + "/submitter_extensions.json"
 ASSIGNMENT_CONFIG = CONFIGS_DIR + "/assignment_config.json"
 SERVER_CONFIG = CONFIGS_DIR + "/server_config.json"
 EMAIL_CONFIG = CONFIGS_DIR + "/email_config.json"

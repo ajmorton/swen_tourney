@@ -3,15 +3,13 @@
 import os
 import subprocess
 import time
-from datetime import datetime
 
 from tournament import config as cfg
 from tournament import flags, daemon
 from tournament import processing as tourney
-from tournament.config import ApprovedSubmitters, SubmitterExtensions
+from tournament.config import ApprovedSubmitters
 from tournament.reporting import results_server
-from tournament.util import paths
-from tournament.util.types import Result
+from tournament.util import paths, Result
 
 
 def start_tournament() -> Result:
@@ -51,7 +49,7 @@ def clean() -> Result:
 
 def get_diffs() -> Result:
     """ Fetch diffs of submitters progs, provided submissions have been closed """
-    if ApprovedSubmitters().submissions_closed() and SubmitterExtensions().extensions_closed():
+    if ApprovedSubmitters().submissions_closed() and ApprovedSubmitters().extensions_closed():
         return tourney.get_diffs()
     else:
         return Result(False, "Submissions are not currently closed.\n"
@@ -60,7 +58,7 @@ def get_diffs() -> Result:
 
 def rescore_invalid_progs() -> Result:
     """ rescore programs based on the results of the annotated diffs file, provided submissions are closed """
-    if not ApprovedSubmitters().submissions_closed() or not SubmitterExtensions().extensions_closed():
+    if not ApprovedSubmitters().submissions_closed() or not ApprovedSubmitters().extensions_closed():
         return Result(False, "Submissions are not currently closed.\n "
                              "Rescoring invalid programs should only be performed once submissions are closed")
 
@@ -78,7 +76,7 @@ def create_results_csv() -> Result:
     if not ApprovedSubmitters().submissions_closed():
         return Result(False, "Cannot export results. Submissions are still open")
 
-    if not SubmitterExtensions().extensions_closed():
+    if not ApprovedSubmitters().extensions_closed():
         return Result(False, "Cannot export results. Submissions are still open for students with an extension")
 
     return tourney.create_results_csv()

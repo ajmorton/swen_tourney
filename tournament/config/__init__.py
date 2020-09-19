@@ -4,7 +4,7 @@ Configuration file validation performed on tournament startup
 
 from tournament.util import Result, Ansi
 from .exceptions import NoConfigDefined
-from .files import ApprovedSubmitters, AssignmentConfig, EmailConfig, ServerConfig, SubmitterExtensions
+from .files import ApprovedSubmitters, AssignmentConfig, EmailConfig, ServerConfig
 
 
 def configuration_valid() -> Result:
@@ -22,8 +22,6 @@ def configuration_valid() -> Result:
             result += ApprovedSubmitters().check_valid()
         if result:
             result += ServerConfig().check_server_config()
-        if result:
-            result += SubmitterExtensions().check_valid()
         # if result:
         #    result += EmailConfig().check_email_valid()
 

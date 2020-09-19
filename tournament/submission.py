@@ -10,7 +10,7 @@ from enum import Enum
 from itertools import takewhile
 
 from tournament import daemon
-from tournament.config import AssignmentConfig, ApprovedSubmitters, SubmitterExtensions
+from tournament.config import AssignmentConfig, ApprovedSubmitters
 from tournament.config.assignments import AbstractAssignment
 from tournament.flags import get_flag, set_flag, clear_all_flags, SubmissionFlag
 from tournament.util import paths, format as fmt, print_tourney_trace
@@ -299,7 +299,7 @@ def _submit(submitter: Submitter) -> Result:
     pre_val_dir = paths.get_pre_validation_dir(submitter)
     submission_time = datetime.now()
 
-    if ApprovedSubmitters().submissions_closed() and not SubmitterExtensions().is_eligible(submitter):
+    if ApprovedSubmitters().submissions_closed() and not ApprovedSubmitters().elig_for_extension(submitter):
         return Result(False, f"A new submission can't be made at {submission_time.strftime(fmt.DATETIME_TRACE_STRING)}."
                              f" Submissions have been closed")
 

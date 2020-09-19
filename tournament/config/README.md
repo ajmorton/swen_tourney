@@ -42,7 +42,8 @@ based on either of these values.
 
 **Fields**  
 `submission_deadline` the date and time at which submissions are closed
-`submitters` A list of approved submitters, identified by their gitlab username
+`submission_extensions_deadline` the date and time at which submission extensions are closed
+`submitters` A list of approved submitters, identified by their gitlab username, and whether they are eligible for an extension
 
 **Example file**
 
@@ -77,31 +78,6 @@ The details used by the results server to host the HTTP results webpage.
 
 **Validation** 
 None
-
-
-### submitter_extensions
-When submissions to the tournament are closed some submitters may be eligible for an extension. 
-Submitters in this list can continue to make submissions to the tournament.
-
-**Fields**  
-`extension_deadline` the date and time at which extensions are closed
-`submitters` A list of submitter usernames. These names should map to the usernames used in `approved_submitters`
-
-**Example file**  
-
-```json
-{
-    "extension_deadline": "2019-10-05 16:42:00",
-    "submitters": [
-        "student_a",
-        "student_b",
-        "student_c"
-    ]
-}
-```
-**Validation**  
-Checks that `submitter_extensions` has been updated from its default values, and that all names provided in 
-the list are matched by a username in `approved_submitters`
 
 
 ### email_config

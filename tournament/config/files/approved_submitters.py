@@ -18,7 +18,12 @@ class ApprovedSubmitters:
 
     default_submitters_details = {
         'submission_deadline': datetime.strftime(datetime.max, fmt.DATETIME_TRACE_STRING),
-        'submitters': ["student_a", "student_b", "student_c"]
+        'submission_extensions_deadline': datetime.strftime(datetime.max, fmt.DATETIME_TRACE_STRING),
+        'submitters': {
+            "student_a": {"extension_granted": False},
+            "student_b": {"extension_granted": False},
+            "student_c": {"extension_granted": False},
+        }
     }
 
     submitters_details = {}
@@ -33,11 +38,20 @@ class ApprovedSubmitters:
 
     def get_list(self) -> [Submitter]:
         """ Get the list of approved submitters """
-        return self.submitters_details['submitters']
+        return self.submitters_details['submitters'].keys()
+
+    def elig_for_extension(self, submitter: Submitter) -> bool:
+        """ Return true if the submitter has an extension """
+        return self.submitters_details['submitters'][submitter]['extension_granted'] and not self.extensions_closed()
 
     def submissions_closed(self) -> bool:
         """ Check whether the submission deadline has passed """
         return datetime.now() > datetime.strptime(self.submitters_details['submission_deadline'],
+                                                  fmt.DATETIME_TRACE_STRING)
+
+    def extensions_closed(self) -> bool:
+        """ Check whether the submission extension deadline has passed """
+        return datetime.now() > datetime.strptime(self.submitters_details['submission_extensions_deadline'],
                                                   fmt.DATETIME_TRACE_STRING)
 
     @staticmethod
@@ -54,17 +68,20 @@ class ApprovedSubmitters:
             return Result(False, f"ERROR: Approved submitters list has not been changed from the default provided.\n"
                                  f"Please update {paths.APPROVED_SUBMITTERS_LIST} with the correct details")
 
-    def _check_num_submitters(self) -> Result:
-        """ Check that more than one submitter has been added to the approved submitters list """
-        num_submitters = len(self.submitters_details['submitters'])
-        if num_submitters < 2:
-            return Result(False, "\tERROR: There are less than 2 submitters in the approved submitters list")
+    def _check_extension_date(self) -> Result:
+        """ Check that the extension deadline is after the submission deadline """
+        submission_deadline = datetime.strptime(self.submitters_details['submission_deadline'],
+                                                fmt.DATETIME_TRACE_STRING)
+        extension_deadline = datetime.strptime(self.submitters_details['submission_extensions_deadline'],
+                                               fmt.DATETIME_TRACE_STRING)
+        if extension_deadline > submission_deadline:
+            return Result(True, "\tExtension deadline is after submission deadline")
         else:
-            return Result(True, f"\tThere are {num_submitters} approved submitters for the tournament")
+            return Result(False, "\tERROR: Extension deadline is not after the submission deadline")
 
     def check_valid(self) -> Result:
         """ Check the approved submitters list is valid """
         result = self._check_non_default()
         if result:
-            result += self._check_num_submitters() + ""
+            result += self._check_extension_date() + ""
         return result
