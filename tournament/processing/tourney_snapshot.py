@@ -13,7 +13,6 @@ from tournament.processing.tourney_state import TourneyState
 from tournament.util import FilePath
 from tournament.util import format as fmt
 from tournament.util import paths
-from tournament.util.funcs import print_tourney_trace
 
 
 class TourneySnapshot:
@@ -154,6 +153,8 @@ class TourneySnapshot:
         # The current scoring algo for tests doesn't give the best test suite a maximums score.
         # re-normalise to make this happen
         best_test_score = max([results[submitter]['normalised_test_score'] for submitter in results.keys()])
+        if best_test_score == 0:
+            best_test_score = 1
         for submitter in results.keys():
             new_score = round(results[submitter]['normalised_test_score'] * (2.5 / best_test_score), 2)
             results[submitter]['normalised_test_score'] = new_score
