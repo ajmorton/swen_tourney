@@ -120,10 +120,13 @@ class FuzzAssignment(AbstractAssignment):
     def compile_test(self, submission_dir: FilePath, test: Test) -> Result:
         try:
             # run the fuzzer to generate a list of tests in tests/
-            subprocess.run("./run_fuzzer.sh", shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT, universal_newlines=True, timeout=300, check=False)
+            result = subprocess.run("./run_fuzzer.sh", shell=True, cwd=submission_dir, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT, universal_newlines=True, timeout=300, check=False)
         except subprocess.TimeoutExpired:
             return Result(False, "Generating tests with ./run_fuzzer.sh timed out after 5 minutes")
+
+        if result.returncode != 0:
+            return Result(False, result.stdout)
         return Result(True, "")
 
     def detect_new_tests(self, new_submission: FilePath, old_submission: FilePath) -> [Test]:
