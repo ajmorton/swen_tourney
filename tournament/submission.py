@@ -49,6 +49,10 @@ def run_stage(stage: Stage, submitter: Submitter, assg_name: str = None, submiss
     :return: the result of running the test stage
     """
 
+    daemon_online = daemon.is_alive()
+    if not daemon_online:
+        return daemon_online
+
     _, pre_val_dir, _ = _submission_details(submitter)
 
     # Check that the test stage can be run.
@@ -105,10 +109,6 @@ def _check_submitter_eligibility(submitter: Submitter, assg_name: str, submissio
     :param submission_dir: The location of the submission prior to moving into the pre_validation directory
     :return: Whether the submitter is eligible, with traces
     """
-
-    daemon_online = daemon.is_alive()
-    if not daemon_online:
-        return daemon_online
 
     _, submitter_pre_val_dir, assg = _submission_details(submitter)
 
